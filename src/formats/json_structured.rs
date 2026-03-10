@@ -169,21 +169,35 @@ fn insert_nested(
 ) {
     let parts: Vec<&str> = key.split('.').collect();
     if parts.len() == 1 {
+        if let Some(existing) = root.get(key) {
+            if existing.is_object() {
+                let obj = root.get_mut(key).unwrap().as_object_mut().unwrap();
+                obj.insert("_content".to_string(), value);
+                return;
+            }
+        }
         root.insert(key.to_string(), value);
         return;
     }
 
-    // Navigate/create nested objects for all parts except the last
     let mut current = root;
     for part in &parts[..parts.len() - 1] {
-        current = current
+        let entry = current
             .entry(part.to_string())
-            .or_insert_with(|| serde_json::Value::Object(serde_json::Map::new()))
-            .as_object_mut()
-            .expect("Expected nested object in key path");
+            .or_insert_with(|| serde_json::Value::Object(serde_json::Map::new()));
+
+        if !entry.is_object() {
+            let old_value = entry.clone();
+            *entry = serde_json::Value::Object(serde_json::Map::new());
+            entry
+                .as_object_mut()
+                .unwrap()
+                .insert("_content".to_string(), old_value);
+        }
+
+        current = entry.as_object_mut().unwrap();
     }
 
-    // Insert the leaf value
     let leaf_key = parts[parts.len() - 1];
     current.insert(leaf_key.to_string(), value);
 }

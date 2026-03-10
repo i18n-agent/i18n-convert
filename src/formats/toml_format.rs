@@ -208,21 +208,33 @@ fn insert_nested_toml(
 ) -> Result<(), WriteError> {
     let parts: Vec<&str> = key.split('.').collect();
     if parts.len() == 1 {
+        if let Some(existing) = root.get(key) {
+            if existing.is_table() {
+                let table = root.get_mut(key).unwrap().as_table_mut().unwrap();
+                table.insert("_content".to_string(), value);
+                return Ok(());
+            }
+        }
         root.insert(key.to_string(), value);
         return Ok(());
     }
 
     let mut current = root;
     for part in &parts[..parts.len() - 1] {
-        current = current
+        let entry = current
             .entry(part.to_string())
-            .or_insert_with(|| toml::Value::Table(toml::map::Map::new()))
-            .as_table_mut()
-            .ok_or_else(|| {
-                WriteError::Serialization(format!(
-                    "Key path conflict: '{part}' is both a value and a table in key '{key}'"
-                ))
-            })?;
+            .or_insert_with(|| toml::Value::Table(toml::map::Map::new()));
+
+        if !entry.is_table() {
+            let old_value = entry.clone();
+            *entry = toml::Value::Table(toml::map::Map::new());
+            entry
+                .as_table_mut()
+                .unwrap()
+                .insert("_content".to_string(), old_value);
+        }
+
+        current = entry.as_table_mut().unwrap();
     }
 
     let leaf_key = parts[parts.len() - 1];

@@ -318,6 +318,14 @@ fn write_ini(resource: &I18nResource) -> String {
         sections.entry(section).or_default().push((key, entry));
     }
 
+    // Ensure root-level entries (None section) come before named sections
+    sections.sort_by(|k1, _, k2, _| match (k1, k2) {
+        (None, None) => std::cmp::Ordering::Equal,
+        (None, Some(_)) => std::cmp::Ordering::Less,
+        (Some(_), None) => std::cmp::Ordering::Greater,
+        (Some(a), Some(b)) => a.cmp(b),
+    });
+
     let mut first_section = true;
     for (section, section_entries) in &sections {
         if !first_section {

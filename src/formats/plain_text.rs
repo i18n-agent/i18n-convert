@@ -192,18 +192,25 @@ impl FormatWriter for Writer {
 
             restore_line_endings(&joined, line_ending)
         } else {
-            // Single content entry
-            let text = resource
+            // Multiple entries without content.* pattern: join all values
+            let texts: Vec<&str> = resource
                 .entries
                 .values()
-                .next()
-                .map(|e| match &e.value {
-                    EntryValue::Simple(s) => s.as_str(),
-                    _ => "",
+                .filter_map(|e| match &e.value {
+                    EntryValue::Simple(s) if !s.is_empty() => Some(s.as_str()),
+                    _ => None,
                 })
-                .unwrap_or("");
+                .collect();
 
-            restore_line_endings(text, line_ending)
+            if texts.len() <= 1 {
+                // Single entry: output directly
+                let text = texts.first().copied().unwrap_or("");
+                restore_line_endings(text, line_ending)
+            } else {
+                // Multiple entries: join with section delimiters
+                let joined = texts.join(&format!("\n{SECTION_DELIMITER}\n"));
+                restore_line_endings(&joined, line_ending)
+            }
         };
 
         // Add trailing newline

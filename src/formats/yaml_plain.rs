@@ -443,9 +443,18 @@ fn get_or_create_parent<'a>(
         let child = current
             .entry(key)
             .or_insert_with(|| serde_yaml::Value::Mapping(serde_yaml::Mapping::new()));
+
+        if !child.is_mapping() {
+            let old_value = child.clone();
+            *child = serde_yaml::Value::Mapping(serde_yaml::Mapping::new());
+            if let serde_yaml::Value::Mapping(ref mut m) = child {
+                m.insert(serde_yaml::Value::String("_content".to_string()), old_value);
+            }
+        }
+
         current = match child {
             serde_yaml::Value::Mapping(ref mut m) => m,
-            _ => panic!("Expected mapping at key {part}"),
+            _ => unreachable!("just created a mapping above"),
         };
     }
     current
@@ -460,12 +469,32 @@ fn insert_nested(mapping: &mut serde_yaml::Mapping, parts: &[&str], value: &Entr
     let key = serde_yaml::Value::String(parts[0].to_string());
 
     if parts.len() == 1 {
+        if let Some(existing) = mapping.get(&key) {
+            if existing.is_mapping() {
+                let child = mapping.get_mut(&key).unwrap();
+                if let serde_yaml::Value::Mapping(ref mut m) = child {
+                    m.insert(
+                        serde_yaml::Value::String("_content".to_string()),
+                        entry_value_to_yaml(value),
+                    );
+                }
+                return;
+            }
+        }
         let yaml_value = entry_value_to_yaml(value);
         mapping.insert(key, yaml_value);
     } else {
         let child = mapping
             .entry(key)
             .or_insert_with(|| serde_yaml::Value::Mapping(serde_yaml::Mapping::new()));
+
+        if !child.is_mapping() {
+            let old_value = child.clone();
+            *child = serde_yaml::Value::Mapping(serde_yaml::Mapping::new());
+            if let serde_yaml::Value::Mapping(ref mut m) = child {
+                m.insert(serde_yaml::Value::String("_content".to_string()), old_value);
+            }
+        }
 
         if let serde_yaml::Value::Mapping(ref mut child_map) = child {
             insert_nested(child_map, &parts[1..], value);

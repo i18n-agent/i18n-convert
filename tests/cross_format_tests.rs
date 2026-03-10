@@ -318,3 +318,246 @@ fn stringsdict_to_xcstrings_multi_variable_plurals_survive() {
         }
     }
 }
+
+// ── 10. Markdown → JSON (key conflicts resolved, no panic) ──────────────
+
+#[test]
+fn markdown_to_json_no_panic_on_key_conflicts() {
+    let input = std::fs::read("tests/fixtures/markdown/simple.md").unwrap();
+    let resource = markdown::Parser.parse(&input).unwrap();
+    // This used to panic with "Expected nested object in key path"
+    let output = json_structured::Writer.write(&resource).unwrap();
+    let output_str = String::from_utf8(output).unwrap();
+
+    assert!(output_str.contains("Hello and welcome"));
+    assert!(output_str.contains("getting-started"));
+    assert!(output_str.contains("reset"));
+}
+
+// ── 11. Markdown → TOML (key conflicts resolved, no error) ─────────────
+
+#[test]
+fn markdown_to_toml_no_error_on_key_conflicts() {
+    let input = std::fs::read("tests/fixtures/markdown/simple.md").unwrap();
+    let resource = markdown::Parser.parse(&input).unwrap();
+    // This used to error with "Key path conflict"
+    let output = toml_format::Writer.write(&resource).unwrap();
+    let output_str = String::from_utf8(output).unwrap();
+
+    assert!(output_str.contains("Hello and welcome"));
+    assert!(output_str.contains("getting-started"));
+}
+
+// ── 12. Markdown → YAML (key conflicts resolved, no silent data loss) ──
+
+#[test]
+fn markdown_to_yaml_no_silent_data_loss() {
+    let input = std::fs::read("tests/fixtures/markdown/simple.md").unwrap();
+    let resource = markdown::Parser.parse(&input).unwrap();
+    let entry_count = resource.entries.len();
+    // This used to silently drop entries
+    let output = yaml_plain::Writer.write(&resource).unwrap();
+    let reparsed = yaml_plain::Parser.parse(&output).unwrap();
+
+    assert!(
+        reparsed.entries.len() >= entry_count,
+        "Expected at least {entry_count} entries after YAML roundtrip, got {}",
+        reparsed.entries.len()
+    );
+}
+
+// ── 13. Markdown → Plain Text (all entries output, not just first) ──────
+
+#[test]
+fn markdown_to_plain_text_all_entries_output() {
+    let input = std::fs::read("tests/fixtures/markdown/simple.md").unwrap();
+    let resource = markdown::Parser.parse(&input).unwrap();
+    // This used to only output the first entry
+    let output = plain_text::Writer.write(&resource).unwrap();
+    let output_str = String::from_utf8(output).unwrap();
+
+    assert!(output_str.contains("Hello and welcome"));
+    assert!(
+        output_str.contains("reset") || output_str.contains("Reset"),
+        "Should contain FAQ content, not just first section"
+    );
+}
+
+// ── 14. INI writer: root-level keys appear before sections ──────────────
+
+#[test]
+fn ini_writer_root_keys_before_sections() {
+    let mut entries = indexmap::IndexMap::new();
+
+    entries.insert(
+        "section.nested_key".to_string(),
+        I18nEntry {
+            key: "section.nested_key".to_string(),
+            value: EntryValue::Simple("nested value".to_string()),
+            format_ext: Some(FormatExtension::Ini(IniExt {
+                section: Some("section".to_string()),
+                delimiter: Some('='),
+                comment_char: None,
+            })),
+            ..Default::default()
+        },
+    );
+
+    entries.insert(
+        "root_key".to_string(),
+        I18nEntry {
+            key: "root_key".to_string(),
+            value: EntryValue::Simple("root value".to_string()),
+            format_ext: Some(FormatExtension::Ini(IniExt {
+                section: None,
+                delimiter: Some('='),
+                comment_char: None,
+            })),
+            ..Default::default()
+        },
+    );
+
+    let resource = I18nResource {
+        metadata: ResourceMetadata {
+            source_format: FormatId::Ini,
+            format_ext: Some(FormatExtension::Ini(IniExt {
+                section: None,
+                delimiter: Some('='),
+                comment_char: None,
+            })),
+            ..Default::default()
+        },
+        entries,
+    };
+
+    let output = ini::Writer.write(&resource).unwrap();
+    let output_str = String::from_utf8(output).unwrap();
+
+    let root_pos = output_str
+        .find("root_key")
+        .expect("root_key should be in output");
+    let section_pos = output_str
+        .find("[section]")
+        .expect("[section] should be in output");
+    assert!(
+        root_pos < section_pos,
+        "Root keys should appear before section headers. Output:\n{output_str}"
+    );
+
+    let reparsed = ini::Parser.parse(output_str.as_bytes()).unwrap();
+    assert_eq!(
+        reparsed.entries["root_key"].value,
+        EntryValue::Simple("root value".to_string()),
+    );
+}
+
+// ── 15. JSON writer: key conflict promotion to _content ─────────────────
+
+#[test]
+fn json_writer_handles_leaf_and_branch_conflict() {
+    let mut entries = indexmap::IndexMap::new();
+    entries.insert(
+        "parent".to_string(),
+        I18nEntry {
+            key: "parent".to_string(),
+            value: EntryValue::Simple("parent value".to_string()),
+            ..Default::default()
+        },
+    );
+    entries.insert(
+        "parent.child".to_string(),
+        I18nEntry {
+            key: "parent.child".to_string(),
+            value: EntryValue::Simple("child value".to_string()),
+            ..Default::default()
+        },
+    );
+
+    let resource = I18nResource {
+        metadata: ResourceMetadata {
+            source_format: FormatId::JsonStructured,
+            ..Default::default()
+        },
+        entries,
+    };
+
+    let output = json_structured::Writer.write(&resource).unwrap();
+    let output_str = String::from_utf8(output).unwrap();
+
+    assert!(output_str.contains("parent value"));
+    assert!(output_str.contains("child value"));
+}
+
+// ── 16. TOML writer: key conflict promotion to _content ─────────────────
+
+#[test]
+fn toml_writer_handles_leaf_and_branch_conflict() {
+    let mut entries = indexmap::IndexMap::new();
+    entries.insert(
+        "parent".to_string(),
+        I18nEntry {
+            key: "parent".to_string(),
+            value: EntryValue::Simple("parent value".to_string()),
+            ..Default::default()
+        },
+    );
+    entries.insert(
+        "parent.child".to_string(),
+        I18nEntry {
+            key: "parent.child".to_string(),
+            value: EntryValue::Simple("child value".to_string()),
+            ..Default::default()
+        },
+    );
+
+    let resource = I18nResource {
+        metadata: ResourceMetadata {
+            source_format: FormatId::Toml,
+            ..Default::default()
+        },
+        entries,
+    };
+
+    let output = toml_format::Writer.write(&resource).unwrap();
+    let output_str = String::from_utf8(output).unwrap();
+
+    assert!(output_str.contains("parent value"));
+    assert!(output_str.contains("child value"));
+}
+
+// ── 17. YAML writer: key conflict promotion to _content ─────────────────
+
+#[test]
+fn yaml_writer_handles_leaf_and_branch_conflict() {
+    let mut entries = indexmap::IndexMap::new();
+    entries.insert(
+        "parent".to_string(),
+        I18nEntry {
+            key: "parent".to_string(),
+            value: EntryValue::Simple("parent value".to_string()),
+            ..Default::default()
+        },
+    );
+    entries.insert(
+        "parent.child".to_string(),
+        I18nEntry {
+            key: "parent.child".to_string(),
+            value: EntryValue::Simple("child value".to_string()),
+            ..Default::default()
+        },
+    );
+
+    let resource = I18nResource {
+        metadata: ResourceMetadata {
+            source_format: FormatId::YamlPlain,
+            ..Default::default()
+        },
+        entries,
+    };
+
+    let output = yaml_plain::Writer.write(&resource).unwrap();
+    let output_str = String::from_utf8(output).unwrap();
+
+    assert!(output_str.contains("parent value"));
+    assert!(output_str.contains("child value"));
+}
