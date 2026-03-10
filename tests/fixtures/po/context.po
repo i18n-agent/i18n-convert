@@ -1,0 +1,16 @@
+msgid ""
+msgstr ""
+"Content-Type: text/plain; charset=UTF-8\n"
+"Language: de\n"
+
+msgctxt "menu"
+msgid "Open"
+msgstr "Oeffnen"
+
+msgctxt "button"
+msgid "Open"
+msgstr "Oeffnen"
+
+msgctxt "window_title"
+msgid "Save As"
+msgstr "Speichern unter"

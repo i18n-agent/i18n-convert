@@ -1,0 +1,14 @@
+{
+  "item_zero": "No items",
+  "item_one": "{{count}} item",
+  "item_two": "{{count}} items (dual)",
+  "item_few": "{{count}} items (few)",
+  "item_many": "{{count}} items (many)",
+  "item_other": "{{count}} items",
+  "message_one": "You have {{count}} message",
+  "message_other": "You have {{count}} messages",
+  "ordinal_one": "{{count}}st",
+  "ordinal_two": "{{count}}nd",
+  "ordinal_few": "{{count}}rd",
+  "ordinal_other": "{{count}}th"
+}

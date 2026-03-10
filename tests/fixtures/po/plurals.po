@@ -1,0 +1,15 @@
+msgid ""
+msgstr ""
+"Content-Type: text/plain; charset=UTF-8\n"
+"Language: de\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+msgid "%d file"
+msgid_plural "%d files"
+msgstr[0] "%d Datei"
+msgstr[1] "%d Dateien"
+
+msgid "%d message"
+msgid_plural "%d messages"
+msgstr[0] "%d Nachricht"
+msgstr[1] "%d Nachrichten"

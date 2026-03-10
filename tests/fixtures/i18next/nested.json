@@ -1,0 +1,23 @@
+{
+  "common": {
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete"
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "stats": {
+      "user_one": "{{count}} user",
+      "user_other": "{{count}} users",
+      "session_one": "{{count}} active session",
+      "session_other": "{{count}} active sessions"
+    }
+  },
+  "settings": {
+    "title": "Settings",
+    "notifications": {
+      "enabled": "Notifications are enabled",
+      "disabled": "Notifications are disabled"
+    }
+  }
+}

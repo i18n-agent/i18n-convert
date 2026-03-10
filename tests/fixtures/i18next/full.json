@@ -1,0 +1,24 @@
+{
+  "app_title": "My Application",
+  "greeting": "Hello, {{name}}!",
+  "common": {
+    "save": "Save",
+    "cancel": "Cancel"
+  },
+  "item_zero": "No items",
+  "item_one": "{{count}} item",
+  "item_two": "{{count}} items (dual)",
+  "item_few": "{{count}} items (few)",
+  "item_many": "{{count}} items (many)",
+  "item_other": "{{count}} items",
+  "dashboard": {
+    "title": "Dashboard",
+    "stats": {
+      "user_one": "{{count}} user",
+      "user_other": "{{count}} users"
+    }
+  },
+  "welcome_back": "Welcome back, {{firstName}} {{lastName}}",
+  "message_one": "You have {{count}} message",
+  "message_other": "You have {{count}} messages"
+}

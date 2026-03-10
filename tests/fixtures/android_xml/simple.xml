@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- App name -->
+    <string name="app_name">My App</string>
+    <string name="greeting">Hello, World!</string>
+    <string name="untranslatable" translatable="false">DEBUG_MODE</string>
+</resources>

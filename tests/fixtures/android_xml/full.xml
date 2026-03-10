@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
+    <!-- Screen title -->
+    <string name="title">Welcome</string>
+    <string name="formatted_greeting">Hello, <xliff:g id="name" example="John">%1$s</xliff:g>!</string>
+    <string name="no_translate" translatable="false">API_KEY</string>
+    <string name="unformatted" formatted="false">100% complete</string>
+    <plurals name="messages">
+        <item quantity="one">%d message</item>
+        <item quantity="other">%d messages</item>
+    </plurals>
+    <string-array name="colors">
+        <item>Red</item>
+        <item>Green</item>
+        <item>Blue</item>
+    </string-array>
+</resources>

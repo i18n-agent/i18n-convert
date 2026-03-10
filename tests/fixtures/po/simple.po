@@ -1,0 +1,16 @@
+# Simple PO file for testing
+msgid ""
+msgstr ""
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: de\n"
+"MIME-Version: 1.0\n"
+
+msgid "Hello"
+msgstr "Hallo"
+
+msgid "Goodbye"
+msgstr "Auf Wiedersehen"
+
+msgid "Welcome to %s"
+msgstr "Willkommen bei %s"

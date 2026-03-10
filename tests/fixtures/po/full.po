@@ -1,0 +1,50 @@
+# Translation file for MyApp
+# Copyright (C) 2024
+msgid ""
+msgstr ""
+"Project-Id-Version: MyApp 1.0\n"
+"Report-Msgid-Bugs-To: bugs@example.com\n"
+"POT-Creation-Date: 2024-01-15 10:00+0000\n"
+"PO-Revision-Date: 2024-02-01 14:30+0000\n"
+"Last-Translator: John Doe <john@example.com>\n"
+"Language-Team: German\n"
+"Language: de\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+# Translator comment for greeting
+#. Extracted: shown on the home page
+#: src/home.c:15
+#: src/welcome.c:30
+#, c-format
+msgid "Welcome, %s!"
+msgstr "Willkommen, %s!"
+
+#, fuzzy
+#: src/dialog.c:50
+msgid "Are you sure?"
+msgstr "Bist du sicher?"
+
+#| msgid "old item count"
+msgid "%d item"
+msgid_plural "%d items"
+msgstr[0] "%d Gegenstand"
+msgstr[1] "Gegenstaende"
+
+msgctxt "menu"
+msgid "File"
+msgstr "Datei"
+
+msgid ""
+"This is a long "
+"multiline string "
+"that spans several lines."
+msgstr ""
+"Dies ist ein langer "
+"mehrzeiliger String, "
+"der mehrere Zeilen umfasst."
+
+#~ msgid "Removed feature"
+#~ msgstr "Entferntes Feature"

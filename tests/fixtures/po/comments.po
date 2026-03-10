@@ -1,0 +1,18 @@
+msgid ""
+msgstr ""
+"Content-Type: text/plain; charset=UTF-8\n"
+"Language: de\n"
+
+# This is a translator comment
+#. This is an extracted comment
+#: src/main.c:42
+#: src/utils.c:10
+#, c-format
+msgid "File %s has %d lines"
+msgstr "Datei %s hat %d Zeilen"
+
+# Another translator note
+#. Developer note: shown on settings page
+#: src/settings.c:100
+msgid "Settings"
+msgstr "Einstellungen"
