@@ -1,0 +1,13 @@
+{
+  // Single-line comment
+  greeting: 'Hello, World!',
+  farewell: "Goodbye!",
+
+  /* Multi-line
+     comment */
+  nested: {
+    welcome: 'Welcome to our app',
+    // Trailing comma is valid
+    items: 'You have {count} items',
+  },
+}

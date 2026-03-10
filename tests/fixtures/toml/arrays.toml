@@ -1,0 +1,5 @@
+colors = ["red", "green", "blue"]
+sizes = ["small", "medium", "large"]
+
+[navigation]
+menu_items = ["Home", "About", "Contact"]

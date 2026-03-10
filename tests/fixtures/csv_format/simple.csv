@@ -1,0 +1,5 @@
+key,en,comment
+greeting,Hello World!,Main greeting
+farewell,Goodbye!,
+app.title,My Application,Title shown in header
+empty,,

@@ -1,0 +1,10 @@
+[messages]
+greeting = "Hello, World!"
+farewell = "Goodbye!"
+
+[messages.nested]
+welcome = "Welcome to our app"
+
+[errors]
+not_found = "Page not found"
+server_error = "Internal server error"

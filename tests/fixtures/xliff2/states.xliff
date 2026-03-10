@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xliff xmlns="urn:oasis:names:tc:xliff:document:2.0" version="2.0" srcLang="en" trgLang="ja">
+  <file id="f1">
+    <unit id="initial_entry">
+      <segment state="initial">
+        <source>Initial</source>
+        <target>初期</target>
+      </segment>
+    </unit>
+    <unit id="translated_entry">
+      <segment state="translated">
+        <source>Translated</source>
+        <target>翻訳済み</target>
+      </segment>
+    </unit>
+    <unit id="reviewed_entry">
+      <segment state="reviewed">
+        <source>Reviewed</source>
+        <target>レビュー済み</target>
+      </segment>
+    </unit>
+    <unit id="final_entry">
+      <segment state="final">
+        <source>Final</source>
+        <target>最終</target>
+      </segment>
+    </unit>
+  </file>
+</xliff>

@@ -1,0 +1,5 @@
+greeting = "Hello"
+farewell = "Goodbye"
+app_name = "My Application"
+welcome_message = "Welcome to our app!"
+empty_value = ""

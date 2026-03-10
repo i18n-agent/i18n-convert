@@ -1,0 +1,8 @@
+{
+  # A simple flat HJSON file for localization
+  greeting: Hello, World!
+  farewell: Goodbye!
+  app_name: My Application
+  welcome_message: Welcome to our app!
+  empty_value: ""
+}

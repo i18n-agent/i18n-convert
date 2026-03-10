@@ -1,0 +1,8 @@
+{
+  colors: [
+    Red
+    Green
+    Blue
+  ]
+  greeting: Hello
+}

@@ -1,0 +1,8 @@
+{
+  description:
+    '''
+    This is a
+    multi-line string
+    '''
+  simple: Hello
+}

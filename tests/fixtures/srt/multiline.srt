@@ -1,0 +1,9 @@
+1
+00:01:15,000 --> 00:01:20,000
+This is the first line
+of a multi-line subtitle
+with three lines.
+
+2
+00:01:21,000 --> 00:01:25,000
+Second entry with just one line.

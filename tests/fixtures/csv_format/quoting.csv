@@ -1,0 +1,6 @@
+key,value,comment
+simple,Hello World,A simple value
+with_comma,"Hello, World!",Contains a comma
+with_quotes,"She said ""hello""",Contains quotes
+with_newline,"Line one
+Line two",Multi-line value

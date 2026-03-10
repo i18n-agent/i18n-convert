@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE tmx SYSTEM "tmx14.dtd">
+<tmx version="1.4">
+  <header creationtool="i18n-convert" creationtoolversion="0.1.0"
+          segtype="sentence" o-tmf="undefined" adminlang="en"
+          srclang="en" datatype="plaintext"/>
+  <body>
+    <tu tuid="btn_save">
+      <note>Button label for save action</note>
+      <tuv xml:lang="en">
+        <seg>Save</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>Enregistrer</seg>
+      </tuv>
+    </tu>
+    <tu tuid="btn_cancel">
+      <note>Keep it short</note>
+      <tuv xml:lang="en">
+        <seg>Cancel</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>Annuler</seg>
+      </tuv>
+    </tu>
+    <tu tuid="menu_file">
+      <note>Main menu item</note>
+      <note>Should match OS convention</note>
+      <tuv xml:lang="en">
+        <seg>File</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>Fichier</seg>
+      </tuv>
+    </tu>
+  </body>
+</tmx>

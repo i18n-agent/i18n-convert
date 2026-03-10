@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <data name="greeting" xml:space="preserve">
+    <value>Hello, World!</value>
+    <comment>Main greeting message</comment>
+  </data>
+  <data name="farewell" xml:space="preserve">
+    <value>Goodbye!</value>
+    <comment>Farewell message shown on exit</comment>
+  </data>
+  <data name="no_comment" xml:space="preserve">
+    <value>No comment here</value>
+  </data>
+</root>

@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE tmx SYSTEM "tmx14.dtd">
+<tmx version="1.4">
+  <header creationtool="MyTool" creationtoolversion="2.0"
+          segtype="paragraph" o-tmf="ABCTransMem" adminlang="en"
+          srclang="en" datatype="plaintext"/>
+  <body>
+    <tu tuid="greeting" changedate="20240101T120000Z" changeid="translator1">
+      <note>A greeting message</note>
+      <prop type="domain">general</prop>
+      <prop type="project">webapp</prop>
+      <tuv xml:lang="en">
+        <seg>Hello</seg>
+      </tuv>
+      <tuv xml:lang="de">
+        <seg>Hallo</seg>
+      </tuv>
+    </tu>
+    <tu tuid="farewell" changedate="20240215T083000Z" changeid="reviewer1">
+      <prop type="domain">general</prop>
+      <tuv xml:lang="en">
+        <seg>Goodbye</seg>
+      </tuv>
+      <tuv xml:lang="de">
+        <seg>Auf Wiedersehen</seg>
+      </tuv>
+    </tu>
+  </body>
+</tmx>

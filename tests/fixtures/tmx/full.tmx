@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE tmx SYSTEM "tmx14.dtd">
+<tmx version="1.4">
+  <header creationtool="CAT-Tool" creationtoolversion="3.0"
+          segtype="sentence" o-tmf="TradosTransMem" adminlang="en"
+          srclang="en" datatype="plaintext"/>
+  <body>
+    <tu tuid="welcome" changedate="20240301T100000Z" changeid="admin">
+      <note>Welcome message on homepage</note>
+      <prop type="domain">web</prop>
+      <prop type="client">acme</prop>
+      <tuv xml:lang="en">
+        <seg>Welcome to our application</seg>
+      </tuv>
+      <tuv xml:lang="es">
+        <seg>Bienvenido a nuestra aplicación</seg>
+      </tuv>
+    </tu>
+    <tu tuid="items_count">
+      <note>Item count label</note>
+      <tuv xml:lang="en">
+        <seg>%d items</seg>
+      </tuv>
+      <tuv xml:lang="es">
+        <seg>%d elementos</seg>
+      </tuv>
+    </tu>
+    <tu tuid="empty_target">
+      <tuv xml:lang="en">
+        <seg>Untranslated text</seg>
+      </tuv>
+    </tu>
+    <tu tuid="multi_lang">
+      <note>Greeting in multiple languages</note>
+      <tuv xml:lang="en">
+        <seg>Hello World</seg>
+      </tuv>
+      <tuv xml:lang="es">
+        <seg>Hola Mundo</seg>
+      </tuv>
+      <tuv xml:lang="fr">
+        <seg>Bonjour le monde</seg>
+      </tuv>
+    </tu>
+  </body>
+</tmx>

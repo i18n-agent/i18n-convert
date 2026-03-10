@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xliff xmlns="urn:oasis:names:tc:xliff:document:2.0" version="2.0" srcLang="en" trgLang="es">
+  <file id="f1" original="app.json">
+    <group id="nav" name="Navigation">
+      <unit id="nav.home">
+        <notes>
+          <note category="description">Navigation home link</note>
+        </notes>
+        <segment state="translated">
+          <source>Home</source>
+          <target>Inicio</target>
+        </segment>
+      </unit>
+      <unit id="nav.about">
+        <segment state="translated">
+          <source>About</source>
+          <target>Acerca de</target>
+        </segment>
+      </unit>
+    </group>
+    <unit id="title">
+      <notes>
+        <note category="description" priority="1">Main page title</note>
+        <note category="translator">Keep it short</note>
+      </notes>
+      <segment state="final">
+        <source>Welcome to our app</source>
+        <target>Bienvenido a nuestra aplicación</target>
+      </segment>
+    </unit>
+    <unit id="items_count">
+      <segment state="needs-review">
+        <source>%d items</source>
+        <target>%d elementos</target>
+      </segment>
+    </unit>
+    <unit id="empty_target">
+      <segment state="initial">
+        <source>Untranslated text</source>
+      </segment>
+    </unit>
+  </file>
+</xliff>

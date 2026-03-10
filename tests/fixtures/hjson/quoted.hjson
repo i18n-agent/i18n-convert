@@ -1,0 +1,7 @@
+{
+  /* Block comment example */
+  "greeting": "Hello, World!"
+  "farewell": "Goodbye!"
+  "with_escape": "Line one\nLine two"
+  "with_colon": "Time: 12:00"
+}

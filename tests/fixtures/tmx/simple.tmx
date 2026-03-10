@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE tmx SYSTEM "tmx14.dtd">
+<tmx version="1.4">
+  <header creationtool="i18n-convert" creationtoolversion="0.1.0"
+          segtype="sentence" o-tmf="undefined" adminlang="en"
+          srclang="en" datatype="plaintext"/>
+  <body>
+    <tu tuid="greeting">
+      <tuv xml:lang="en">
+        <seg>Hello</seg>
+      </tuv>
+      <tuv xml:lang="de">
+        <seg>Hallo</seg>
+      </tuv>
+    </tu>
+    <tu tuid="farewell">
+      <tuv xml:lang="en">
+        <seg>Goodbye</seg>
+      </tuv>
+      <tuv xml:lang="de">
+        <seg>Auf Wiedersehen</seg>
+      </tuv>
+    </tu>
+    <tu tuid="untranslated">
+      <tuv xml:lang="en">
+        <seg>Not yet translated</seg>
+      </tuv>
+    </tu>
+  </body>
+</tmx>

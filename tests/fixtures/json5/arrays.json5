@@ -1,0 +1,7 @@
+{
+  colors: ['red', 'green', 'blue'],
+  sizes: ['small', 'medium', 'large'],
+  nested: {
+    menu_items: ['Home', 'About', 'Contact'],
+  },
+}
