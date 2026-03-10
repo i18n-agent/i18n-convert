@@ -1,0 +1,28 @@
+{
+    "@@locale": "en",
+    "@@last_modified": "2024-01-15T10:30:00Z",
+    "@@author": "Flutter Dev",
+    "@@context": "Main application strings",
+    "@@x-generator": "i18n-agent",
+    "@@x-project-id": "flutter-demo",
+    "appTitle": "My App",
+    "@appTitle": {
+        "description": "The title of the application",
+        "type": "text",
+        "context": "App bar title"
+    },
+    "welcomeMessage": "Welcome, {userName}!",
+    "@welcomeMessage": {
+        "description": "Welcome message shown on home screen",
+        "placeholders": {
+            "userName": {
+                "type": "String",
+                "example": "John"
+            }
+        }
+    },
+    "settings": "Settings",
+    "@settings": {
+        "description": "Label for settings menu item"
+    }
+}

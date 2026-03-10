@@ -1,0 +1,56 @@
+{
+    "@@locale": "en",
+    "greeting": "Hello, {firstName} {lastName}!",
+    "@greeting": {
+        "description": "A greeting with first and last name",
+        "placeholders": {
+            "firstName": {
+                "type": "String",
+                "example": "Jane"
+            },
+            "lastName": {
+                "type": "String",
+                "example": "Doe"
+            }
+        }
+    },
+    "totalPrice": "Total: {price}",
+    "@totalPrice": {
+        "description": "Total price display",
+        "placeholders": {
+            "price": {
+                "type": "double",
+                "format": "currency",
+                "example": "$12.99",
+                "optionalParameters": {
+                    "decimalDigits": "2",
+                    "name": "USD",
+                    "symbol": "$",
+                    "customPattern": "\u00a4#,##0.00"
+                }
+            }
+        }
+    },
+    "eventDate": "Event on {date}",
+    "@eventDate": {
+        "description": "Event date display",
+        "placeholders": {
+            "date": {
+                "type": "DateTime",
+                "format": "yMMMd",
+                "example": "Jan 15, 2024"
+            }
+        }
+    },
+    "fileSize": "Size: {size} bytes",
+    "@fileSize": {
+        "description": "File size display",
+        "placeholders": {
+            "size": {
+                "type": "int",
+                "format": "compact",
+                "example": "1024"
+            }
+        }
+    }
+}

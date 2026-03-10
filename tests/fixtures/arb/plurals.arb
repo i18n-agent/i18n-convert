@@ -1,0 +1,35 @@
+{
+    "@@locale": "en",
+    "itemCount": "{count, plural, =0{No items} one{1 item} other{{count} items}}",
+    "@itemCount": {
+        "description": "Number of items in the cart",
+        "placeholders": {
+            "count": {
+                "type": "int",
+                "example": "3"
+            }
+        }
+    },
+    "messageCount": "{count, plural, one{You have {count} new message} other{You have {count} new messages}}",
+    "@messageCount": {
+        "description": "Unread message count notification",
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "genderGreeting": "{gender, select, male{Mr. {name}} female{Ms. {name}} other{Dear {name}}}",
+    "@genderGreeting": {
+        "description": "Gender-aware greeting",
+        "placeholders": {
+            "gender": {
+                "type": "String"
+            },
+            "name": {
+                "type": "String",
+                "example": "Smith"
+            }
+        }
+    }
+}
