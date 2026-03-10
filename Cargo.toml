@@ -1,0 +1,26 @@
+[package]
+name = "i18n-convert"
+version = "0.1.0"
+edition = "2021"
+description = "Cross-platform localization file format converter"
+license = "MIT"
+repository = "https://github.com/i18n-agent/i18n-convert"
+keywords = ["i18n", "l10n", "localization", "translation", "converter"]
+categories = ["command-line-utilities", "internationalization"]
+
+[dependencies]
+clap = { version = "4", features = ["derive"] }
+indexmap = { version = "2", features = ["serde"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+serde_yaml = "0.9"
+quick-xml = { version = "0.36", features = ["serialize"] }
+plist = "1"
+thiserror = "2"
+colored = "2"
+dialoguer = "0.11"
+regex = "1"
+
+[dev-dependencies]
+pretty_assertions = "1"
+tempfile = "3"
