@@ -1,0 +1,10 @@
+{
+  "greeting": "Hello, {name}!",
+  "items_count": "{count, plural, one {# item} other {# items}}",
+  "gender_msg": "{gender, select, male {He} female {She} other {They}} liked this.",
+  "rich_message": "You have {count, plural, one {# new message} other {# new messages}} from {sender}.",
+  "nested": {
+    "welcome": "Welcome, {user}!",
+    "order_status": "Your order #{orderId} is {status, select, pending {being processed} shipped {on the way} delivered {delivered} other {unknown}}."
+  }
+}
