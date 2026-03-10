@@ -1,0 +1,20 @@
+#!/usr/bin/env node
+
+const { execFileSync } = require("child_process");
+const path = require("path");
+const os = require("os");
+
+const ext = os.platform() === "win32" ? ".exe" : "";
+const binary = path.join(__dirname, `i18n-convert${ext}`);
+
+try {
+  execFileSync(binary, process.argv.slice(2), { stdio: "inherit" });
+} catch (error) {
+  if (error.status !== null) {
+    process.exit(error.status);
+  }
+  console.error(
+    "Failed to run i18n-convert. Try reinstalling: npm install -g @i18n-agent/i18n-convert"
+  );
+  process.exit(1);
+}

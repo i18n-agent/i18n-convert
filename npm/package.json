@@ -1,0 +1,22 @@
+{
+  "name": "@i18n-agent/i18n-convert",
+  "version": "0.1.0",
+  "description": "Cross-platform localization file format converter",
+  "bin": {
+    "i18n-convert": "bin/i18n-convert"
+  },
+  "scripts": {
+    "postinstall": "node install.js"
+  },
+  "os": [
+    "darwin",
+    "linux",
+    "win32"
+  ],
+  "cpu": [
+    "x64",
+    "arm64"
+  ],
+  "repository": "https://github.com/i18n-agent/i18n-convert",
+  "license": "MIT"
+}
