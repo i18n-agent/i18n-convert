@@ -16,6 +16,20 @@ pub enum FormatExtension {
     Xliff1(Xliff1Ext),
     Po(PoExt),
     YamlRails(YamlRailsExt),
+    Xliff2(Xliff2Ext),
+    Resx(ResxExt),
+    JavaProperties(JavaPropertiesExt),
+    PhpLaravel(PhpLaravelExt),
+    QtLinguist(QtLinguistExt),
+    Csv(CsvExt),
+    Toml(TomlExt),
+    Ini(IniExt),
+    Json5(Json5Ext),
+    Hjson(HjsonExt),
+    Tmx(TmxExt),
+    Srt(SrtExt),
+    Excel(ExcelExt),
+    Markdown(MarkdownExt),
 }
 
 // Tier 1 format extensions -- each starts minimal and grows as needed
@@ -71,3 +85,86 @@ pub struct PoExt {
 
 #[derive(Debug, Clone, PartialEq, Default)]
 pub struct YamlRailsExt {}
+
+#[derive(Debug, Clone, PartialEq, Default)]
+pub struct Xliff2Ext {
+    pub can_resegment: Option<bool>,
+    pub original_data: IndexMap<String, String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Default)]
+pub struct ResxExt {
+    pub mimetype: Option<String>,
+    pub type_name: Option<String>,
+    pub schema: Option<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Default)]
+pub struct JavaPropertiesExt {
+    pub separator: Option<char>,
+    pub comment_char: Option<char>,
+}
+
+#[derive(Debug, Clone, PartialEq, Default)]
+pub struct PhpLaravelExt {
+    pub quote_style: Option<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Default)]
+pub struct QtLinguistExt {
+    pub numerus: Option<bool>,
+    pub extra_elements: IndexMap<String, String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Default)]
+pub struct CsvExt {
+    pub delimiter: Option<char>,
+    pub key_column: Option<String>,
+    pub value_column: Option<String>,
+    pub has_bom: Option<bool>,
+}
+
+#[derive(Debug, Clone, PartialEq, Default)]
+pub struct TomlExt {
+    pub table_path: Option<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Default)]
+pub struct IniExt {
+    pub section: Option<String>,
+    pub delimiter: Option<char>,
+    pub comment_char: Option<char>,
+}
+
+#[derive(Debug, Clone, PartialEq, Default)]
+pub struct Json5Ext {
+    pub trailing_commas: Option<bool>,
+}
+
+#[derive(Debug, Clone, PartialEq, Default)]
+pub struct HjsonExt {}
+
+#[derive(Debug, Clone, PartialEq, Default)]
+pub struct TmxExt {
+    pub seg_type: Option<String>,
+    pub o_tmf: Option<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Default)]
+pub struct SrtExt {
+    pub sequence_number: Option<u32>,
+    pub start_time: Option<String>,
+    pub end_time: Option<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Default)]
+pub struct ExcelExt {
+    pub sheet_name: Option<String>,
+    pub key_column: Option<u32>,
+    pub value_column: Option<u32>,
+}
+
+#[derive(Debug, Clone, PartialEq, Default)]
+pub struct MarkdownExt {
+    pub front_matter: Option<String>,
+}

@@ -38,6 +38,20 @@ pub enum FormatId {
     Xliff1,
     Po,
     YamlRails,
+    Xliff2,
+    Resx,
+    JavaProperties,
+    PhpLaravel,
+    QtLinguist,
+    Csv,
+    Toml,
+    Ini,
+    Json5,
+    Hjson,
+    Tmx,
+    Srt,
+    Excel,
+    Markdown,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]

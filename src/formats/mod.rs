@@ -12,6 +12,20 @@ pub mod i18next;
 pub mod xliff1;
 pub mod po;
 pub mod yaml_rails;
+pub mod xliff2;
+pub mod resx;
+pub mod java_properties;
+pub mod php_laravel;
+pub mod qt_linguist;
+pub mod csv_format;
+pub mod toml_format;
+pub mod ini;
+pub mod json5_format;
+pub mod hjson;
+pub mod tmx;
+pub mod srt;
+pub mod excel;
+pub mod markdown;
 
 #[derive(Error, Debug)]
 pub enum ParseError {
@@ -150,6 +164,120 @@ impl FormatRegistry {
             &[".yml", ".yaml"],
             yaml_rails::Parser,
             yaml_rails::Writer,
+        );
+
+        // Tier 2 formats
+        Self::register(
+            &mut formats,
+            "xliff2",
+            "XLIFF 2.0",
+            &[".xliff", ".xlf"],
+            xliff2::Parser,
+            xliff2::Writer,
+        );
+        Self::register(
+            &mut formats,
+            "resx",
+            ".NET RESX",
+            &[".resx"],
+            resx::Parser,
+            resx::Writer,
+        );
+        Self::register(
+            &mut formats,
+            "java-properties",
+            "Java Properties",
+            &[".properties"],
+            java_properties::Parser,
+            java_properties::Writer,
+        );
+        Self::register(
+            &mut formats,
+            "php-laravel",
+            "PHP/Laravel",
+            &[".php"],
+            php_laravel::Parser,
+            php_laravel::Writer,
+        );
+        Self::register(
+            &mut formats,
+            "qt",
+            "Qt Linguist",
+            &[".ts"],
+            qt_linguist::Parser,
+            qt_linguist::Writer,
+        );
+        Self::register(
+            &mut formats,
+            "csv",
+            "CSV",
+            &[".csv", ".tsv"],
+            csv_format::Parser,
+            csv_format::Writer,
+        );
+        Self::register(
+            &mut formats,
+            "toml",
+            "TOML",
+            &[".toml"],
+            toml_format::Parser,
+            toml_format::Writer,
+        );
+        Self::register(
+            &mut formats,
+            "ini",
+            "INI",
+            &[".ini"],
+            ini::Parser,
+            ini::Writer,
+        );
+        Self::register(
+            &mut formats,
+            "json5",
+            "JSON5",
+            &[".json5"],
+            json5_format::Parser,
+            json5_format::Writer,
+        );
+        Self::register(
+            &mut formats,
+            "hjson",
+            "HJSON",
+            &[".hjson"],
+            hjson::Parser,
+            hjson::Writer,
+        );
+        Self::register(
+            &mut formats,
+            "tmx",
+            "TMX",
+            &[".tmx"],
+            tmx::Parser,
+            tmx::Writer,
+        );
+        Self::register(
+            &mut formats,
+            "srt",
+            "SRT Subtitles",
+            &[".srt"],
+            srt::Parser,
+            srt::Writer,
+        );
+        Self::register(
+            &mut formats,
+            "excel",
+            "Excel",
+            &[".xlsx", ".xls"],
+            excel::Parser,
+            excel::Writer,
+        );
+        Self::register(
+            &mut formats,
+            "markdown",
+            "Markdown",
+            &[".md"],
+            markdown::Parser,
+            markdown::Writer,
         );
 
         Self { formats }
