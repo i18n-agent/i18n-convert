@@ -1,4 +1,3 @@
-use crate::ir::*;
 use super::*;
 use indexmap::IndexMap;
 use regex::Regex;
@@ -6,31 +5,6 @@ use std::sync::LazyLock;
 
 pub struct Parser;
 pub struct Writer;
-
-// ---------------------------------------------------------------------------
-// Plural suffix handling (same convention as i18next)
-// ---------------------------------------------------------------------------
-
-const PLURAL_SUFFIXES: &[(&str, &str)] = &[
-    ("_zero", "zero"),
-    ("_one", "one"),
-    ("_two", "two"),
-    ("_few", "few"),
-    ("_many", "many"),
-    ("_other", "other"),
-];
-
-fn strip_plural_suffix(key: &str) -> Option<(&str, &str)> {
-    for &(suffix, category) in PLURAL_SUFFIXES {
-        if key.ends_with(suffix) {
-            let base = &key[..key.len() - suffix.len()];
-            if !base.is_empty() {
-                return Some((base, category));
-            }
-        }
-    }
-    None
-}
 
 // ---------------------------------------------------------------------------
 // Comment extraction

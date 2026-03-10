@@ -1,4 +1,3 @@
-use crate::ir::*;
 use super::*;
 
 pub struct Parser;

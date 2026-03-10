@@ -25,14 +25,14 @@ fn fixture(name: &str) -> Vec<u8> {
 
 #[test]
 fn detect_txt_extension() {
-    assert_eq!(parser().detect(".txt", b""), Confidence::Definite);
+    assert_eq!(parser().detect(".txt", b""), Confidence::High);
 }
 
 #[test]
 fn detect_txt_extension_with_content() {
     assert_eq!(
         parser().detect(".txt", b"Hello, world!"),
-        Confidence::Definite
+        Confidence::High
     );
 }
 

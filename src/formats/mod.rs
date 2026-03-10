@@ -1,6 +1,42 @@
 use crate::ir::*;
 use indexmap::IndexMap;
+use quick_xml::events::BytesStart;
 use thiserror::Error;
+
+// ---------------------------------------------------------------------------
+// Shared utilities used by multiple format implementations
+// ---------------------------------------------------------------------------
+
+/// Standard plural suffixes used by i18next-style formats (INI, NEON, JS, TS, YAML plain).
+pub const PLURAL_SUFFIXES: &[(&str, &str)] = &[
+    ("_zero", "zero"),
+    ("_one", "one"),
+    ("_two", "two"),
+    ("_few", "few"),
+    ("_many", "many"),
+    ("_other", "other"),
+];
+
+/// Check if a key ends with a plural suffix. Returns (base_key, category) if so.
+pub fn strip_plural_suffix(key: &str) -> Option<(&str, &str)> {
+    for &(suffix, category) in PLURAL_SUFFIXES {
+        if key.ends_with(suffix) {
+            let base = &key[..key.len() - suffix.len()];
+            if !base.is_empty() {
+                return Some((base, category));
+            }
+        }
+    }
+    None
+}
+
+/// Extract an attribute value from a quick_xml BytesStart event.
+pub fn get_attr(e: &BytesStart, name: &[u8]) -> Option<String> {
+    e.attributes()
+        .filter_map(|a| a.ok())
+        .find(|a| a.key.as_ref() == name)
+        .and_then(|a| String::from_utf8(a.value.to_vec()).ok())
+}
 
 pub mod android_xml;
 pub mod xcstrings;

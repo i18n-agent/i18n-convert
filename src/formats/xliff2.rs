@@ -1,4 +1,3 @@
-use crate::ir::*;
 use super::*;
 use quick_xml::events::{BytesDecl, BytesEnd, BytesStart, BytesText, Event};
 use quick_xml::reader::Reader;
@@ -92,14 +91,6 @@ fn role_to_category(role: &CommentRole) -> Option<&'static str> {
         CommentRole::Extracted => Some("extracted"),
         CommentRole::General => Some("general"),
     }
-}
-
-// Helper to get an attribute value from a BytesStart event
-fn get_attr(e: &BytesStart, name: &[u8]) -> Option<String> {
-    e.attributes()
-        .filter_map(|a| a.ok())
-        .find(|a| a.key.as_ref() == name)
-        .and_then(|a| String::from_utf8(a.value.to_vec()).ok())
 }
 
 // ---------------------------------------------------------------------------
@@ -466,10 +457,10 @@ impl Writer {
         // <target>
         let target_text = match &entry.value {
             EntryValue::Simple(s) => Some(s.clone()),
-            other => {
-                eprintln!("XLIFF 2.0 writer: skipping unsupported value type: {:?}", other);
-                None
-            }
+            EntryValue::Plural(ps) => Some(ps.other.clone()),
+            EntryValue::Array(arr) => Some(arr.join(", ")),
+            EntryValue::Select(ss) => Some(ss.cases.get("other").cloned().unwrap_or_default()),
+            EntryValue::MultiVariablePlural(mvp) => Some(mvp.pattern.clone()),
         };
 
         if let Some(ref text) = target_text {

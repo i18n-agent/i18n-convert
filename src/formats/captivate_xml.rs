@@ -1,10 +1,16 @@
-use crate::ir::*;
 use super::*;
 use indexmap::IndexMap;
 use quick_xml::events::{BytesDecl, BytesEnd, BytesStart, BytesText, Event};
 use quick_xml::reader::Reader;
 use quick_xml::writer::Writer as XmlWriter;
+use regex::Regex;
 use std::io::Cursor;
+use std::sync::LazyLock;
+
+static RE_SLIDE_ITEM_ATTR: LazyLock<Regex> =
+    LazyLock::new(|| Regex::new(r#"id\s*=\s*"slide_\d+_item_\d+"#).unwrap());
+static RE_SLIDE_ITEM_ID: LazyLock<Regex> =
+    LazyLock::new(|| Regex::new(r"^slide_(\d+)_item_(\d+)$").unwrap());
 
 pub struct Parser;
 pub struct Writer;
@@ -55,8 +61,7 @@ fn has_captivate_markers(content: &str) -> bool {
     }
 
     // Check for slide_N_item_M ID patterns in trans-unit IDs
-    let re = regex::Regex::new(r#"id\s*=\s*"slide_\d+_item_\d+"#).unwrap();
-    re.is_match(content)
+    RE_SLIDE_ITEM_ATTR.is_match(content)
 }
 
 // ---------------------------------------------------------------------------
@@ -83,8 +88,7 @@ fn role_to_from(role: &CommentRole) -> Option<&'static str> {
 
 /// Parse slide_id and item_id from a trans-unit id like "slide_1_item_2"
 fn parse_slide_item_id(id: &str) -> (Option<String>, Option<String>) {
-    let re = regex::Regex::new(r"^slide_(\d+)_item_(\d+)$").unwrap();
-    if let Some(caps) = re.captures(id) {
+    if let Some(caps) = RE_SLIDE_ITEM_ID.captures(id) {
         (
             Some(caps[1].to_string()),
             Some(caps[2].to_string()),
@@ -92,14 +96,6 @@ fn parse_slide_item_id(id: &str) -> (Option<String>, Option<String>) {
     } else {
         (None, None)
     }
-}
-
-// Helper to get an attribute value from a BytesStart event
-fn get_attr(e: &BytesStart, name: &[u8]) -> Option<String> {
-    e.attributes()
-        .filter_map(|a| a.ok())
-        .find(|a| a.key.as_ref() == name)
-        .and_then(|a| String::from_utf8(a.value.to_vec()).ok())
 }
 
 // ---------------------------------------------------------------------------

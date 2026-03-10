@@ -1,4 +1,3 @@
-use crate::ir::*;
 use super::*;
 
 pub struct Parser;
@@ -393,6 +392,32 @@ fn flatten_tokens(
     }
 }
 
+/// Detect the quote style used for keys by scanning for the first `'=>` pattern.
+fn detect_key_quote_style(content: &str) -> Option<String> {
+    // Find `'=>` or `"=>` (with optional space before `=>`) to detect key quoting
+    let bytes = content.as_bytes();
+    for (i, &b) in bytes.iter().enumerate() {
+        if b == b'=' && i + 1 < bytes.len() && bytes[i + 1] == b'>' {
+            // Walk backwards past whitespace to find the closing quote
+            let mut j = i;
+            while j > 0 {
+                j -= 1;
+                let c = bytes[j];
+                if c == b'\'' {
+                    return Some("single".to_string());
+                } else if c == b'"' {
+                    return Some("double".to_string());
+                } else if c == b' ' || c == b'\t' {
+                    continue;
+                } else {
+                    break;
+                }
+            }
+        }
+    }
+    Some("single".to_string())
+}
+
 /// Parse the full PHP file content into an I18nResource.
 fn parse_php(content: &str) -> Result<I18nResource, ParseError> {
     let trimmed = content.trim();
@@ -419,12 +444,8 @@ fn parse_php(content: &str) -> Result<I18nResource, ParseError> {
     let mut entries = IndexMap::new();
     flatten_tokens(&array_start, "", &mut entries);
 
-    // Detect quote style from the original content
-    let quote_style = if content.contains("\"=>") || content.contains("\" =>") {
-        Some("double".to_string())
-    } else {
-        Some("single".to_string())
-    };
+    // Detect quote style by checking the first key quote character in the source
+    let quote_style = detect_key_quote_style(content);
 
     Ok(I18nResource {
         metadata: ResourceMetadata {
@@ -442,14 +463,33 @@ fn parse_php(content: &str) -> Result<I18nResource, ParseError> {
 // Writer helpers
 // ---------------------------------------------------------------------------
 
+/// Escape a string value for PHP double-quoted output.
+fn escape_double_quoted(s: &str) -> String {
+    let mut out = String::with_capacity(s.len());
+    for ch in s.chars() {
+        match ch {
+            '"' => out.push_str("\\\""),
+            '\\' => out.push_str("\\\\"),
+            '$' => out.push_str("\\$"),
+            other => out.push(other),
+        }
+    }
+    out
+}
+
 /// Build nested structure from dot-separated keys, then write PHP array syntax.
 fn write_php(resource: &I18nResource) -> String {
+    let use_double = matches!(
+        &resource.metadata.format_ext,
+        Some(FormatExtension::PhpLaravel(PhpLaravelExt { quote_style: Some(ref qs) })) if qs == "double"
+    );
+
     let mut out = String::new();
     out.push_str("<?php\n\nreturn [\n");
 
     // Build a tree structure from dot-separated keys
     let tree = build_tree(&resource.entries);
-    write_tree_entries(&tree, &resource.entries, &mut out, 1);
+    write_tree_entries(&tree, &resource.entries, &mut out, 1, use_double);
 
     out.push_str("];\n");
     out
@@ -507,8 +547,14 @@ fn write_tree_entries(
     entries: &IndexMap<String, I18nEntry>,
     out: &mut String,
     indent: usize,
+    use_double: bool,
 ) {
     let indent_str = "    ".repeat(indent);
+    let (q, esc_key, esc_val): (char, fn(&str) -> String, fn(&str) -> String) = if use_double {
+        ('"', escape_double_quoted, escape_double_quoted)
+    } else {
+        ('\'', escape_single_quoted, escape_single_quoted)
+    };
 
     for (key, node) in tree {
         match node {
@@ -530,16 +576,16 @@ fn write_tree_entries(
                     };
 
                     out.push_str(&format!(
-                        "{}'{}' => '{}',\n",
+                        "{}{q}{}{q} => {q}{}{q},\n",
                         indent_str,
-                        escape_single_quoted(key),
-                        escape_single_quoted(&value_str)
+                        esc_key(key),
+                        esc_val(&value_str)
                     ));
                 }
             }
             TreeNode::Branch(children) => {
-                out.push_str(&format!("{}'{}' => [\n", indent_str, escape_single_quoted(key)));
-                write_tree_entries(children, entries, out, indent + 1);
+                out.push_str(&format!("{}{q}{}{q} => [\n", indent_str, esc_key(key)));
+                write_tree_entries(children, entries, out, indent + 1, use_double);
                 out.push_str(&format!("{}],\n", indent_str));
             }
         }

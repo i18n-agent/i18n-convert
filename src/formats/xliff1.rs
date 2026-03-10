@@ -1,4 +1,3 @@
-use crate::ir::*;
 use super::*;
 use quick_xml::events::{BytesDecl, BytesEnd, BytesStart, BytesText, Event};
 use quick_xml::reader::Reader;
@@ -155,16 +154,6 @@ fn context_type_to_str(ct: &ContextType) -> String {
         ContextType::Description => "x-description".to_string(),
         ContextType::Custom(s) => s.clone(),
     }
-}
-
-// Helper to get an attribute value from a BytesStart event
-fn get_attr(e: &BytesStart, name: &[u8]) -> Option<String> {
-    e.attributes()
-        .filter_map(|a| a.ok())
-        .find(|a| a.key.as_ref() == name)
-        .and_then(|a| {
-            String::from_utf8(a.value.to_vec()).ok()
-        })
 }
 
 // ---------------------------------------------------------------------------

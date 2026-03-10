@@ -1,35 +1,8 @@
-use crate::ir::*;
 use super::*;
 use indexmap::IndexMap;
 
 pub struct Parser;
 pub struct Writer;
-
-// ---------------------------------------------------------------------------
-// Plural suffix handling (same convention as i18next / INI)
-// ---------------------------------------------------------------------------
-
-const PLURAL_SUFFIXES: &[(&str, &str)] = &[
-    ("_zero", "zero"),
-    ("_one", "one"),
-    ("_two", "two"),
-    ("_few", "few"),
-    ("_many", "many"),
-    ("_other", "other"),
-];
-
-/// Check if a key ends with a plural suffix. Returns (base_key, category) if so.
-fn strip_plural_suffix(key: &str) -> Option<(&str, &str)> {
-    for &(suffix, category) in PLURAL_SUFFIXES {
-        if key.ends_with(suffix) {
-            let base = &key[..key.len() - suffix.len()];
-            if !base.is_empty() {
-                return Some((base, category));
-            }
-        }
-    }
-    None
-}
 
 // ---------------------------------------------------------------------------
 // Parser
@@ -41,40 +14,6 @@ struct RawEntry {
     key: String,
     value: String,
     comments: Vec<String>,
-}
-
-/// Compute the indentation level of a line. Counts leading tabs or groups of spaces.
-/// Returns the number of indentation units and whether tabs are used.
-fn indentation_level(line: &str) -> usize {
-    let mut level = 0;
-    let mut chars = line.chars().peekable();
-    while let Some(&ch) = chars.peek() {
-        if ch == '\t' {
-            level += 1;
-            chars.next();
-        } else if ch == ' ' {
-            // Count consecutive spaces as one level per group of spaces
-            // NEON typically uses tabs, but also accept spaces
-            let mut space_count = 0;
-            while let Some(&' ') = chars.peek() {
-                space_count += 1;
-                chars.next();
-            }
-            // Treat 4 spaces (or 2 spaces) as one level
-            // We detect the indent width from context, but default to counting
-            // each contiguous space group
-            level += if space_count >= 4 {
-                space_count / 4
-            } else if space_count >= 2 {
-                space_count / 2
-            } else {
-                1
-            };
-        } else {
-            break;
-        }
-    }
-    level
 }
 
 /// Unquote a NEON string value. Handles single-quoted, double-quoted, and unquoted strings.
@@ -551,13 +490,6 @@ mod tests {
         assert_eq!(unquote_neon("\"hello\""), "hello");
         assert_eq!(unquote_neon("'hello'"), "hello");
         assert_eq!(unquote_neon("  hello  "), "hello");
-    }
-
-    #[test]
-    fn test_indentation_level_tabs() {
-        assert_eq!(indentation_level("key: val"), 0);
-        assert_eq!(indentation_level("\tkey: val"), 1);
-        assert_eq!(indentation_level("\t\tkey: val"), 2);
     }
 
     #[test]

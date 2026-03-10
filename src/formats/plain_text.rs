@@ -1,4 +1,3 @@
-use crate::ir::*;
 use super::*;
 use indexmap::IndexMap;
 
@@ -43,7 +42,7 @@ fn restore_line_endings(content: &str, line_ending: &str) -> String {
 impl FormatParser for Parser {
     fn detect(&self, extension: &str, _content: &[u8]) -> Confidence {
         if extension == ".txt" {
-            Confidence::Definite
+            Confidence::High
         } else {
             Confidence::None
         }
@@ -233,7 +232,7 @@ mod tests {
     #[test]
     fn test_detect_txt() {
         let parser = Parser;
-        assert_eq!(parser.detect(".txt", b""), Confidence::Definite);
+        assert_eq!(parser.detect(".txt", b""), Confidence::High);
     }
 
     #[test]

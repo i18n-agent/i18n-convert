@@ -1,4 +1,3 @@
-use crate::ir::*;
 use super::*;
 use indexmap::IndexMap;
 use regex::Regex;
@@ -6,16 +5,6 @@ use std::sync::LazyLock;
 
 pub struct Parser;
 pub struct Writer;
-
-/// CLDR plural suffixes used in flat key conventions (e.g. items_one, items_other)
-const PLURAL_SUFFIXES: &[(&str, &str)] = &[
-    ("_zero", "zero"),
-    ("_one", "one"),
-    ("_two", "two"),
-    ("_few", "few"),
-    ("_many", "many"),
-    ("_other", "other"),
-];
 
 /// CLDR plural categories recognized in nested plural mappings (Rails-style)
 const PLURAL_KEYS: &[&str] = &["zero", "one", "two", "few", "many", "other"];
@@ -104,19 +93,6 @@ fn extract_placeholders(text: &str) -> Vec<Placeholder> {
             }
         })
         .collect()
-}
-
-/// Check if a key ends with a plural suffix. Returns (base_key, category) if so.
-fn strip_plural_suffix(key: &str) -> Option<(&str, &str)> {
-    for &(suffix, category) in PLURAL_SUFFIXES {
-        if key.ends_with(suffix) {
-            let base = &key[..key.len() - suffix.len()];
-            if !base.is_empty() {
-                return Some((base, category));
-            }
-        }
-    }
-    None
 }
 
 // ---------------------------------------------------------------------------

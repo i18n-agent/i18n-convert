@@ -1,4 +1,3 @@
-use crate::ir::*;
 use super::*;
 use std::io::Cursor;
 

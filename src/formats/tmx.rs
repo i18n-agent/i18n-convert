@@ -1,4 +1,3 @@
-use crate::ir::*;
 use super::*;
 use quick_xml::events::{BytesDecl, BytesEnd, BytesStart, BytesText, Event};
 use quick_xml::reader::Reader;
@@ -41,14 +40,6 @@ struct TuBuilder {
 struct TuvData {
     lang: String,
     text: String,
-}
-
-// Helper to get an attribute value from a BytesStart event
-fn get_attr(e: &BytesStart, name: &[u8]) -> Option<String> {
-    e.attributes()
-        .filter_map(|a| a.ok())
-        .find(|a| a.key.as_ref() == name)
-        .and_then(|a| String::from_utf8(a.value.to_vec()).ok())
 }
 
 // Helper to get xml:lang attribute (may appear as "xml:lang" or just "lang")
@@ -453,10 +444,10 @@ impl Writer {
         // Target <tuv>
         let target_text = match &entry.value {
             EntryValue::Simple(s) => Some(s.clone()),
-            other => {
-                eprintln!("TMX writer: skipping unsupported value type: {:?}", other);
-                None
-            }
+            EntryValue::Plural(ps) => Some(ps.other.clone()),
+            EntryValue::Array(arr) => Some(arr.join(", ")),
+            EntryValue::Select(ss) => Some(ss.cases.get("other").cloned().unwrap_or_default()),
+            EntryValue::MultiVariablePlural(mvp) => Some(mvp.pattern.clone()),
         };
 
         if let Some(ref text) = target_text {

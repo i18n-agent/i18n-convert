@@ -1,4 +1,3 @@
-use crate::ir::*;
 use super::*;
 
 pub struct Parser;
@@ -618,7 +617,7 @@ impl FormatWriter for Writer {
                 }
             };
 
-            insert_nested(&mut root, &entry.key, json_value);
+            insert_nested(&mut root, &entry.key, json_value)?;
         }
 
         let json = serde_json::to_string_pretty(&serde_json::Value::Object(root))
@@ -641,11 +640,11 @@ fn insert_nested(
     root: &mut serde_json::Map<String, serde_json::Value>,
     key: &str,
     value: serde_json::Value,
-) {
+) -> Result<(), WriteError> {
     let parts: Vec<&str> = key.split('.').collect();
     if parts.len() == 1 {
         root.insert(key.to_string(), value);
-        return;
+        return Ok(());
     }
 
     let mut current = root;
@@ -654,9 +653,12 @@ fn insert_nested(
             .entry(part.to_string())
             .or_insert_with(|| serde_json::Value::Object(serde_json::Map::new()))
             .as_object_mut()
-            .expect("Expected nested object in key path");
+            .ok_or_else(|| WriteError::Serialization(
+                format!("Key path conflict: '{}' is both a value and an object in key '{}'", part, key)
+            ))?;
     }
 
     let leaf_key = parts[parts.len() - 1];
     current.insert(leaf_key.to_string(), value);
+    Ok(())
 }

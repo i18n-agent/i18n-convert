@@ -1,4 +1,3 @@
-use crate::ir::*;
 use super::*;
 
 pub struct Parser;
@@ -184,7 +183,7 @@ impl FormatWriter for Writer {
                 }
             };
 
-            insert_nested_toml(&mut root, &entry.key, toml_value);
+            insert_nested_toml(&mut root, &entry.key, toml_value)?;
         }
 
         let toml_str = toml::to_string_pretty(&toml::Value::Table(root))
@@ -207,11 +206,11 @@ fn insert_nested_toml(
     root: &mut toml::map::Map<String, toml::Value>,
     key: &str,
     value: toml::Value,
-) {
+) -> Result<(), WriteError> {
     let parts: Vec<&str> = key.split('.').collect();
     if parts.len() == 1 {
         root.insert(key.to_string(), value);
-        return;
+        return Ok(());
     }
 
     let mut current = root;
@@ -220,11 +219,14 @@ fn insert_nested_toml(
             .entry(part.to_string())
             .or_insert_with(|| toml::Value::Table(toml::map::Map::new()))
             .as_table_mut()
-            .expect("Expected nested table in key path");
+            .ok_or_else(|| WriteError::Serialization(
+                format!("Key path conflict: '{}' is both a value and a table in key '{}'", part, key)
+            ))?;
     }
 
     let leaf_key = parts[parts.len() - 1];
     current.insert(leaf_key.to_string(), value);
+    Ok(())
 }
 
 #[cfg(test)]

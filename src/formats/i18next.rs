@@ -1,4 +1,3 @@
-use crate::ir::*;
 use super::*;
 use regex::Regex;
 use std::sync::LazyLock;

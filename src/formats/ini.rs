@@ -1,35 +1,8 @@
-use crate::ir::*;
 use super::*;
 use indexmap::IndexMap;
 
 pub struct Parser;
 pub struct Writer;
-
-// ---------------------------------------------------------------------------
-// Plural suffix handling (same convention as i18next)
-// ---------------------------------------------------------------------------
-
-const PLURAL_SUFFIXES: &[(&str, &str)] = &[
-    ("_zero", "zero"),
-    ("_one", "one"),
-    ("_two", "two"),
-    ("_few", "few"),
-    ("_many", "many"),
-    ("_other", "other"),
-];
-
-/// Check if a key ends with a plural suffix. Returns (base_key, category) if so.
-fn strip_plural_suffix(key: &str) -> Option<(&str, &str)> {
-    for &(suffix, category) in PLURAL_SUFFIXES {
-        if key.ends_with(suffix) {
-            let base = &key[..key.len() - suffix.len()];
-            if !base.is_empty() {
-                return Some((base, category));
-            }
-        }
-    }
-    None
-}
 
 // ---------------------------------------------------------------------------
 // Parser
@@ -116,21 +89,56 @@ fn parse_ini_content(content: &str) -> Result<I18nResource, ParseError> {
     })
 }
 
+/// Unescape an INI value: handles \n, \t, \r, \\.
+fn unescape_ini_value(s: &str) -> String {
+    let mut out = String::with_capacity(s.len());
+    let mut chars = s.chars().peekable();
+    while let Some(ch) = chars.next() {
+        if ch == '\\' {
+            match chars.peek() {
+                Some(&'n') => { chars.next(); out.push('\n'); }
+                Some(&'t') => { chars.next(); out.push('\t'); }
+                Some(&'r') => { chars.next(); out.push('\r'); }
+                Some(&'\\') => { chars.next(); out.push('\\'); }
+                _ => out.push('\\'),
+            }
+        } else {
+            out.push(ch);
+        }
+    }
+    out
+}
+
+/// Escape an INI value: escapes \n, \t, \r, \\.
+fn escape_ini_value(s: &str) -> String {
+    let mut out = String::with_capacity(s.len());
+    for ch in s.chars() {
+        match ch {
+            '\\' => out.push_str("\\\\"),
+            '\n' => out.push_str("\\n"),
+            '\t' => out.push_str("\\t"),
+            '\r' => out.push_str("\\r"),
+            other => out.push(other),
+        }
+    }
+    out
+}
+
 /// Split a line into key, value, and delimiter.
 fn split_ini_kv(line: &str) -> Option<(String, String, char)> {
     // Try = first, then :
     if let Some(pos) = line.find('=') {
         let key = line[..pos].trim().to_string();
-        let value = line[pos + 1..].trim().to_string();
+        let raw_value = line[pos + 1..].trim().to_string();
         if !key.is_empty() {
-            return Some((key, value, '='));
+            return Some((key, unescape_ini_value(&raw_value), '='));
         }
     }
     if let Some(pos) = line.find(':') {
         let key = line[..pos].trim().to_string();
-        let value = line[pos + 1..].trim().to_string();
+        let raw_value = line[pos + 1..].trim().to_string();
         if !key.is_empty() {
-            return Some((key, value, ':'));
+            return Some((key, unescape_ini_value(&raw_value), ':'));
         }
     }
     None
@@ -336,36 +344,36 @@ fn write_ini(resource: &I18nResource) -> String {
 
             match &entry.value {
                 EntryValue::Simple(val) => {
-                    out.push_str(&format!("{} {} {}\n", local_key, delim, val));
+                    out.push_str(&format!("{} {} {}\n", local_key, delim, escape_ini_value(val)));
                 }
                 EntryValue::Plural(ps) => {
                     // Write each plural form as separate key with suffix
                     if let Some(ref zero) = ps.zero {
-                        out.push_str(&format!("{}_zero {} {}\n", local_key, delim, zero));
+                        out.push_str(&format!("{}_zero {} {}\n", local_key, delim, escape_ini_value(zero)));
                     }
                     if let Some(ref one) = ps.one {
-                        out.push_str(&format!("{}_one {} {}\n", local_key, delim, one));
+                        out.push_str(&format!("{}_one {} {}\n", local_key, delim, escape_ini_value(one)));
                     }
                     if let Some(ref two) = ps.two {
-                        out.push_str(&format!("{}_two {} {}\n", local_key, delim, two));
+                        out.push_str(&format!("{}_two {} {}\n", local_key, delim, escape_ini_value(two)));
                     }
                     if let Some(ref few) = ps.few {
-                        out.push_str(&format!("{}_few {} {}\n", local_key, delim, few));
+                        out.push_str(&format!("{}_few {} {}\n", local_key, delim, escape_ini_value(few)));
                     }
                     if let Some(ref many) = ps.many {
-                        out.push_str(&format!("{}_many {} {}\n", local_key, delim, many));
+                        out.push_str(&format!("{}_many {} {}\n", local_key, delim, escape_ini_value(many)));
                     }
-                    out.push_str(&format!("{}_other {} {}\n", local_key, delim, &ps.other));
+                    out.push_str(&format!("{}_other {} {}\n", local_key, delim, escape_ini_value(&ps.other)));
                 }
                 EntryValue::Array(arr) => {
-                    out.push_str(&format!("{} {} {}\n", local_key, delim, arr.join(", ")));
+                    out.push_str(&format!("{} {} {}\n", local_key, delim, escape_ini_value(&arr.join(", "))));
                 }
                 EntryValue::Select(ss) => {
                     let val = ss.cases.values().next().cloned().unwrap_or_default();
-                    out.push_str(&format!("{} {} {}\n", local_key, delim, val));
+                    out.push_str(&format!("{} {} {}\n", local_key, delim, escape_ini_value(&val)));
                 }
                 EntryValue::MultiVariablePlural(mvp) => {
-                    out.push_str(&format!("{} {} {}\n", local_key, delim, mvp.pattern));
+                    out.push_str(&format!("{} {} {}\n", local_key, delim, escape_ini_value(&mvp.pattern)));
                 }
             }
         }

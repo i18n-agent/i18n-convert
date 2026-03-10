@@ -1,5 +1,9 @@
-use crate::ir::*;
 use super::*;
+use regex::Regex;
+use std::sync::LazyLock;
+
+static RE_SRT_TIMECODE: LazyLock<Regex> =
+    LazyLock::new(|| Regex::new(r"(?m)^\d+\s*\n\d{2}:\d{2}:\d{2},\d{3}\s*-->").unwrap());
 
 pub struct Parser;
 pub struct Writer;
@@ -61,14 +65,8 @@ impl FormatParser for Parser {
         }
         // Content-based detection
         if let Ok(s) = std::str::from_utf8(content) {
-            // Look for pattern: digit(s) followed by a line with timecodes
-            let re_pattern = regex::Regex::new(
-                r"(?m)^\d+\s*\n\d{2}:\d{2}:\d{2},\d{3}\s*-->"
-            );
-            if let Ok(re) = re_pattern {
-                if re.is_match(s) {
-                    return Confidence::High;
-                }
+            if RE_SRT_TIMECODE.is_match(s) {
+                return Confidence::High;
             }
         }
         Confidence::None

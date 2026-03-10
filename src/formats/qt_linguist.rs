@@ -1,4 +1,3 @@
-use crate::ir::*;
 use super::*;
 use quick_xml::events::{BytesDecl, BytesEnd, BytesStart, BytesText, Event};
 use quick_xml::reader::Reader;
@@ -47,14 +46,6 @@ struct MessageBuilder {
     old_comment: Option<String>,
     locations: Vec<SourceRef>,
     extra_elements: IndexMap<String, String>,
-}
-
-// Helper to get an attribute value from a BytesStart event
-fn get_attr(e: &BytesStart, name: &[u8]) -> Option<String> {
-    e.attributes()
-        .filter_map(|a| a.ok())
-        .find(|a| a.key.as_ref() == name)
-        .and_then(|a| String::from_utf8(a.value.to_vec()).ok())
 }
 
 /// Map the Qt Linguist translation type attribute to IR TranslationState
