@@ -1,0 +1,13 @@
+/* App title */
+"app_title" = "My Application";
+
+/* Greeting message */
+"greeting" = "Hello, World!";
+
+"no_comment" = "This has no comment";
+
+/* Empty value */
+"empty_value" = "";
+
+/* Multi-word key */
+"settings.general.title" = "General Settings";

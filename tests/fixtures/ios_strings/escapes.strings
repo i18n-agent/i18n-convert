@@ -1,0 +1,14 @@
+/* Escaped double quote */
+"escaped_quote" = "She said \"hello\"";
+
+/* Escaped backslash */
+"escaped_backslash" = "C:\\Users\\test";
+
+/* Newline escape */
+"newline" = "Line one\nLine two";
+
+/* Tab escape */
+"tab" = "Column1\tColumn2";
+
+/* Mixed escapes */
+"mixed" = "Say \"hi\"\nThen press\\tab\there";

@@ -1,0 +1,14 @@
+/* Unicode accent */
+"accent" = "caf\U00E9";
+
+/* Japanese text */
+"japanese" = "\U3053\U3093\U306B\U3061\U306F";
+
+/* Direct Unicode (UTF-8 encoded) */
+"direct_unicode" = "Bonjour le monde";
+
+/* Emoji (direct UTF-8) */
+"emoji" = "Hello World \U0001F600";
+
+/* Mixed Unicode escapes and literal */
+"mixed_unicode" = "\U00FCber cool";
