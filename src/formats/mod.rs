@@ -32,6 +32,8 @@ pub mod ts_format;
 pub mod neon;
 pub mod plain_text;
 pub mod yaml_plain;
+pub mod ispring_xliff;
+pub mod captivate_xml;
 
 #[derive(Error, Debug)]
 pub enum ParseError {
@@ -334,6 +336,24 @@ impl FormatRegistry {
             &[".yml", ".yaml"],
             yaml_plain::Parser,
             yaml_plain::Writer,
+        );
+
+        // Vendor-specific formats
+        Self::register(
+            &mut formats,
+            "ispring-xliff",
+            "iSpring Suite XLIFF",
+            &[".xliff", ".xlf"],
+            ispring_xliff::Parser,
+            ispring_xliff::Writer,
+        );
+        Self::register(
+            &mut formats,
+            "captivate-xml",
+            "Adobe Captivate XML",
+            &[".xml"],
+            captivate_xml::Parser,
+            captivate_xml::Writer,
         );
 
         Self { formats }

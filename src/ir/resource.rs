@@ -59,6 +59,9 @@ pub enum FormatId {
     Neon,
     PlainText,
     YamlPlain,
+    // Vendor-specific
+    IspringXliff,
+    CaptivateXml,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]

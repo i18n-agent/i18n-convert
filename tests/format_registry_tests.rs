@@ -24,7 +24,7 @@ fn registry_has_all_tier1_formats() {
 fn registry_list_formats_returns_all() {
     let registry = FormatRegistry::new();
     let formats = registry.list();
-    assert_eq!(formats.len(), 30);
+    assert_eq!(formats.len(), 32);
 }
 
 #[test]

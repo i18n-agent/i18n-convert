@@ -37,6 +37,9 @@ pub enum FormatExtension {
     Neon(NeonExt),
     PlainText(PlainTextExt),
     YamlPlain(YamlPlainExt),
+    // Vendor-specific
+    IspringXliff(IspringXliffExt),
+    CaptivateXml(CaptivateXmlExt),
 }
 
 // Tier 1 format extensions -- each starts minimal and grows as needed
@@ -205,3 +208,18 @@ pub struct PlainTextExt {
 
 #[derive(Debug, Clone, PartialEq, Default)]
 pub struct YamlPlainExt {}
+
+// Vendor-specific format extensions
+
+#[derive(Debug, Clone, PartialEq, Default)]
+pub struct IspringXliffExt {
+    pub xliff_version: Option<String>, // "1.2" or "2.1"
+    pub source_language: Option<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Default)]
+pub struct CaptivateXmlExt {
+    pub slide_id: Option<String>,
+    pub item_id: Option<String>,
+    pub css_style: Option<String>,
+}
