@@ -26,6 +26,12 @@ pub mod tmx;
 pub mod srt;
 pub mod excel;
 pub mod markdown;
+pub mod ios_plist;
+pub mod js_format;
+pub mod ts_format;
+pub mod neon;
+pub mod plain_text;
+pub mod yaml_plain;
 
 #[derive(Error, Debug)]
 pub enum ParseError {
@@ -278,6 +284,56 @@ impl FormatRegistry {
             &[".md"],
             markdown::Parser,
             markdown::Writer,
+        );
+
+        // Tier 3 formats
+        Self::register(
+            &mut formats,
+            "ios-plist",
+            "iOS Property List",
+            &[".plist"],
+            ios_plist::Parser,
+            ios_plist::Writer,
+        );
+        Self::register(
+            &mut formats,
+            "javascript",
+            "JavaScript",
+            &[".js"],
+            js_format::Parser,
+            js_format::Writer,
+        );
+        Self::register(
+            &mut formats,
+            "typescript",
+            "TypeScript",
+            &[".ts"],
+            ts_format::Parser,
+            ts_format::Writer,
+        );
+        Self::register(
+            &mut formats,
+            "neon",
+            "NEON",
+            &[".neon"],
+            neon::Parser,
+            neon::Writer,
+        );
+        Self::register(
+            &mut formats,
+            "plain-text",
+            "Plain Text",
+            &[".txt"],
+            plain_text::Parser,
+            plain_text::Writer,
+        );
+        Self::register(
+            &mut formats,
+            "yaml-plain",
+            "YAML (Plain)",
+            &[".yml", ".yaml"],
+            yaml_plain::Parser,
+            yaml_plain::Writer,
         );
 
         Self { formats }

@@ -52,6 +52,13 @@ pub enum FormatId {
     Srt,
     Excel,
     Markdown,
+    // Tier 3
+    IosPlist,
+    JavaScript,
+    TypeScript,
+    Neon,
+    PlainText,
+    YamlPlain,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]

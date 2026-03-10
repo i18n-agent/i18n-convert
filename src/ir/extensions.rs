@@ -30,6 +30,13 @@ pub enum FormatExtension {
     Srt(SrtExt),
     Excel(ExcelExt),
     Markdown(MarkdownExt),
+    // Tier 3
+    IosPlist(IosPlistExt),
+    JavaScript(JavaScriptExt),
+    TypeScript(TypeScriptExt),
+    Neon(NeonExt),
+    PlainText(PlainTextExt),
+    YamlPlain(YamlPlainExt),
 }
 
 // Tier 1 format extensions -- each starts minimal and grows as needed
@@ -168,3 +175,33 @@ pub struct ExcelExt {
 pub struct MarkdownExt {
     pub front_matter: Option<String>,
 }
+
+// Tier 3 format extensions
+
+#[derive(Debug, Clone, PartialEq, Default)]
+pub struct IosPlistExt {
+    pub plist_format: Option<String>, // "xml1" or "binary1"
+}
+
+#[derive(Debug, Clone, PartialEq, Default)]
+pub struct JavaScriptExt {
+    pub export_style: Option<String>, // "module.exports", "export default", "exports"
+    pub quote_style: Option<char>,    // '\'' or '"'
+}
+
+#[derive(Debug, Clone, PartialEq, Default)]
+pub struct TypeScriptExt {
+    pub export_style: Option<String>, // "export default", "export const"
+    pub type_annotation: Option<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Default)]
+pub struct NeonExt {}
+
+#[derive(Debug, Clone, PartialEq, Default)]
+pub struct PlainTextExt {
+    pub line_ending: Option<String>, // "\n" or "\r\n"
+}
+
+#[derive(Debug, Clone, PartialEq, Default)]
+pub struct YamlPlainExt {}
