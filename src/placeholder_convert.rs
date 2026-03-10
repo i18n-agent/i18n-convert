@@ -9,61 +9,84 @@
 ///   PO:        %(name)s
 ///   YAML:      %{name}
 
+use std::sync::LazyLock;
 use regex::Regex;
+
+static RE_ANDROID_POSITIONAL: LazyLock<Regex> = LazyLock::new(|| {
+    Regex::new(r"%(\d+)\$[sdifegacoxX@]").expect("valid regex pattern")
+});
+
+static RE_ANDROID_SIMPLE: LazyLock<Regex> = LazyLock::new(|| {
+    Regex::new(r"%([sdifegacoxX@])").expect("valid regex pattern")
+});
+
+static RE_ICU_POSITIONAL: LazyLock<Regex> = LazyLock::new(|| {
+    Regex::new(r"\{(\d+)\}").expect("valid regex pattern")
+});
+
+static RE_ICU_NAMED: LazyLock<Regex> = LazyLock::new(|| {
+    Regex::new(r"\{(\w+)\}").expect("valid regex pattern")
+});
+
+static RE_I18NEXT: LazyLock<Regex> = LazyLock::new(|| {
+    Regex::new(r"\{\{(\w+)\}\}").expect("valid regex pattern")
+});
+
+static RE_ICU_ALPHA: LazyLock<Regex> = LazyLock::new(|| {
+    Regex::new(r"\{([a-zA-Z_]\w*)\}").expect("valid regex pattern")
+});
+
+static RE_YAML_RAILS: LazyLock<Regex> = LazyLock::new(|| {
+    Regex::new(r"%\{(\w+)\}").expect("valid regex pattern")
+});
 
 /// Convert Android positional placeholders to ICU-style.
 /// %1$s -> {0}, %2$d -> {1}, %s -> {0}
 pub fn android_to_icu(s: &str) -> String {
-    let re_positional = Regex::new(r"%(\d+)\$[sdifegacoxX@]").unwrap();
-    let result = re_positional
+    let result = RE_ANDROID_POSITIONAL
         .replace_all(s, |caps: &regex::Captures| {
-            let pos: usize = caps[1].parse::<usize>().unwrap() - 1;
+            let pos: usize = caps[1].parse::<usize>().expect("regex guarantees digits") - 1;
             format!("{{{pos}}}")
         })
         .to_string();
 
     // Handle non-positional %s, %d etc. (map to {0})
-    let re_simple = Regex::new(r"%([sdifegacoxX@])").unwrap();
-    re_simple.replace_all(&result, "{0}").to_string()
+    RE_ANDROID_SIMPLE.replace_all(&result, "{0}").to_string()
 }
 
 /// Convert ICU-style positional placeholders to Android.
 /// {0} -> %1$s, {1} -> %2$s
 pub fn icu_to_android(s: &str) -> String {
-    let re = Regex::new(r"\{(\d+)\}").unwrap();
-    re.replace_all(s, |caps: &regex::Captures| {
-        let pos: usize = caps[1].parse::<usize>().unwrap() + 1;
-        format!("%{pos}$s")
-    })
-    .to_string()
+    RE_ICU_POSITIONAL
+        .replace_all(s, |caps: &regex::Captures| {
+            let pos: usize = caps[1].parse::<usize>().expect("regex guarantees digits") + 1;
+            format!("%{pos}$s")
+        })
+        .to_string()
 }
 
 /// Convert ICU-style placeholders to i18next.
 /// {name} -> {{name}}, {0} -> {{0}}
 pub fn icu_to_i18next(s: &str) -> String {
-    let re = Regex::new(r"\{(\w+)\}").unwrap();
-    re.replace_all(s, "{{$1}}").to_string()
+    RE_ICU_NAMED.replace_all(s, "{{$1}}").to_string()
 }
 
 /// Convert i18next interpolation to ICU-style.
 /// {{name}} -> {name}
 pub fn i18next_to_icu(s: &str) -> String {
-    let re = Regex::new(r"\{\{(\w+)\}\}").unwrap();
-    re.replace_all(s, "{$1}").to_string()
+    RE_I18NEXT.replace_all(s, "{$1}").to_string()
 }
 
 /// Convert ICU-style named placeholders to YAML Rails.
 /// {name} -> %{name}
 pub fn icu_to_yaml_rails(s: &str) -> String {
-    let re = Regex::new(r"\{([a-zA-Z_]\w*)\}").unwrap();
-    re.replace_all(s, "%{$1}").to_string()
+    RE_ICU_ALPHA.replace_all(s, "%{$1}").to_string()
 }
 
 /// Convert YAML Rails interpolation to ICU-style.
 /// %{name} -> {name}
 pub fn yaml_rails_to_icu(s: &str) -> String {
-    let re = Regex::new(r"%\{(\w+)\}").unwrap();
-    re.replace_all(s, "{$1}").to_string()
+    RE_YAML_RAILS.replace_all(s, "{$1}").to_string()
 }
 
 /// Convert Android positional placeholders to i18next.

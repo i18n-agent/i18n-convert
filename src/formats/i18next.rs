@@ -1,6 +1,7 @@
 use crate::ir::*;
 use super::*;
 use regex::Regex;
+use std::sync::LazyLock;
 
 pub struct Parser;
 pub struct Writer;
@@ -369,17 +370,20 @@ fn collect_ordinal_plural(
     ps
 }
 
+static RE_I18NEXT_PLACEHOLDER: LazyLock<Regex> = LazyLock::new(|| {
+    Regex::new(r"\{\{(\s*\w+(?:\s*,\s*\w+)?\s*)\}\}").expect("valid regex pattern")
+});
+
 /// Extract {{name}} style placeholders from a string.
 fn extract_placeholders(value: &str) -> Vec<Placeholder> {
-    let re = Regex::new(r"\{\{(\s*\w+(?:\s*,\s*\w+)?\s*)\}\}").unwrap();
     let mut placeholders = Vec::new();
     let mut seen = std::collections::HashSet::new();
 
-    for cap in re.captures_iter(value) {
-        let full_match = cap.get(0).unwrap().as_str();
-        let inner = cap.get(1).unwrap().as_str().trim();
+    for cap in RE_I18NEXT_PLACEHOLDER.captures_iter(value) {
+        let full_match = cap.get(0).expect("regex group 0 always captures").as_str();
+        let inner = cap.get(1).expect("regex group 1 always captures").as_str().trim();
         // The name is the part before any comma (format hint)
-        let name = inner.split(',').next().unwrap().trim().to_string();
+        let name = inner.split(',').next().expect("split always yields at least one element").trim().to_string();
         if seen.contains(&name) {
             continue;
         }

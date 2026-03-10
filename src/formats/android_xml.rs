@@ -182,7 +182,7 @@ impl FormatParser for Parser {
                                 });
                             }
 
-                            let translatable_bool = translatable.as_deref().map(|v| v == "true");
+                            let translatable_bool = translatable.as_deref().map(|v| parse_translatable(v, &name));
 
                             // Build format extension if we have formatted or product
                             let format_ext = if formatted.is_some() || product.is_some() {
@@ -347,7 +347,7 @@ impl FormatParser for Parser {
                             key: name.clone(),
                             value: EntryValue::Simple(String::new()),
                             comments,
-                            translatable: translatable.as_deref().map(|v| v == "true"),
+                            translatable: translatable.as_deref().map(|v| parse_translatable(v, &name)),
                             ..Default::default()
                         };
 
@@ -410,6 +410,21 @@ fn contains_inline_xml(s: &str) -> bool {
     s.contains("<xliff:g") || s.contains("</xliff:g>")
 }
 
+/// Parse a translatable attribute value. Android XML recognizes "true" and "false".
+fn parse_translatable(value: &str, key: &str) -> bool {
+    match value {
+        "true" => true,
+        "false" => false,
+        other => {
+            eprintln!(
+                "Warning: unrecognized translatable value '{}' for key '{}', treating as true",
+                other, key
+            );
+            true
+        }
+    }
+}
+
 /// Escape a string for use as an XML attribute value.
 fn xml_attr_escape(s: &str) -> String {
     s.replace('&', "&amp;")
@@ -426,12 +441,18 @@ impl FormatWriter for Writer {
         out.push_str("<?xml version=\"1.0\" encoding=\"utf-8\"?>\n");
 
         // Check if any entry has xliff:g placeholders -> need namespace
-        let needs_xliff_ns = resource.entries.values().any(|entry| {
-            if let EntryValue::Simple(s) = &entry.value {
-                contains_inline_xml(s)
-            } else {
-                false
+        let needs_xliff_ns = resource.entries.values().any(|entry| match &entry.value {
+            EntryValue::Simple(s) => contains_inline_xml(s),
+            EntryValue::Plural(ps) => {
+                contains_inline_xml(&ps.other)
+                    || ps.zero.as_deref().is_some_and(contains_inline_xml)
+                    || ps.one.as_deref().is_some_and(contains_inline_xml)
+                    || ps.two.as_deref().is_some_and(contains_inline_xml)
+                    || ps.few.as_deref().is_some_and(contains_inline_xml)
+                    || ps.many.as_deref().is_some_and(contains_inline_xml)
             }
+            EntryValue::Array(items) => items.iter().any(|s| contains_inline_xml(s)),
+            _ => false,
         });
 
         // <resources>
@@ -444,9 +465,7 @@ impl FormatWriter for Writer {
         for (_key, entry) in &resource.entries {
             // Write preceding comment if any
             for comment in &entry.comments {
-                if comment.role == CommentRole::General {
-                    out.push_str(&format!("    <!-- {} -->\n", comment.text));
-                }
+                out.push_str(&format!("    <!-- {} -->\n", comment.text));
             }
 
             match &entry.value {
@@ -531,9 +550,12 @@ impl FormatWriter for Writer {
                     out.push_str("    </string-array>\n");
                 }
 
-                // Other value types (Select, MultiVariablePlural) are not natively
-                // supported by Android XML format. Skip them.
-                _ => {}
+                _ => {
+                    eprintln!(
+                        "Warning: skipping entry '{}' with unsupported value type for Android XML",
+                        entry.key
+                    );
+                }
             }
         }
 

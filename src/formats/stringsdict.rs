@@ -116,7 +116,7 @@ fn parse_entry_dict(
 
     let value = if is_single_var {
         // Single variable → flatten to EntryValue::Plural
-        let var = variables.into_values().next().unwrap();
+        let var = variables.into_values().next().expect("len == 1 checked above");
         EntryValue::Plural(var.plural_set)
     } else {
         // Multi-variable → EntryValue::MultiVariablePlural
@@ -356,7 +356,10 @@ impl FormatWriter for Writer {
                     dict
                 }
                 _ => {
-                    // Array and Select not supported by stringsdict
+                    eprintln!(
+                        "Warning: skipping entry '{}' with unsupported value type for stringsdict",
+                        key
+                    );
                     continue;
                 }
             };

@@ -1,6 +1,7 @@
 use crate::ir::*;
 use super::*;
 use regex::Regex;
+use std::sync::LazyLock;
 
 pub struct Parser;
 pub struct Writer;
@@ -51,14 +52,17 @@ fn value_to_string(value: &serde_yaml::Value) -> String {
     }
 }
 
+static RE_YAML_PLACEHOLDER: LazyLock<Regex> = LazyLock::new(|| {
+    Regex::new(r"%\{([^}]+)\}").expect("valid regex pattern")
+});
+
 /// Extract %{name} style placeholders from a string
 fn extract_placeholders(text: &str) -> Vec<Placeholder> {
-    let re = Regex::new(r"%\{([^}]+)\}").unwrap();
-    re.captures_iter(text)
+    RE_YAML_PLACEHOLDER.captures_iter(text)
         .enumerate()
         .map(|(i, cap)| {
-            let name = cap.get(1).unwrap().as_str().to_string();
-            let original = cap.get(0).unwrap().as_str().to_string();
+            let name = cap.get(1).expect("regex group 1 always captures").as_str().to_string();
+            let original = cap.get(0).expect("regex group 0 always captures").as_str().to_string();
             Placeholder {
                 name,
                 original_syntax: original,
@@ -297,7 +301,7 @@ impl FormatParser for Parser {
             )));
         }
 
-        let (locale_key, locale_value) = root_mapping.iter().next().unwrap();
+        let (locale_key, locale_value) = root_mapping.iter().next().expect("len == 1 checked above");
         let locale = locale_key
             .as_str()
             .ok_or_else(|| ParseError::Yaml("Locale key must be a string".to_string()))?

@@ -20,7 +20,7 @@ fn unescape_strings_value(s: &str) -> String {
                 Some(&'n') => { chars.next(); out.push('\n'); }
                 Some(&'t') => { chars.next(); out.push('\t'); }
                 Some(&'U') | Some(&'u') => {
-                    let u_char = *chars.peek().unwrap();
+                    let u_char = *chars.peek().expect("already matched U/u");
                     chars.next(); // consume U/u
                     // Read exactly 4 hex digits (Apple .strings standard)
                     let mut hex = String::new();
@@ -131,7 +131,7 @@ fn parse_strings(content: &str) -> Result<I18nResource, ParseError> {
             break;
         }
 
-        let ch = *chars.peek().unwrap();
+        let ch = *chars.peek().expect("checked is_none above");
 
         // Block comment: /* ... */
         if ch == '/' {
