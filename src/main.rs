@@ -26,7 +26,7 @@ fn main() {
 
     // Read input
     let content = fs::read(input).unwrap_or_else(|e| {
-        eprintln!("Error reading {}: {e}", input);
+        eprintln!("Error reading {input}: {e}");
         std::process::exit(1);
     });
 
@@ -37,24 +37,21 @@ fn main() {
         .unwrap_or_default();
     let detected = registry.detect(&ext, &content);
     if detected.is_empty() {
-        eprintln!("Error: Could not detect input format for {}", input);
+        eprintln!("Error: Could not detect input format for {input}");
         std::process::exit(1);
     }
     let source_id = detected[0].0;
 
     // Get target format
     let target = registry.get(to).unwrap_or_else(|| {
-        eprintln!(
-            "Error: Unknown target format '{}'. Use --list-formats to see options.",
-            to
-        );
+        eprintln!("Error: Unknown target format '{to}'. Use --list-formats to see options.");
         std::process::exit(1);
     });
 
     // Parse
     let source = registry.get(source_id).unwrap();
     let resource = source.parser.parse(&content).unwrap_or_else(|e| {
-        eprintln!("Error parsing {}: {e}", input);
+        eprintln!("Error parsing {input}: {e}");
         std::process::exit(1);
     });
 
@@ -102,10 +99,7 @@ fn main() {
                 std::process::exit(1);
             });
             if cli.verbose {
-                eprintln!(
-                    "Converted {} ({}) -> {} ({})",
-                    input, source_id, path, to
-                );
+                eprintln!("Converted {input} ({source_id}) -> {path} ({to})");
                 eprintln!("  Entries: {}", resource.entries.len());
                 if !warnings.is_empty() {
                     eprintln!("  Warnings: {}", warnings.len());
@@ -115,7 +109,7 @@ fn main() {
         None => {
             io::stdout().write_all(&output).unwrap();
             if cli.verbose {
-                eprintln!("Converted {} ({}) -> stdout ({})", input, source_id, to);
+                eprintln!("Converted {input} ({source_id}) -> stdout ({to})");
                 eprintln!("  Entries: {}", resource.entries.len());
                 if !warnings.is_empty() {
                     eprintln!("  Warnings: {}", warnings.len());

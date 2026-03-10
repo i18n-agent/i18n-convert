@@ -96,7 +96,7 @@ impl FormatParser for Parser {
                 Ok(Event::Eof) => break,
                 Ok(Event::Start(ref e)) | Ok(Event::Empty(ref e)) => {
                     let tag_name = String::from_utf8_lossy(e.name().as_ref()).to_string();
-                    let local_name = tag_name.split(':').last().unwrap_or(&tag_name);
+                    let local_name = tag_name.split(':').next_back().unwrap_or(&tag_name);
 
                     match local_name {
                         "tmx" => {
@@ -111,10 +111,14 @@ impl FormatParser for Parser {
                             o_tmf = get_attr(e, b"o-tmf");
 
                             if let Some(ref admin_lang) = get_attr(e, b"adminlang") {
-                                metadata.headers.insert("adminlang".to_string(), admin_lang.clone());
+                                metadata
+                                    .headers
+                                    .insert("adminlang".to_string(), admin_lang.clone());
                             }
                             if let Some(ref datatype) = get_attr(e, b"datatype") {
-                                metadata.headers.insert("datatype".to_string(), datatype.clone());
+                                metadata
+                                    .headers
+                                    .insert("datatype".to_string(), datatype.clone());
                             }
                         }
                         "body" => {
@@ -160,7 +164,7 @@ impl FormatParser for Parser {
                 }
                 Ok(Event::End(ref e)) => {
                     let tag_name = String::from_utf8_lossy(e.name().as_ref()).to_string();
-                    let local_name = tag_name.split(':').last().unwrap_or(&tag_name);
+                    let local_name = tag_name.split(':').next_back().unwrap_or(&tag_name);
 
                     match local_name {
                         "seg" => {
@@ -200,13 +204,15 @@ impl FormatParser for Parser {
                                 let source_lang = metadata.source_locale.as_deref().unwrap_or("en");
 
                                 // Find source and target variants
-                                let source_text = tu.variants.iter()
+                                let source_text = tu
+                                    .variants
+                                    .iter()
                                     .find(|v| v.lang == source_lang)
                                     .map(|v| v.text.clone());
 
                                 // Find the first non-source language as target
-                                let target_variant = tu.variants.iter()
-                                    .find(|v| v.lang != source_lang);
+                                let target_variant =
+                                    tu.variants.iter().find(|v| v.lang != source_lang);
 
                                 let target_text = target_variant.map(|v| v.text.clone());
                                 let target_lang = target_variant.map(|v| v.lang.clone());
@@ -218,14 +224,16 @@ impl FormatParser for Parser {
                                     }
                                 }
 
-                                let comments: Vec<Comment> = tu.notes.iter().map(|n| {
-                                    Comment {
+                                let comments: Vec<Comment> = tu
+                                    .notes
+                                    .iter()
+                                    .map(|n| Comment {
                                         text: n.clone(),
                                         role: CommentRole::General,
                                         priority: None,
                                         annotates: None,
-                                    }
-                                }).collect();
+                                    })
+                                    .collect();
 
                                 let value = target_text
                                     .map(EntryValue::Simple)
@@ -242,7 +250,9 @@ impl FormatParser for Parser {
 
                                 let key = if tu.tuid.is_empty() {
                                     // Generate a key from source text if no tuid
-                                    source_text.clone().unwrap_or_else(|| format!("entry_{}", entries.len()))
+                                    source_text
+                                        .clone()
+                                        .unwrap_or_else(|| format!("entry_{}", entries.len()))
                                 } else {
                                     tu.tuid.clone()
                                 };
@@ -278,10 +288,7 @@ impl FormatParser for Parser {
         }
 
         // Set format extension
-        metadata.format_ext = Some(FormatExtension::Tmx(TmxExt {
-            seg_type,
-            o_tmf,
-        }));
+        metadata.format_ext = Some(FormatExtension::Tmx(TmxExt { seg_type, o_tmf }));
 
         Ok(I18nResource { metadata, entries })
     }
@@ -317,35 +324,41 @@ impl FormatWriter for Writer {
         let mut writer = XmlWriter::new_with_indent(Cursor::new(&mut buf), b' ', 2);
 
         // XML declaration
-        writer.write_event(Event::Decl(BytesDecl::new("1.0", Some("UTF-8"), None)))
+        writer
+            .write_event(Event::Decl(BytesDecl::new("1.0", Some("UTF-8"), None)))
             .map_err(|e| WriteError::Serialization(e.to_string()))?;
 
         // <tmx>
         let mut tmx_start = BytesStart::new("tmx");
         tmx_start.push_attribute(("version", "1.4"));
-        writer.write_event(Event::Start(tmx_start))
+        writer
+            .write_event(Event::Start(tmx_start))
             .map_err(|e| WriteError::Serialization(e.to_string()))?;
 
         // <header>
         let mut header = BytesStart::new("header");
 
-        let tool_name = resource.metadata.tool_name.as_deref().unwrap_or("i18n-convert");
+        let tool_name = resource
+            .metadata
+            .tool_name
+            .as_deref()
+            .unwrap_or("i18n-convert");
         let tool_version = resource.metadata.tool_version.as_deref().unwrap_or("0.1.0");
         header.push_attribute(("creationtool", tool_name));
         header.push_attribute(("creationtoolversion", tool_version));
 
         let (seg_type, o_tmf) = match &resource.metadata.format_ext {
-            Some(FormatExtension::Tmx(ext)) => (
-                ext.seg_type.as_deref(),
-                ext.o_tmf.as_deref(),
-            ),
+            Some(FormatExtension::Tmx(ext)) => (ext.seg_type.as_deref(), ext.o_tmf.as_deref()),
             _ => (None, None),
         };
 
         header.push_attribute(("segtype", seg_type.unwrap_or("sentence")));
         header.push_attribute(("o-tmf", o_tmf.unwrap_or("undefined")));
 
-        let admin_lang = resource.metadata.headers.get("adminlang")
+        let admin_lang = resource
+            .metadata
+            .headers
+            .get("adminlang")
             .map(|s| s.as_str())
             .unwrap_or("en");
         header.push_attribute(("adminlang", admin_lang));
@@ -353,17 +366,22 @@ impl FormatWriter for Writer {
         let src_lang = resource.metadata.source_locale.as_deref().unwrap_or("en");
         header.push_attribute(("srclang", src_lang));
 
-        let datatype = resource.metadata.headers.get("datatype")
+        let datatype = resource
+            .metadata
+            .headers
+            .get("datatype")
             .map(|s| s.as_str())
             .unwrap_or("plaintext");
         header.push_attribute(("datatype", datatype));
 
         // Write as empty element
-        writer.write_event(Event::Empty(header))
+        writer
+            .write_event(Event::Empty(header))
             .map_err(|e| WriteError::Serialization(e.to_string()))?;
 
         // <body>
-        writer.write_event(Event::Start(BytesStart::new("body")))
+        writer
+            .write_event(Event::Start(BytesStart::new("body")))
             .map_err(|e| WriteError::Serialization(e.to_string()))?;
 
         let trg_lang = resource.metadata.locale.as_deref().unwrap_or("");
@@ -373,11 +391,13 @@ impl FormatWriter for Writer {
         }
 
         // </body>
-        writer.write_event(Event::End(BytesEnd::new("body")))
+        writer
+            .write_event(Event::End(BytesEnd::new("body")))
             .map_err(|e| WriteError::Serialization(e.to_string()))?;
 
         // </tmx>
-        writer.write_event(Event::End(BytesEnd::new("tmx")))
+        writer
+            .write_event(Event::End(BytesEnd::new("tmx")))
             .map_err(|e| WriteError::Serialization(e.to_string()))?;
 
         drop(writer);
@@ -408,16 +428,20 @@ impl Writer {
             tu_start.push_attribute(("changeid", ci.as_str()));
         }
 
-        writer.write_event(Event::Start(tu_start))
+        writer
+            .write_event(Event::Start(tu_start))
             .map_err(|e| WriteError::Serialization(e.to_string()))?;
 
         // <note> elements
         for comment in &entry.comments {
-            writer.write_event(Event::Start(BytesStart::new("note")))
+            writer
+                .write_event(Event::Start(BytesStart::new("note")))
                 .map_err(|e| WriteError::Serialization(e.to_string()))?;
-            writer.write_event(Event::Text(BytesText::new(&comment.text)))
+            writer
+                .write_event(Event::Text(BytesText::new(&comment.text)))
                 .map_err(|e| WriteError::Serialization(e.to_string()))?;
-            writer.write_event(Event::End(BytesEnd::new("note")))
+            writer
+                .write_event(Event::End(BytesEnd::new("note")))
                 .map_err(|e| WriteError::Serialization(e.to_string()))?;
         }
 
@@ -428,11 +452,14 @@ impl Writer {
             }
             let mut prop_start = BytesStart::new("prop");
             prop_start.push_attribute(("type", prop_type.as_str()));
-            writer.write_event(Event::Start(prop_start))
+            writer
+                .write_event(Event::Start(prop_start))
                 .map_err(|e| WriteError::Serialization(e.to_string()))?;
-            writer.write_event(Event::Text(BytesText::new(prop_value)))
+            writer
+                .write_event(Event::Text(BytesText::new(prop_value)))
                 .map_err(|e| WriteError::Serialization(e.to_string()))?;
-            writer.write_event(Event::End(BytesEnd::new("prop")))
+            writer
+                .write_event(Event::End(BytesEnd::new("prop")))
                 .map_err(|e| WriteError::Serialization(e.to_string()))?;
         }
 
@@ -457,7 +484,8 @@ impl Writer {
         }
 
         // </tu>
-        writer.write_event(Event::End(BytesEnd::new("tu")))
+        writer
+            .write_event(Event::End(BytesEnd::new("tu")))
             .map_err(|e| WriteError::Serialization(e.to_string()))?;
 
         Ok(())
@@ -471,17 +499,22 @@ impl Writer {
     ) -> Result<(), WriteError> {
         let mut tuv_start = BytesStart::new("tuv");
         tuv_start.push_attribute(("xml:lang", lang));
-        writer.write_event(Event::Start(tuv_start))
+        writer
+            .write_event(Event::Start(tuv_start))
             .map_err(|e| WriteError::Serialization(e.to_string()))?;
 
-        writer.write_event(Event::Start(BytesStart::new("seg")))
+        writer
+            .write_event(Event::Start(BytesStart::new("seg")))
             .map_err(|e| WriteError::Serialization(e.to_string()))?;
-        writer.write_event(Event::Text(BytesText::new(text)))
+        writer
+            .write_event(Event::Text(BytesText::new(text)))
             .map_err(|e| WriteError::Serialization(e.to_string()))?;
-        writer.write_event(Event::End(BytesEnd::new("seg")))
+        writer
+            .write_event(Event::End(BytesEnd::new("seg")))
             .map_err(|e| WriteError::Serialization(e.to_string()))?;
 
-        writer.write_event(Event::End(BytesEnd::new("tuv")))
+        writer
+            .write_event(Event::End(BytesEnd::new("tuv")))
             .map_err(|e| WriteError::Serialization(e.to_string()))?;
 
         Ok(())

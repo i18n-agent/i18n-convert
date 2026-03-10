@@ -24,9 +24,9 @@ impl FormatParser for Parser {
         let root: toml::Value = toml::from_str(s)
             .map_err(|e| ParseError::InvalidFormat(format!("TOML parse error: {e}")))?;
 
-        let table = root.as_table().ok_or_else(|| {
-            ParseError::InvalidFormat("Root must be a TOML table".to_string())
-        })?;
+        let table = root
+            .as_table()
+            .ok_or_else(|| ParseError::InvalidFormat("Root must be a TOML table".to_string()))?;
 
         let mut entries = IndexMap::new();
         flatten_toml_table(table, &mut String::new(), &mut entries);
@@ -34,9 +34,7 @@ impl FormatParser for Parser {
         Ok(I18nResource {
             metadata: ResourceMetadata {
                 source_format: FormatId::Toml,
-                format_ext: Some(FormatExtension::Toml(TomlExt {
-                    table_path: None,
-                })),
+                format_ext: Some(FormatExtension::Toml(TomlExt { table_path: None })),
                 ..Default::default()
             },
             entries,
@@ -172,15 +170,16 @@ impl FormatWriter for Writer {
             let toml_value = match &entry.value {
                 EntryValue::Simple(s) => toml::Value::String(s.clone()),
                 EntryValue::Plural(ps) => toml::Value::String(ps.other.clone()),
-                EntryValue::Array(items) => {
-                    toml::Value::Array(items.iter().map(|s| toml::Value::String(s.clone())).collect())
-                }
+                EntryValue::Array(items) => toml::Value::Array(
+                    items
+                        .iter()
+                        .map(|s| toml::Value::String(s.clone()))
+                        .collect(),
+                ),
                 EntryValue::Select(ss) => {
                     toml::Value::String(ss.cases.get("other").cloned().unwrap_or_default())
                 }
-                EntryValue::MultiVariablePlural(mvp) => {
-                    toml::Value::String(mvp.pattern.clone())
-                }
+                EntryValue::MultiVariablePlural(mvp) => toml::Value::String(mvp.pattern.clone()),
             };
 
             insert_nested_toml(&mut root, &entry.key, toml_value)?;
@@ -219,9 +218,11 @@ fn insert_nested_toml(
             .entry(part.to_string())
             .or_insert_with(|| toml::Value::Table(toml::map::Map::new()))
             .as_table_mut()
-            .ok_or_else(|| WriteError::Serialization(
-                format!("Key path conflict: '{}' is both a value and a table in key '{}'", part, key)
-            ))?;
+            .ok_or_else(|| {
+                WriteError::Serialization(format!(
+                    "Key path conflict: '{part}' is both a value and a table in key '{key}'"
+                ))
+            })?;
     }
 
     let leaf_key = parts[parts.len() - 1];
@@ -311,7 +312,10 @@ mod tests {
 
         assert_eq!(resource.entries.len(), reparsed.entries.len());
         for (key, entry) in &resource.entries {
-            assert_eq!(entry.value, reparsed.entries[key].value, "Mismatch for key: {key}");
+            assert_eq!(
+                entry.value, reparsed.entries[key].value,
+                "Mismatch for key: {key}"
+            );
         }
     }
 
@@ -340,10 +344,7 @@ mod tests {
         let output_str = std::str::from_utf8(&output).expect("valid UTF-8");
 
         let parsed: toml::Value = toml::from_str(output_str).expect("valid TOML");
-        assert_eq!(
-            parsed["messages"]["greeting"].as_str(),
-            Some("Hello")
-        );
+        assert_eq!(parsed["messages"]["greeting"].as_str(), Some("Hello"));
     }
 
     #[test]

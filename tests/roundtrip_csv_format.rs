@@ -1,5 +1,5 @@
-use i18n_convert::formats::{Confidence, FormatParser, FormatWriter};
 use i18n_convert::formats::csv_format::{Parser, Writer};
+use i18n_convert::formats::{Confidence, FormatParser, FormatWriter};
 use i18n_convert::ir::*;
 use indexmap::IndexMap;
 
@@ -76,7 +76,10 @@ fn parse_simple_fixture() {
 
     // Check comments
     assert_eq!(resource.entries["greeting"].comments.len(), 1);
-    assert_eq!(resource.entries["greeting"].comments[0].text, "Main greeting");
+    assert_eq!(
+        resource.entries["greeting"].comments[0].text,
+        "Main greeting"
+    );
 
     // Empty comment should not be added
     assert!(resource.entries["farewell"].comments.is_empty());
@@ -149,7 +152,7 @@ fn parse_tsv_fixture() {
         Some(FormatExtension::Csv(ext)) => {
             assert_eq!(ext.delimiter, Some('\t'));
         }
-        other => panic!("Expected CsvExt, got {:?}", other),
+        other => panic!("Expected CsvExt, got {other:?}"),
     }
 }
 
@@ -164,7 +167,7 @@ fn parse_format_extension_is_set() {
             assert!(ext.key_column.is_some());
             assert!(ext.value_column.is_some());
         }
-        other => panic!("Expected CsvExt, got {:?}", other),
+        other => panic!("Expected CsvExt, got {other:?}"),
     }
 }
 
@@ -344,11 +347,10 @@ fn roundtrip_simple() {
         let reparsed_entry = reparsed
             .entries
             .get(key)
-            .unwrap_or_else(|| panic!("Key '{}' missing after round-trip", key));
+            .unwrap_or_else(|| panic!("Key '{key}' missing after round-trip"));
         assert_eq!(
             original.value, reparsed_entry.value,
-            "Value mismatch for key '{}'",
-            key
+            "Value mismatch for key '{key}'"
         );
     }
 }
@@ -365,11 +367,10 @@ fn roundtrip_quoting() {
         let reparsed_entry = reparsed
             .entries
             .get(key)
-            .unwrap_or_else(|| panic!("Key '{}' missing after round-trip", key));
+            .unwrap_or_else(|| panic!("Key '{key}' missing after round-trip"));
         assert_eq!(
             original.value, reparsed_entry.value,
-            "Value mismatch for key '{}'",
-            key
+            "Value mismatch for key '{key}'"
         );
     }
 }
@@ -386,11 +387,10 @@ fn roundtrip_no_comments() {
         let reparsed_entry = reparsed
             .entries
             .get(key)
-            .unwrap_or_else(|| panic!("Key '{}' missing after round-trip", key));
+            .unwrap_or_else(|| panic!("Key '{key}' missing after round-trip"));
         assert_eq!(
             original.value, reparsed_entry.value,
-            "Value mismatch for key '{}'",
-            key
+            "Value mismatch for key '{key}'"
         );
     }
 }
@@ -407,14 +407,12 @@ fn roundtrip_comments_preserved() {
         assert_eq!(
             original.comments.len(),
             reparsed_entry.comments.len(),
-            "Comment count mismatch for key '{}'",
-            key
+            "Comment count mismatch for key '{key}'"
         );
         for (i, comment) in original.comments.iter().enumerate() {
             assert_eq!(
                 comment.text, reparsed_entry.comments[i].text,
-                "Comment text mismatch for key '{}' comment {}",
-                key, i
+                "Comment text mismatch for key '{key}' comment {i}"
             );
         }
     }
@@ -447,8 +445,7 @@ fn entry_keys_match_entry_key_field() {
     for (map_key, entry) in &resource.entries {
         assert_eq!(
             map_key, &entry.key,
-            "Map key should match entry.key for '{}'",
-            map_key
+            "Map key should match entry.key for '{map_key}'"
         );
     }
 }
@@ -491,6 +488,6 @@ fn parse_csv_with_bom() {
         Some(FormatExtension::Csv(ext)) => {
             assert_eq!(ext.has_bom, Some(true));
         }
-        other => panic!("Expected CsvExt, got {:?}", other),
+        other => panic!("Expected CsvExt, got {other:?}"),
     }
 }

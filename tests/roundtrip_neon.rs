@@ -1,5 +1,5 @@
-use i18n_convert::formats::{FormatParser, FormatWriter, Confidence};
 use i18n_convert::formats::neon::{Parser, Writer};
+use i18n_convert::formats::{Confidence, FormatParser, FormatWriter};
 use i18n_convert::ir::*;
 use indexmap::IndexMap;
 
@@ -38,13 +38,22 @@ fn parse_simple_fixture() {
     assert_eq!(resource.metadata.source_format, FormatId::Neon);
     assert_eq!(resource.entries.len(), 4);
 
-    let greeting = resource.entries.get("greeting").expect("greeting should exist");
+    let greeting = resource
+        .entries
+        .get("greeting")
+        .expect("greeting should exist");
     assert_eq!(greeting.value, EntryValue::Simple("Hello".to_string()));
 
-    let farewell = resource.entries.get("farewell").expect("farewell should exist");
+    let farewell = resource
+        .entries
+        .get("farewell")
+        .expect("farewell should exist");
     assert_eq!(farewell.value, EntryValue::Simple("Goodbye".to_string()));
 
-    let app = resource.entries.get("app_name").expect("app_name should exist");
+    let app = resource
+        .entries
+        .get("app_name")
+        .expect("app_name should exist");
     assert_eq!(app.value, EntryValue::Simple("My App".to_string()));
 
     let welcome = resource
@@ -135,7 +144,7 @@ fn parse_plurals_fixture() {
             assert_eq!(ps.other, "%count% items".to_string());
             assert!(ps.zero.is_none());
         }
-        other => panic!("Expected plural value, got {:?}", other),
+        other => panic!("Expected plural value, got {other:?}"),
     }
 
     let files = resource.entries.get("files").expect("files should exist");
@@ -145,10 +154,13 @@ fn parse_plurals_fixture() {
             assert_eq!(ps.one, Some("%count% file".to_string()));
             assert_eq!(ps.other, "%count% files".to_string());
         }
-        other => panic!("Expected plural value, got {:?}", other),
+        other => panic!("Expected plural value, got {other:?}"),
     }
 
-    let greeting = resource.entries.get("greeting").expect("greeting should exist");
+    let greeting = resource
+        .entries
+        .get("greeting")
+        .expect("greeting should exist");
     assert_eq!(greeting.value, EntryValue::Simple("Hello".to_string()));
 }
 
@@ -162,15 +174,24 @@ fn parse_comments_fixture() {
     let parser = Parser;
     let resource = parser.parse(content).expect("parse should succeed");
 
-    let greeting = resource.entries.get("greeting").expect("greeting should exist");
+    let greeting = resource
+        .entries
+        .get("greeting")
+        .expect("greeting should exist");
     assert_eq!(greeting.comments.len(), 1);
     assert_eq!(greeting.comments[0].text, "Application strings");
 
-    let farewell = resource.entries.get("farewell").expect("farewell should exist");
+    let farewell = resource
+        .entries
+        .get("farewell")
+        .expect("farewell should exist");
     assert_eq!(farewell.comments.len(), 1);
     assert_eq!(farewell.comments[0].text, "Farewell message shown on exit");
 
-    let app = resource.entries.get("app_name").expect("app_name should exist");
+    let app = resource
+        .entries
+        .get("app_name")
+        .expect("app_name should exist");
     assert!(app.comments.is_empty());
 
     let home = resource
@@ -195,7 +216,7 @@ fn parse_sets_format_extension() {
         Some(FormatExtension::Neon(ext)) => {
             assert_eq!(*ext, NeonExt {});
         }
-        other => panic!("Expected Neon extension, got {:?}", other),
+        other => panic!("Expected Neon extension, got {other:?}"),
     }
 }
 
@@ -355,9 +376,12 @@ fn roundtrip_simple() {
 
     for (key, original) in &resource.entries {
         let reparsed_entry = reparsed.entries.get(key).unwrap_or_else(|| {
-            panic!("Key '{}' missing after round-trip", key);
+            panic!("Key '{key}' missing after round-trip");
         });
-        assert_eq!(original.value, reparsed_entry.value, "Value mismatch for key '{}'", key);
+        assert_eq!(
+            original.value, reparsed_entry.value,
+            "Value mismatch for key '{key}'"
+        );
     }
 }
 
@@ -375,9 +399,12 @@ fn roundtrip_nested() {
 
     for (key, original) in &resource.entries {
         let reparsed_entry = reparsed.entries.get(key).unwrap_or_else(|| {
-            panic!("Key '{}' missing after round-trip", key);
+            panic!("Key '{key}' missing after round-trip");
         });
-        assert_eq!(original.value, reparsed_entry.value, "Value mismatch for key '{}'", key);
+        assert_eq!(
+            original.value, reparsed_entry.value,
+            "Value mismatch for key '{key}'"
+        );
     }
 }
 
@@ -395,9 +422,12 @@ fn roundtrip_plurals() {
 
     for (key, original) in &resource.entries {
         let reparsed_entry = reparsed.entries.get(key).unwrap_or_else(|| {
-            panic!("Key '{}' missing after round-trip", key);
+            panic!("Key '{key}' missing after round-trip");
         });
-        assert_eq!(original.value, reparsed_entry.value, "Value mismatch for key '{}'", key);
+        assert_eq!(
+            original.value, reparsed_entry.value,
+            "Value mismatch for key '{key}'"
+        );
     }
 }
 
@@ -431,7 +461,10 @@ fn parse_quoted_values() {
     assert_eq!(single.value, EntryValue::Simple("Hello World".to_string()));
 
     let double = resource.entries.get("double").expect("should exist");
-    assert_eq!(double.value, EntryValue::Simple("Goodbye World".to_string()));
+    assert_eq!(
+        double.value,
+        EntryValue::Simple("Goodbye World".to_string())
+    );
 }
 
 #[test]
@@ -530,7 +563,7 @@ fn roundtrip_preserves_entry_count() {
             assert_eq!(ps.one, Some("1 item".to_string()));
             assert_eq!(ps.other, "many items");
         }
-        other => panic!("Expected plural, got {:?}", other),
+        other => panic!("Expected plural, got {other:?}"),
     }
 }
 

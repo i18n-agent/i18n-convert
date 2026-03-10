@@ -145,7 +145,7 @@ impl FormatParser for Parser {
                 Ok(Event::Eof) => break,
                 Ok(Event::Start(ref e)) | Ok(Event::Empty(ref e)) => {
                     let tag_name = String::from_utf8_lossy(e.name().as_ref()).to_string();
-                    let local_name = tag_name.split(':').last().unwrap_or(&tag_name);
+                    let local_name = tag_name.split(':').next_back().unwrap_or(&tag_name);
 
                     match local_name {
                         "xliff" => {
@@ -212,7 +212,7 @@ impl FormatParser for Parser {
                 }
                 Ok(Event::End(ref e)) => {
                     let tag_name = String::from_utf8_lossy(e.name().as_ref()).to_string();
-                    let local_name = tag_name.split(':').last().unwrap_or(&tag_name);
+                    let local_name = tag_name.split(':').next_back().unwrap_or(&tag_name);
 
                     match local_name {
                         "source" => {
@@ -247,19 +247,23 @@ impl FormatParser for Parser {
                         }
                         "unit" => {
                             if let Some(unit) = current_unit.take() {
-                                let comments: Vec<Comment> = unit.notes.iter().map(|n| {
-                                    Comment {
+                                let comments: Vec<Comment> = unit
+                                    .notes
+                                    .iter()
+                                    .map(|n| Comment {
                                         text: n.text.clone(),
                                         role: map_note_role(n.category.as_deref()),
                                         priority: n.priority,
                                         annotates: None,
-                                    }
-                                }).collect();
+                                    })
+                                    .collect();
 
-                                let target_state = unit.segment_state.as_deref()
-                                    .and_then(map_xliff2_state);
+                                let target_state =
+                                    unit.segment_state.as_deref().and_then(map_xliff2_state);
 
-                                let value = unit.target.clone()
+                                let value = unit
+                                    .target
+                                    .clone()
                                     .map(EntryValue::Simple)
                                     .unwrap_or_else(|| EntryValue::Simple(String::new()));
 
@@ -343,7 +347,8 @@ impl FormatWriter for Writer {
         let mut writer = XmlWriter::new_with_indent(Cursor::new(&mut buf), b' ', 2);
 
         // XML declaration
-        writer.write_event(Event::Decl(BytesDecl::new("1.0", Some("UTF-8"), None)))
+        writer
+            .write_event(Event::Decl(BytesDecl::new("1.0", Some("UTF-8"), None)))
             .map_err(|e| WriteError::Serialization(e.to_string()))?;
 
         // <xliff>
@@ -356,7 +361,8 @@ impl FormatWriter for Writer {
         if let Some(ref tl) = resource.metadata.locale {
             xliff_start.push_attribute(("trgLang", tl.as_str()));
         }
-        writer.write_event(Event::Start(xliff_start))
+        writer
+            .write_event(Event::Start(xliff_start))
             .map_err(|e| WriteError::Serialization(e.to_string()))?;
 
         // <file>
@@ -365,9 +371,7 @@ impl FormatWriter for Writer {
 
         // Extract original from extension
         let original = match &resource.metadata.format_ext {
-            Some(FormatExtension::Xliff2(ext)) => {
-                ext.original_data.get("original").cloned()
-            }
+            Some(FormatExtension::Xliff2(ext)) => ext.original_data.get("original").cloned(),
             _ => None,
         };
 
@@ -375,7 +379,8 @@ impl FormatWriter for Writer {
             file_start.push_attribute(("original", orig.as_str()));
         }
 
-        writer.write_event(Event::Start(file_start))
+        writer
+            .write_event(Event::Start(file_start))
             .map_err(|e| WriteError::Serialization(e.to_string()))?;
 
         for (_key, entry) in &resource.entries {
@@ -383,11 +388,13 @@ impl FormatWriter for Writer {
         }
 
         // </file>
-        writer.write_event(Event::End(BytesEnd::new("file")))
+        writer
+            .write_event(Event::End(BytesEnd::new("file")))
             .map_err(|e| WriteError::Serialization(e.to_string()))?;
 
         // </xliff>
-        writer.write_event(Event::End(BytesEnd::new("xliff")))
+        writer
+            .write_event(Event::End(BytesEnd::new("xliff")))
             .map_err(|e| WriteError::Serialization(e.to_string()))?;
 
         drop(writer);
@@ -407,12 +414,14 @@ impl Writer {
     ) -> Result<(), WriteError> {
         let mut unit_start = BytesStart::new("unit");
         unit_start.push_attribute(("id", entry.key.as_str()));
-        writer.write_event(Event::Start(unit_start))
+        writer
+            .write_event(Event::Start(unit_start))
             .map_err(|e| WriteError::Serialization(e.to_string()))?;
 
         // <notes> with <note> elements
         if !entry.comments.is_empty() {
-            writer.write_event(Event::Start(BytesStart::new("notes")))
+            writer
+                .write_event(Event::Start(BytesStart::new("notes")))
                 .map_err(|e| WriteError::Serialization(e.to_string()))?;
 
             for comment in &entry.comments {
@@ -424,15 +433,19 @@ impl Writer {
                     let p_str = priority.to_string();
                     note_start.push_attribute(("priority", p_str.as_str()));
                 }
-                writer.write_event(Event::Start(note_start))
+                writer
+                    .write_event(Event::Start(note_start))
                     .map_err(|e| WriteError::Serialization(e.to_string()))?;
-                writer.write_event(Event::Text(BytesText::new(&comment.text)))
+                writer
+                    .write_event(Event::Text(BytesText::new(&comment.text)))
                     .map_err(|e| WriteError::Serialization(e.to_string()))?;
-                writer.write_event(Event::End(BytesEnd::new("note")))
+                writer
+                    .write_event(Event::End(BytesEnd::new("note")))
                     .map_err(|e| WriteError::Serialization(e.to_string()))?;
             }
 
-            writer.write_event(Event::End(BytesEnd::new("notes")))
+            writer
+                .write_event(Event::End(BytesEnd::new("notes")))
                 .map_err(|e| WriteError::Serialization(e.to_string()))?;
         }
 
@@ -441,16 +454,20 @@ impl Writer {
         if let Some(ref state) = entry.state {
             segment_start.push_attribute(("state", state_to_xliff2(state)));
         }
-        writer.write_event(Event::Start(segment_start))
+        writer
+            .write_event(Event::Start(segment_start))
             .map_err(|e| WriteError::Serialization(e.to_string()))?;
 
         // <source>
         if let Some(ref source) = entry.source {
-            writer.write_event(Event::Start(BytesStart::new("source")))
+            writer
+                .write_event(Event::Start(BytesStart::new("source")))
                 .map_err(|e| WriteError::Serialization(e.to_string()))?;
-            writer.write_event(Event::Text(BytesText::new(source)))
+            writer
+                .write_event(Event::Text(BytesText::new(source)))
                 .map_err(|e| WriteError::Serialization(e.to_string()))?;
-            writer.write_event(Event::End(BytesEnd::new("source")))
+            writer
+                .write_event(Event::End(BytesEnd::new("source")))
                 .map_err(|e| WriteError::Serialization(e.to_string()))?;
         }
 
@@ -465,21 +482,26 @@ impl Writer {
 
         if let Some(ref text) = target_text {
             if !text.is_empty() {
-                writer.write_event(Event::Start(BytesStart::new("target")))
+                writer
+                    .write_event(Event::Start(BytesStart::new("target")))
                     .map_err(|e| WriteError::Serialization(e.to_string()))?;
-                writer.write_event(Event::Text(BytesText::new(text)))
+                writer
+                    .write_event(Event::Text(BytesText::new(text)))
                     .map_err(|e| WriteError::Serialization(e.to_string()))?;
-                writer.write_event(Event::End(BytesEnd::new("target")))
+                writer
+                    .write_event(Event::End(BytesEnd::new("target")))
                     .map_err(|e| WriteError::Serialization(e.to_string()))?;
             }
         }
 
         // </segment>
-        writer.write_event(Event::End(BytesEnd::new("segment")))
+        writer
+            .write_event(Event::End(BytesEnd::new("segment")))
             .map_err(|e| WriteError::Serialization(e.to_string()))?;
 
         // </unit>
-        writer.write_event(Event::End(BytesEnd::new("unit")))
+        writer
+            .write_event(Event::End(BytesEnd::new("unit")))
             .map_err(|e| WriteError::Serialization(e.to_string()))?;
 
         Ok(())

@@ -68,7 +68,7 @@ fn parse_simple() {
     assert_eq!(resource.metadata.source_locale, Some("en_US".to_string()));
 
     // Check Hello entry
-    let hello_key = format!("MainWindow{}Hello", CTX_SEP);
+    let hello_key = format!("MainWindow{CTX_SEP}Hello");
     let hello = &resource.entries[&hello_key];
     assert_eq!(hello.source, Some("Hello".to_string()));
     assert_eq!(hello.value, EntryValue::Simple("Hallo".to_string()));
@@ -77,13 +77,10 @@ fn parse_simple() {
     // Check context
     assert_eq!(hello.contexts.len(), 1);
     assert_eq!(hello.contexts[0].value, "MainWindow");
-    assert_eq!(
-        hello.contexts[0].context_type,
-        ContextType::Disambiguation
-    );
+    assert_eq!(hello.contexts[0].context_type, ContextType::Disambiguation);
 
     // Check Goodbye entry
-    let goodbye_key = format!("MainWindow{}Goodbye", CTX_SEP);
+    let goodbye_key = format!("MainWindow{CTX_SEP}Goodbye");
     let goodbye = &resource.entries[&goodbye_key];
     assert_eq!(goodbye.source, Some("Goodbye".to_string()));
     assert_eq!(
@@ -106,25 +103,25 @@ fn parse_states() {
     assert_eq!(resource.entries.len(), 4);
 
     // Translated (no type attribute)
-    let translated_key = format!("Dialog{}Translated text", CTX_SEP);
+    let translated_key = format!("Dialog{CTX_SEP}Translated text");
     let translated = &resource.entries[&translated_key];
     assert_eq!(translated.state, Some(TranslationState::Translated));
     assert!(!translated.obsolete);
 
     // Unfinished -> NeedsReview
-    let unfinished_key = format!("Dialog{}Unfinished text", CTX_SEP);
+    let unfinished_key = format!("Dialog{CTX_SEP}Unfinished text");
     let unfinished = &resource.entries[&unfinished_key];
     assert_eq!(unfinished.state, Some(TranslationState::NeedsReview));
     assert!(!unfinished.obsolete);
 
     // Obsolete
-    let obsolete_key = format!("Dialog{}Obsolete text", CTX_SEP);
+    let obsolete_key = format!("Dialog{CTX_SEP}Obsolete text");
     let obsolete = &resource.entries[&obsolete_key];
     assert_eq!(obsolete.state, Some(TranslationState::Obsolete));
     assert!(obsolete.obsolete);
 
     // Vanished
-    let vanished_key = format!("Dialog{}Vanished text", CTX_SEP);
+    let vanished_key = format!("Dialog{CTX_SEP}Vanished text");
     let vanished = &resource.entries[&vanished_key];
     assert_eq!(vanished.state, Some(TranslationState::Vanished));
     assert!(vanished.obsolete);
@@ -144,7 +141,7 @@ fn parse_plurals() {
     assert_eq!(resource.entries.len(), 2);
 
     // Plural entry
-    let plural_key = format!("FileDialog{}%n file(s)", CTX_SEP);
+    let plural_key = format!("FileDialog{CTX_SEP}%n file(s)");
     let plural_entry = &resource.entries[&plural_key];
     assert_eq!(plural_entry.source, Some("%n file(s)".to_string()));
 
@@ -153,7 +150,7 @@ fn parse_plurals() {
             assert_eq!(plural_set.one, Some("%n Datei".to_string()));
             assert_eq!(plural_set.other, "%n Dateien".to_string());
         }
-        other => panic!("Expected Plural value, got {:?}", other),
+        other => panic!("Expected Plural value, got {other:?}"),
     }
 
     // Check numerus flag in extension
@@ -161,16 +158,13 @@ fn parse_plurals() {
         Some(FormatExtension::QtLinguist(ext)) => {
             assert_eq!(ext.numerus, Some(true));
         }
-        other => panic!("Expected QtLinguistExt, got {:?}", other),
+        other => panic!("Expected QtLinguistExt, got {other:?}"),
     }
 
     // Non-plural entry in same context
-    let open_key = format!("FileDialog{}Open", CTX_SEP);
+    let open_key = format!("FileDialog{CTX_SEP}Open");
     let open_entry = &resource.entries[&open_key];
-    assert_eq!(
-        open_entry.value,
-        EntryValue::Simple("Oeffnen".to_string())
-    );
+    assert_eq!(open_entry.value, EntryValue::Simple("Oeffnen".to_string()));
 }
 
 // ---------------------------------------------------------------------------
@@ -187,7 +181,7 @@ fn parse_full() {
     assert_eq!(resource.entries.len(), 5);
 
     // Hello entry: location, comments, oldsource, oldcomment, extra elements
-    let hello_key = format!("MainWindow{}Hello", CTX_SEP);
+    let hello_key = format!("MainWindow{CTX_SEP}Hello");
     let hello = &resource.entries[&hello_key];
 
     // Source references (locations)
@@ -219,24 +213,24 @@ fn parse_full() {
                 Some(&"Hellos".to_string())
             );
         }
-        other => panic!("Expected QtLinguistExt, got {:?}", other),
+        other => panic!("Expected QtLinguistExt, got {other:?}"),
     }
 
     // Quit entry: unfinished
-    let quit_key = format!("MainWindow{}Quit", CTX_SEP);
+    let quit_key = format!("MainWindow{CTX_SEP}Quit");
     let quit = &resource.entries[&quit_key];
     assert_eq!(quit.state, Some(TranslationState::NeedsReview));
     assert_eq!(quit.comments.len(), 1);
     assert_eq!(quit.comments[0].text, "Menu action to quit the application");
 
     // About entry: obsolete
-    let about_key = format!("MainWindow{}About", CTX_SEP);
+    let about_key = format!("MainWindow{CTX_SEP}About");
     let about = &resource.entries[&about_key];
     assert_eq!(about.state, Some(TranslationState::Obsolete));
     assert!(about.obsolete);
 
     // Settings entry in different context
-    let settings_key = format!("SettingsDialog{}Settings", CTX_SEP);
+    let settings_key = format!("SettingsDialog{CTX_SEP}Settings");
     let settings = &resource.entries[&settings_key];
     assert_eq!(
         settings.value,
@@ -443,7 +437,7 @@ fn roundtrip_full() {
     }
 
     // Verify extra elements round-trip
-    let hello_key = format!("MainWindow{}Hello", CTX_SEP);
+    let hello_key = format!("MainWindow{CTX_SEP}Hello");
     let hello = &resource.entries[&hello_key];
     let rt_hello = &reparsed.entries[&hello_key];
     match (&hello.format_ext, &rt_hello.format_ext) {

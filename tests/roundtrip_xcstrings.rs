@@ -1,5 +1,5 @@
-use i18n_convert::formats::{FormatParser, FormatWriter, Confidence};
 use i18n_convert::formats::xcstrings::{Parser, Writer};
+use i18n_convert::formats::{Confidence, FormatParser, FormatWriter};
 use i18n_convert::ir::*;
 use indexmap::IndexMap;
 
@@ -11,7 +11,7 @@ fn fixture(name: &str) -> Vec<u8> {
         env!("CARGO_MANIFEST_DIR"),
         name
     );
-    std::fs::read(&path).unwrap_or_else(|e| panic!("Failed to read fixture {}: {}", path, e))
+    std::fs::read(&path).unwrap_or_else(|e| panic!("Failed to read fixture {path}: {e}"))
 }
 
 fn parse(name: &str) -> I18nResource {
@@ -22,10 +22,10 @@ fn parse(name: &str) -> I18nResource {
 fn round_trip(name: &str) -> I18nResource {
     let resource = parse(name);
     let written = Writer.write(&resource).expect("write failed");
-    let re_parsed = Parser
+
+    Parser
         .parse(&written)
-        .expect("re-parse after round-trip failed");
-    re_parsed
+        .expect("re-parse after round-trip failed")
 }
 
 /// Parse the raw JSON back into serde_json::Value for structural comparison.
@@ -38,36 +38,24 @@ fn write_to_json(resource: &I18nResource) -> serde_json::Value {
 
 #[test]
 fn detect_xcstrings_extension() {
-    assert_eq!(
-        Parser.detect(".xcstrings", b"{}"),
-        Confidence::Definite,
-    );
+    assert_eq!(Parser.detect(".xcstrings", b"{}"), Confidence::Definite,);
 }
 
 #[test]
 fn detect_json_with_xcstrings_content() {
     let content = br#"{"sourceLanguage":"en","strings":{}}"#;
-    assert_eq!(
-        Parser.detect(".json", content),
-        Confidence::High,
-    );
+    assert_eq!(Parser.detect(".json", content), Confidence::High,);
 }
 
 #[test]
 fn detect_json_without_xcstrings_content() {
     let content = br#"{"key":"value"}"#;
-    assert_eq!(
-        Parser.detect(".json", content),
-        Confidence::None,
-    );
+    assert_eq!(Parser.detect(".json", content), Confidence::None,);
 }
 
 #[test]
 fn detect_other_extension() {
-    assert_eq!(
-        Parser.detect(".xml", b"{}"),
-        Confidence::None,
-    );
+    assert_eq!(Parser.detect(".xml", b"{}"), Confidence::None,);
 }
 
 // ─── Simple strings ───────────────────────────────────────────────────
@@ -124,7 +112,9 @@ fn parse_simple_stores_other_locales() {
     let greeting = resource.entries.get("greeting").expect("missing greeting");
     // The Japanese localization should be stored in properties
     assert!(
-        greeting.properties.contains_key("xcstrings.localization.ja"),
+        greeting
+            .properties
+            .contains_key("xcstrings.localization.ja"),
         "Expected ja localization in properties"
     );
 }
@@ -141,12 +131,11 @@ fn roundtrip_simple() {
     for key in original.entries.keys() {
         let orig = &original.entries[key];
         let rted = rt.entries.get(key).expect("missing key in round-trip");
-        assert_eq!(orig.value, rted.value, "value mismatch for key {}", key);
+        assert_eq!(orig.value, rted.value, "value mismatch for key {key}");
         assert_eq!(
             orig.comments.len(),
             rted.comments.len(),
-            "comment count mismatch for key {}",
-            key
+            "comment count mismatch for key {key}"
         );
     }
 }
@@ -228,9 +217,7 @@ fn roundtrip_plurals() {
 
     // Arabic localization should survive round-trip
     assert!(
-        rt_item
-            .properties
-            .contains_key("xcstrings.localization.ar"),
+        rt_item.properties.contains_key("xcstrings.localization.ar"),
         "Arabic localization lost in round-trip"
     );
 }
@@ -273,22 +260,25 @@ fn parse_device_variants() {
     }
 
     // Device variants should be populated
-    let dv = share.device_variants.as_ref().expect("missing device_variants");
+    let dv = share
+        .device_variants
+        .as_ref()
+        .expect("missing device_variants");
     assert!(dv.contains_key(&DeviceType::Phone));
     assert!(dv.contains_key(&DeviceType::Tablet));
     assert!(dv.contains_key(&DeviceType::Desktop));
 
     match dv.get(&DeviceType::Phone) {
         Some(EntryValue::Simple(v)) => assert_eq!(v, "Tap to share"),
-        other => panic!("Expected Simple for Phone, got {:?}", other),
+        other => panic!("Expected Simple for Phone, got {other:?}"),
     }
     match dv.get(&DeviceType::Tablet) {
         Some(EntryValue::Simple(v)) => assert_eq!(v, "Tap or click to share"),
-        other => panic!("Expected Simple for Tablet, got {:?}", other),
+        other => panic!("Expected Simple for Tablet, got {other:?}"),
     }
     match dv.get(&DeviceType::Desktop) {
         Some(EntryValue::Simple(v)) => assert_eq!(v, "Click to share"),
-        other => panic!("Expected Simple for Desktop, got {:?}", other),
+        other => panic!("Expected Simple for Desktop, got {other:?}"),
     }
 }
 
@@ -300,7 +290,10 @@ fn parse_device_variants_extended() {
         .get("input_prompt")
         .expect("missing input_prompt");
 
-    let dv = input.device_variants.as_ref().expect("missing device_variants");
+    let dv = input
+        .device_variants
+        .as_ref()
+        .expect("missing device_variants");
     assert!(dv.contains_key(&DeviceType::Phone));
     assert!(dv.contains_key(&DeviceType::TV));
     assert!(dv.contains_key(&DeviceType::Watch));
@@ -332,7 +325,10 @@ fn write_device_variants_structure() {
     let device = &en_loc["variations"]["device"];
 
     assert_eq!(device["iphone"]["stringUnit"]["value"], "Tap to share");
-    assert_eq!(device["ipad"]["stringUnit"]["value"], "Tap or click to share");
+    assert_eq!(
+        device["ipad"]["stringUnit"]["value"],
+        "Tap or click to share"
+    );
     assert_eq!(device["mac"]["stringUnit"]["value"], "Click to share");
     assert_eq!(device["other"]["stringUnit"]["value"], "Share");
 }
@@ -413,7 +409,10 @@ fn parse_full_substitutions() {
             assert_eq!(mvp.pattern, "%#@files@ in %#@folders@");
             assert_eq!(mvp.variables.len(), 2);
 
-            let files = mvp.variables.get("files").expect("missing 'files' variable");
+            let files = mvp
+                .variables
+                .get("files")
+                .expect("missing 'files' variable");
             assert_eq!(files.arg_num, Some(1));
             assert_eq!(files.format_specifier, Some("lld".to_string()));
             assert_eq!(files.plural_set.one, Some("%arg file".to_string()));
@@ -445,13 +444,15 @@ fn roundtrip_full() {
     // Check every entry's value survived
     for key in original.entries.keys() {
         let orig = &original.entries[key];
-        let rted = rt.entries.get(key).expect(&format!("missing key {} in round-trip", key));
-        assert_eq!(orig.value, rted.value, "value mismatch for key {}", key);
-        assert_eq!(orig.state, rted.state, "state mismatch for key {}", key);
+        let rted = rt
+            .entries
+            .get(key)
+            .unwrap_or_else(|| panic!("missing key {key} in round-trip"));
+        assert_eq!(orig.value, rted.value, "value mismatch for key {key}");
+        assert_eq!(orig.state, rted.state, "state mismatch for key {key}");
         assert_eq!(
             orig.translatable, rted.translatable,
-            "translatable mismatch for key {}",
-            key
+            "translatable mismatch for key {key}"
         );
     }
 }
@@ -477,7 +478,10 @@ fn write_full_should_translate() {
     let resource = parse("full.xcstrings");
     let json = write_to_json(&resource);
 
-    assert_eq!(json["strings"]["do_not_translate"]["shouldTranslate"], false);
+    assert_eq!(
+        json["strings"]["do_not_translate"]["shouldTranslate"],
+        false
+    );
     // Entries without shouldTranslate=false should not have the field
     assert!(json["strings"]["welcome_message"]["shouldTranslate"].is_null());
 }
@@ -491,10 +495,7 @@ fn write_full_extraction_state() {
         json["strings"]["welcome_message"]["extractionState"],
         "extracted_with_value"
     );
-    assert_eq!(
-        json["strings"]["stale_entry"]["extractionState"],
-        "stale"
-    );
+    assert_eq!(json["strings"]["stale_entry"]["extractionState"], "stale");
 }
 
 // ─── Construct from scratch and write ─────────────────────────────────

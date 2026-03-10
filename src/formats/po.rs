@@ -19,7 +19,7 @@ struct PoBlock {
     msgctxt: Option<String>,
     msgid: String,
     msgid_plural: Option<String>,
-    msgstr: Option<String>,            // for non-plural
+    msgstr: Option<String>,               // for non-plural
     msgstr_plural: IndexMap<u32, String>, // msgstr[N]
     obsolete: bool,
 }
@@ -111,10 +111,10 @@ fn parse_blocks(content: &str) -> Vec<PoBlock> {
         }
 
         // Handle obsolete entries (#~ ...)
-        if trimmed.starts_with("#~") {
+        if let Some(stripped) = trimmed.strip_prefix("#~") {
             in_block = true;
             current.obsolete = true;
-            let rest = trimmed[2..].trim();
+            let rest = stripped.trim();
             // Parse the actual keyword from the obsolete line
             if let Some(val) = extract_keyword_value(rest, "msgid") {
                 current.msgid = val;
@@ -134,26 +134,26 @@ fn parse_blocks(content: &str) -> Vec<PoBlock> {
             in_block = true;
             current_field = None;
 
-            if trimmed.starts_with("#.") {
+            if let Some(stripped) = trimmed.strip_prefix("#.") {
                 // Extracted comment
-                let text = trimmed[2..].trim().to_string();
+                let text = stripped.trim().to_string();
                 current.extracted_comments.push(text);
-            } else if trimmed.starts_with("#:") {
+            } else if let Some(stripped) = trimmed.strip_prefix("#:") {
                 // Reference
-                let text = trimmed[2..].trim().to_string();
+                let text = stripped.trim().to_string();
                 current.references.push(text);
-            } else if trimmed.starts_with("#,") {
+            } else if let Some(stripped) = trimmed.strip_prefix("#,") {
                 // Flags
-                let text = trimmed[2..].trim();
+                let text = stripped.trim();
                 for flag in text.split(',') {
                     let flag = flag.trim().to_string();
                     if !flag.is_empty() {
                         current.flags.push(flag);
                     }
                 }
-            } else if trimmed.starts_with("#|") {
+            } else if let Some(stripped) = trimmed.strip_prefix("#|") {
                 // Previous msgid
-                let rest = trimmed[2..].trim();
+                let rest = stripped.trim();
                 if let Some(val) = extract_keyword_value(rest, "msgid") {
                     current.previous_msgid = Some(val);
                 } else if let Some(existing) = &current.previous_msgid {
@@ -316,7 +316,7 @@ fn parse_nplurals(plural_forms: &str) -> u32 {
 /// If msgctxt is present, the key is "msgctxt\x04msgid" (standard PO convention).
 fn make_entry_key(msgctxt: &Option<String>, msgid: &str) -> String {
     match msgctxt {
-        Some(ctx) => format!("{}\x04{}", ctx, msgid),
+        Some(ctx) => format!("{ctx}\x04{msgid}"),
         None => msgid.to_string(),
     }
 }
@@ -367,7 +367,7 @@ impl FormatParser for Parser {
 
     fn parse(&self, content: &[u8]) -> Result<I18nResource, ParseError> {
         let text = std::str::from_utf8(content)
-            .map_err(|e| ParseError::InvalidFormat(format!("Invalid UTF-8: {}", e)))?;
+            .map_err(|e| ParseError::InvalidFormat(format!("Invalid UTF-8: {e}")))?;
 
         let blocks = parse_blocks(text);
         let mut metadata = ResourceMetadata {
@@ -556,16 +556,19 @@ impl FormatParser for Parser {
 fn format_po_string(s: &str) -> Vec<String> {
     let escaped = po_escape(s);
     // If the string contains literal \n (i.e., the escaped form), split into multiline
-    if escaped.contains("\\n") && escaped != "\\n" && escaped.len() > escaped.find("\\n").unwrap_or(0) + 2 {
+    if escaped.contains("\\n")
+        && escaped != "\\n"
+        && escaped.len() > escaped.find("\\n").unwrap_or(0) + 2
+    {
         let mut lines = Vec::new();
         lines.push("\"\"".to_string());
         // Split on \n but keep the \n at the end of each segment
         let parts: Vec<&str> = escaped.split("\\n").collect();
         for (i, part) in parts.iter().enumerate() {
             if i < parts.len() - 1 {
-                lines.push(format!("\"{}\\n\"", part));
+                lines.push(format!("\"{part}\\n\""));
             } else if !part.is_empty() {
-                lines.push(format!("\"{}\"", part));
+                lines.push(format!("\"{part}\""));
             }
         }
         lines
@@ -660,7 +663,7 @@ fn write_header(out: &mut String, resource: &I18nResource) {
     // Write header translator comments from PoExt
     if let Some(FormatExtension::Po(ref ext)) = resource.metadata.format_ext {
         for comment in &ext.translator_comments {
-            out.push_str(&format!("# {}\n", comment));
+            out.push_str(&format!("# {comment}\n"));
         }
     }
 
@@ -732,7 +735,7 @@ fn write_entry(out: &mut String, entry: &I18nEntry, nplurals: u32) {
             let lines = format_po_string(&ctx.value);
             out.push_str(&format!("msgctxt {}\n", lines[0]));
             for line in &lines[1..] {
-                out.push_str(&format!("{}\n", line));
+                out.push_str(&format!("{line}\n"));
             }
         }
     }
@@ -742,7 +745,7 @@ fn write_entry(out: &mut String, entry: &I18nEntry, nplurals: u32) {
     let lines = format_po_string(msgid);
     out.push_str(&format!("msgid {}\n", lines[0]));
     for line in &lines[1..] {
-        out.push_str(&format!("{}\n", line));
+        out.push_str(&format!("{line}\n"));
     }
 
     match &entry.value {
@@ -750,16 +753,18 @@ fn write_entry(out: &mut String, entry: &I18nEntry, nplurals: u32) {
             // Write msgid_plural
             // We need the plural source form. Check if there's a msgid_plural stored.
             // For round-trip, we store msgid_plural in entry properties.
-            let msgid_plural = entry.properties.get("msgid_plural")
+            let msgid_plural = entry
+                .properties
+                .get("msgid_plural")
                 .cloned()
                 .unwrap_or_else(|| {
                     // Fallback: use msgid + "s" or the source
-                    format!("{}s", msgid)
+                    format!("{msgid}s")
                 });
             let lines = format_po_string(&msgid_plural);
             out.push_str(&format!("msgid_plural {}\n", lines[0]));
             for line in &lines[1..] {
-                out.push_str(&format!("{}\n", line));
+                out.push_str(&format!("{line}\n"));
             }
 
             // Write msgstr[N] for each plural form
@@ -787,7 +792,7 @@ fn write_entry(out: &mut String, entry: &I18nEntry, nplurals: u32) {
                 let lines = format_po_string(val);
                 out.push_str(&format!("msgstr[{}] {}\n", i, lines[0]));
                 for line in &lines[1..] {
-                    out.push_str(&format!("{}\n", line));
+                    out.push_str(&format!("{line}\n"));
                 }
             }
         }
@@ -795,7 +800,7 @@ fn write_entry(out: &mut String, entry: &I18nEntry, nplurals: u32) {
             let lines = format_po_string(val);
             out.push_str(&format!("msgstr {}\n", lines[0]));
             for line in &lines[1..] {
-                out.push_str(&format!("{}\n", line));
+                out.push_str(&format!("{line}\n"));
             }
         }
         _ => {
@@ -821,7 +826,10 @@ mod tests {
     fn test_extract_quoted() {
         assert_eq!(extract_quoted("\"hello\""), Some("hello".to_string()));
         assert_eq!(extract_quoted("\"\""), Some("".to_string()));
-        assert_eq!(extract_quoted("\"hello\\nworld\""), Some("hello\nworld".to_string()));
+        assert_eq!(
+            extract_quoted("\"hello\\nworld\""),
+            Some("hello\nworld".to_string())
+        );
         assert_eq!(extract_quoted("not quoted"), None);
     }
 

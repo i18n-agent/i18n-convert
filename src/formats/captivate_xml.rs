@@ -20,6 +20,7 @@ pub struct Writer;
 // ---------------------------------------------------------------------------
 
 #[derive(Debug, Clone, PartialEq)]
+#[allow(dead_code)]
 enum ParseState {
     Root,
     File,
@@ -89,10 +90,7 @@ fn role_to_from(role: &CommentRole) -> Option<&'static str> {
 /// Parse slide_id and item_id from a trans-unit id like "slide_1_item_2"
 fn parse_slide_item_id(id: &str) -> (Option<String>, Option<String>) {
     if let Some(caps) = RE_SLIDE_ITEM_ID.captures(id) {
-        (
-            Some(caps[1].to_string()),
-            Some(caps[2].to_string()),
-        )
+        (Some(caps[1].to_string()), Some(caps[2].to_string()))
     } else {
         (None, None)
     }
@@ -116,7 +114,7 @@ fn collect_inline_content(
         match reader.read_event_into(buf) {
             Ok(Event::Start(ref e)) => {
                 let tag = String::from_utf8_lossy(e.name().as_ref()).to_string();
-                let local = tag.split(':').last().unwrap_or(&tag);
+                let local = tag.split(':').next_back().unwrap_or(&tag);
                 if local == end_tag && depth == 0 {
                     // This shouldn't happen since we already consumed the start
                     break;
@@ -138,7 +136,7 @@ fn collect_inline_content(
             }
             Ok(Event::End(ref e)) => {
                 let tag = String::from_utf8_lossy(e.name().as_ref()).to_string();
-                let local = tag.split(':').last().unwrap_or(&tag);
+                let local = tag.split(':').next_back().unwrap_or(&tag);
                 if local == end_tag && depth == 0 {
                     break;
                 }
@@ -149,7 +147,7 @@ fn collect_inline_content(
             }
             Ok(Event::Empty(ref e)) => {
                 let tag = String::from_utf8_lossy(e.name().as_ref()).to_string();
-                let local = tag.split(':').last().unwrap_or(&tag);
+                let local = tag.split(':').next_back().unwrap_or(&tag);
                 result.push('<');
                 result.push_str(local);
                 for attr in e.attributes().filter_map(|a| a.ok()) {
@@ -218,7 +216,7 @@ impl FormatParser for Parser {
                 Ok(Event::Eof) => break,
                 Ok(Event::Start(ref e)) | Ok(Event::Empty(ref e)) => {
                     let tag_name = String::from_utf8_lossy(e.name().as_ref()).to_string();
-                    let local_name = tag_name.split(':').last().unwrap_or(&tag_name);
+                    let local_name = tag_name.split(':').next_back().unwrap_or(&tag_name);
 
                     match local_name {
                         "xliff" => {
@@ -255,11 +253,8 @@ impl FormatParser for Parser {
                         }
                         "source" if state == ParseState::TransUnit => {
                             // Use inline content collector to handle <g> elements
-                            let inline_text = collect_inline_content(
-                                &mut reader,
-                                &mut buf,
-                                "source",
-                            )?;
+                            let inline_text =
+                                collect_inline_content(&mut reader, &mut buf, "source")?;
                             if let Some(ref mut tu) = current_tu {
                                 tu.source = inline_text;
                             }
@@ -269,11 +264,8 @@ impl FormatParser for Parser {
                             continue;
                         }
                         "target" if state == ParseState::TransUnit => {
-                            let inline_text = collect_inline_content(
-                                &mut reader,
-                                &mut buf,
-                                "target",
-                            )?;
+                            let inline_text =
+                                collect_inline_content(&mut reader, &mut buf, "target")?;
                             if let Some(ref mut tu) = current_tu {
                                 tu.target = Some(inline_text);
                             }
@@ -298,7 +290,7 @@ impl FormatParser for Parser {
                 }
                 Ok(Event::End(ref e)) => {
                     let tag_name = String::from_utf8_lossy(e.name().as_ref()).to_string();
-                    let local_name = tag_name.split(':').last().unwrap_or(&tag_name);
+                    let local_name = tag_name.split(':').next_back().unwrap_or(&tag_name);
 
                     match local_name {
                         "note" => {
@@ -315,20 +307,26 @@ impl FormatParser for Parser {
                             if let Some(tu) = current_tu.take() {
                                 let (slide_id, item_id) = parse_slide_item_id(&tu.id);
 
-                                let comments: Vec<Comment> = tu.notes.iter().map(|n| {
-                                    Comment {
+                                let comments: Vec<Comment> = tu
+                                    .notes
+                                    .iter()
+                                    .map(|n| Comment {
                                         text: n.text.clone(),
                                         role: map_note_role(n.from.as_deref()),
                                         priority: None,
                                         annotates: None,
-                                    }
-                                }).collect();
+                                    })
+                                    .collect();
 
                                 // For mono-lingual: use target if present, otherwise use source
-                                let value_text = tu.target.clone().unwrap_or_else(|| tu.source.clone());
+                                let value_text =
+                                    tu.target.clone().unwrap_or_else(|| tu.source.clone());
                                 let value = EntryValue::Simple(value_text);
 
-                                let entry_ext = if slide_id.is_some() || item_id.is_some() || tu.css_style.is_some() {
+                                let entry_ext = if slide_id.is_some()
+                                    || item_id.is_some()
+                                    || tu.css_style.is_some()
+                                {
                                     Some(FormatExtension::CaptivateXml(CaptivateXmlExt {
                                         slide_id,
                                         item_id,
@@ -380,7 +378,9 @@ impl FormatParser for Parser {
 
         // Store file original in metadata properties for round-trip
         if let Some(ref orig) = file_original {
-            metadata.properties.insert("original".to_string(), orig.clone());
+            metadata
+                .properties
+                .insert("original".to_string(), orig.clone());
         }
 
         Ok(I18nResource { metadata, entries })

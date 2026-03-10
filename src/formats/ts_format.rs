@@ -20,9 +20,12 @@ fn extract_line_comments(text: &str) -> Vec<LineComment> {
     let mut comments = Vec::new();
     for (line_no, line) in text.lines().enumerate() {
         let trimmed = line.trim();
-        if trimmed.starts_with("//") {
-            let text = trimmed[2..].trim().to_string();
-            comments.push(LineComment { text, line: line_no });
+        if let Some(stripped) = trimmed.strip_prefix("//") {
+            let text = stripped.trim().to_string();
+            comments.push(LineComment {
+                text,
+                line: line_no,
+            });
         }
     }
     comments
@@ -34,16 +37,12 @@ fn find_comments_for_line(comments: &[LineComment], key_line: usize) -> Vec<Stri
     }
     let mut result = Vec::new();
     let mut check_line = key_line - 1;
-    loop {
-        if let Some(c) = comments.iter().find(|c| c.line == check_line) {
-            result.push(c.text.clone());
-            if check_line == 0 {
-                break;
-            }
-            check_line -= 1;
-        } else {
+    while let Some(c) = comments.iter().find(|c| c.line == check_line) {
+        result.push(c.text.clone());
+        if check_line == 0 {
             break;
         }
+        check_line -= 1;
     }
     result.reverse();
     result
@@ -52,12 +51,12 @@ fn find_comments_for_line(comments: &[LineComment], key_line: usize) -> Vec<Stri
 fn find_key_line(text: &str, key: &str) -> Option<usize> {
     for (line_no, line) in text.lines().enumerate() {
         let trimmed = line.trim();
-        if trimmed.starts_with(&format!("{}:", key))
-            || trimmed.starts_with(&format!("{} :", key))
-            || trimmed.starts_with(&format!("\"{}\":", key))
-            || trimmed.starts_with(&format!("\"{}\" :", key))
-            || trimmed.starts_with(&format!("'{}':", key))
-            || trimmed.starts_with(&format!("'{}' :", key))
+        if trimmed.starts_with(&format!("{key}:"))
+            || trimmed.starts_with(&format!("{key} :"))
+            || trimmed.starts_with(&format!("\"{key}\":"))
+            || trimmed.starts_with(&format!("\"{key}\" :"))
+            || trimmed.starts_with(&format!("'{key}':"))
+            || trimmed.starts_with(&format!("'{key}' :"))
         {
             return Some(line_no);
         }
@@ -69,13 +68,11 @@ fn find_key_line(text: &str, key: &str) -> Option<usize> {
 // Export style & type annotation detection
 // ---------------------------------------------------------------------------
 
-static RE_EXPORT_DEFAULT: LazyLock<Regex> = LazyLock::new(|| {
-    Regex::new(r"(?m)^\s*export\s+default\b").expect("valid regex")
-});
+static RE_EXPORT_DEFAULT: LazyLock<Regex> =
+    LazyLock::new(|| Regex::new(r"(?m)^\s*export\s+default\b").expect("valid regex"));
 
-static RE_EXPORT_CONST: LazyLock<Regex> = LazyLock::new(|| {
-    Regex::new(r"(?m)^\s*export\s+const\b").expect("valid regex")
-});
+static RE_EXPORT_CONST: LazyLock<Regex> =
+    LazyLock::new(|| Regex::new(r"(?m)^\s*export\s+const\b").expect("valid regex"));
 
 /// Detect `const <name>: <TypeAnnotation> = {` or similar patterns.
 static RE_TYPE_ANNOTATION: LazyLock<Regex> = LazyLock::new(|| {
@@ -352,9 +349,8 @@ fn is_js_identifier_char(c: char) -> bool {
 }
 
 fn remove_trailing_commas(text: &str) -> String {
-    static RE_TRAILING_COMMA: LazyLock<Regex> = LazyLock::new(|| {
-        Regex::new(r",(\s*[}\]])").expect("valid regex")
-    });
+    static RE_TRAILING_COMMA: LazyLock<Regex> =
+        LazyLock::new(|| Regex::new(r",(\s*[}\]])").expect("valid regex"));
     RE_TRAILING_COMMA.replace_all(text, "$1").to_string()
 }
 
@@ -565,8 +561,7 @@ fn expand_entries_to_flat(entries: &IndexMap<String, I18nEntry>) -> IndexMap<Str
                 flat.insert(format!("{key}_other"), ps.other.clone());
             }
             EntryValue::Array(arr) => {
-                let json_arr =
-                    serde_json::to_string(arr).unwrap_or_else(|_| "[]".to_string());
+                let json_arr = serde_json::to_string(arr).unwrap_or_else(|_| "[]".to_string());
                 flat.insert(key.clone(), json_arr);
             }
             EntryValue::Select(ss) => {
@@ -581,9 +576,8 @@ fn expand_entries_to_flat(entries: &IndexMap<String, I18nEntry>) -> IndexMap<Str
     flat
 }
 
-static RE_VALID_JS_IDENT: LazyLock<Regex> = LazyLock::new(|| {
-    Regex::new(r"^[a-zA-Z_$][a-zA-Z0-9_$]*$").expect("valid regex")
-});
+static RE_VALID_JS_IDENT: LazyLock<Regex> =
+    LazyLock::new(|| Regex::new(r"^[a-zA-Z_$][a-zA-Z0-9_$]*$").expect("valid regex"));
 
 fn is_valid_js_identifier(s: &str) -> bool {
     RE_VALID_JS_IDENT.is_match(s)
@@ -614,11 +608,7 @@ fn escape_js_string(s: &str, quote: char) -> String {
     result
 }
 
-fn json_to_js_object(
-    value: &serde_json::Value,
-    indent: usize,
-    quote: char,
-) -> String {
+fn json_to_js_object(value: &serde_json::Value, indent: usize, quote: char) -> String {
     let indent_str = "  ".repeat(indent);
     let inner_indent = "  ".repeat(indent + 1);
 
@@ -780,9 +770,9 @@ impl FormatParser for Parser {
         let json_value: serde_json::Value = serde_json::from_str(&cleaned)
             .map_err(|e| ParseError::Json(format!("Failed to parse TS object as JSON: {e}")))?;
 
-        let obj = json_value.as_object().ok_or_else(|| {
-            ParseError::InvalidFormat("Root value is not an object".to_string())
-        })?;
+        let obj = json_value
+            .as_object()
+            .ok_or_else(|| ParseError::InvalidFormat("Root value is not an object".to_string()))?;
 
         let mut flat = IndexMap::new();
         flatten_json_object(obj, "", &mut flat);
@@ -846,15 +836,16 @@ impl FormatWriter for Writer {
         let flat = expand_entries_to_flat(&resource.entries);
         let nested = unflatten_to_json(&flat);
 
-        let inner_output =
-            write_js_object_with_comments(&nested, &resource.entries, 0, quote);
+        let inner_output = write_js_object_with_comments(&nested, &resource.entries, 0, quote);
 
         let mut output = String::new();
 
         match export_style.as_str() {
             "export const" => {
                 if let Some(ref ann) = type_annotation {
-                    output.push_str(&format!("const messages: {ann} = {inner_output};\n\nexport default messages;\n"));
+                    output.push_str(&format!(
+                        "const messages: {ann} = {inner_output};\n\nexport default messages;\n"
+                    ));
                 } else {
                     output.push_str(&format!("export const messages = {inner_output};\n"));
                 }

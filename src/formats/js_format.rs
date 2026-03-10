@@ -24,9 +24,12 @@ fn extract_line_comments(text: &str) -> Vec<LineComment> {
     let mut comments = Vec::new();
     for (line_no, line) in text.lines().enumerate() {
         let trimmed = line.trim();
-        if trimmed.starts_with("//") {
-            let text = trimmed[2..].trim().to_string();
-            comments.push(LineComment { text, line: line_no });
+        if let Some(stripped) = trimmed.strip_prefix("//") {
+            let text = stripped.trim().to_string();
+            comments.push(LineComment {
+                text,
+                line: line_no,
+            });
         }
     }
     comments
@@ -40,16 +43,12 @@ fn find_comments_for_line(comments: &[LineComment], key_line: usize) -> Vec<Stri
     }
     let mut result = Vec::new();
     let mut check_line = key_line - 1;
-    loop {
-        if let Some(c) = comments.iter().find(|c| c.line == check_line) {
-            result.push(c.text.clone());
-            if check_line == 0 {
-                break;
-            }
-            check_line -= 1;
-        } else {
+    while let Some(c) = comments.iter().find(|c| c.line == check_line) {
+        result.push(c.text.clone());
+        if check_line == 0 {
             break;
         }
+        check_line -= 1;
     }
     result.reverse();
     result
@@ -62,12 +61,12 @@ fn find_key_line(text: &str, key: &str) -> Option<usize> {
     for (line_no, line) in text.lines().enumerate() {
         let trimmed = line.trim();
         // Check for: key: or "key": or 'key':
-        if trimmed.starts_with(&format!("{}:", key))
-            || trimmed.starts_with(&format!("{} :", key))
-            || trimmed.starts_with(&format!("\"{}\":", key))
-            || trimmed.starts_with(&format!("\"{}\" :", key))
-            || trimmed.starts_with(&format!("'{}':", key))
-            || trimmed.starts_with(&format!("'{}' :", key))
+        if trimmed.starts_with(&format!("{key}:"))
+            || trimmed.starts_with(&format!("{key} :"))
+            || trimmed.starts_with(&format!("\"{key}\":"))
+            || trimmed.starts_with(&format!("\"{key}\" :"))
+            || trimmed.starts_with(&format!("'{key}':"))
+            || trimmed.starts_with(&format!("'{key}' :"))
         {
             return Some(line_no);
         }
@@ -79,17 +78,14 @@ fn find_key_line(text: &str, key: &str) -> Option<usize> {
 // Export style detection
 // ---------------------------------------------------------------------------
 
-static RE_MODULE_EXPORTS: LazyLock<Regex> = LazyLock::new(|| {
-    Regex::new(r"(?m)^\s*module\.exports\s*=").expect("valid regex")
-});
+static RE_MODULE_EXPORTS: LazyLock<Regex> =
+    LazyLock::new(|| Regex::new(r"(?m)^\s*module\.exports\s*=").expect("valid regex"));
 
-static RE_EXPORT_DEFAULT: LazyLock<Regex> = LazyLock::new(|| {
-    Regex::new(r"(?m)^\s*export\s+default\b").expect("valid regex")
-});
+static RE_EXPORT_DEFAULT: LazyLock<Regex> =
+    LazyLock::new(|| Regex::new(r"(?m)^\s*export\s+default\b").expect("valid regex"));
 
-static RE_EXPORTS_DOT: LazyLock<Regex> = LazyLock::new(|| {
-    Regex::new(r"(?m)^\s*exports\.").expect("valid regex")
-});
+static RE_EXPORTS_DOT: LazyLock<Regex> =
+    LazyLock::new(|| Regex::new(r"(?m)^\s*exports\.").expect("valid regex"));
 
 /// Detect the export style used in the source.
 fn detect_export_style(text: &str) -> Option<String> {
@@ -389,9 +385,8 @@ fn is_js_identifier_char(c: char) -> bool {
 
 /// Remove trailing commas in JSON (commas followed by } or ]).
 fn remove_trailing_commas(text: &str) -> String {
-    static RE_TRAILING_COMMA: LazyLock<Regex> = LazyLock::new(|| {
-        Regex::new(r",(\s*[}\]])").expect("valid regex")
-    });
+    static RE_TRAILING_COMMA: LazyLock<Regex> =
+        LazyLock::new(|| Regex::new(r",(\s*[}\]])").expect("valid regex"));
     RE_TRAILING_COMMA.replace_all(text, "$1").to_string()
 }
 
@@ -605,8 +600,7 @@ fn expand_entries_to_flat(entries: &IndexMap<String, I18nEntry>) -> IndexMap<Str
                 flat.insert(format!("{key}_other"), ps.other.clone());
             }
             EntryValue::Array(arr) => {
-                let json_arr =
-                    serde_json::to_string(arr).unwrap_or_else(|_| "[]".to_string());
+                let json_arr = serde_json::to_string(arr).unwrap_or_else(|_| "[]".to_string());
                 flat.insert(key.clone(), json_arr);
             }
             EntryValue::Select(ss) => {
@@ -622,11 +616,7 @@ fn expand_entries_to_flat(entries: &IndexMap<String, I18nEntry>) -> IndexMap<Str
 }
 
 /// Format a JSON value as a JavaScript object literal with the given indent.
-fn json_to_js_object(
-    value: &serde_json::Value,
-    indent: usize,
-    quote: char,
-) -> String {
+fn json_to_js_object(value: &serde_json::Value, indent: usize, quote: char) -> String {
     let indent_str = "  ".repeat(indent);
     let inner_indent = "  ".repeat(indent + 1);
 
@@ -673,9 +663,8 @@ fn json_to_js_object(
     }
 }
 
-static RE_VALID_JS_IDENT: LazyLock<Regex> = LazyLock::new(|| {
-    Regex::new(r"^[a-zA-Z_$][a-zA-Z0-9_$]*$").expect("valid regex")
-});
+static RE_VALID_JS_IDENT: LazyLock<Regex> =
+    LazyLock::new(|| Regex::new(r"^[a-zA-Z_$][a-zA-Z0-9_$]*$").expect("valid regex"));
 
 fn is_valid_js_identifier(s: &str) -> bool {
     RE_VALID_JS_IDENT.is_match(s)
@@ -759,9 +748,9 @@ impl FormatParser for Parser {
         let json_value: serde_json::Value = serde_json::from_str(&cleaned)
             .map_err(|e| ParseError::Json(format!("Failed to parse JS object as JSON: {e}")))?;
 
-        let obj = json_value.as_object().ok_or_else(|| {
-            ParseError::InvalidFormat("Root value is not an object".to_string())
-        })?;
+        let obj = json_value
+            .as_object()
+            .ok_or_else(|| ParseError::InvalidFormat("Root value is not an object".to_string()))?;
 
         // Flatten nested structure to dot-separated keys
         let mut flat = IndexMap::new();
@@ -837,12 +826,7 @@ impl FormatWriter for Writer {
         output.push_str(prefix);
 
         // We need to write the object with comments. Rebuild the output manually.
-        let inner_output = write_js_object_with_comments(
-            &nested,
-            &resource.entries,
-            0,
-            quote,
-        );
+        let inner_output = write_js_object_with_comments(&nested, &resource.entries, 0, quote);
         output.push_str(&inner_output);
         output.push_str(";\n");
 

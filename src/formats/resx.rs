@@ -30,6 +30,7 @@ struct DataBuilder {
     comment: Option<String>,
     type_name: Option<String>,
     mimetype: Option<String>,
+    #[allow(dead_code)]
     xml_space: Option<String>,
 }
 
@@ -87,7 +88,7 @@ impl FormatParser for Parser {
                 Ok(Event::Eof) => break,
                 Ok(Event::Start(ref e)) => {
                     let tag_name = String::from_utf8_lossy(e.name().as_ref()).to_string();
-                    let local_name = tag_name.split(':').last().unwrap_or(&tag_name);
+                    let local_name = tag_name.split(':').next_back().unwrap_or(&tag_name);
 
                     match state {
                         ParseState::Schema => {
@@ -138,7 +139,7 @@ impl FormatParser for Parser {
                 }
                 Ok(Event::Empty(ref e)) => {
                     let tag_name = String::from_utf8_lossy(e.name().as_ref()).to_string();
-                    let local_name = tag_name.split(':').last().unwrap_or(&tag_name);
+                    let local_name = tag_name.split(':').next_back().unwrap_or(&tag_name);
 
                     match local_name {
                         "data" if state == ParseState::Root => {
@@ -167,7 +168,7 @@ impl FormatParser for Parser {
                 }
                 Ok(Event::End(ref e)) => {
                     let tag_name = String::from_utf8_lossy(e.name().as_ref()).to_string();
-                    let local_name = tag_name.split(':').last().unwrap_or(&tag_name);
+                    let local_name = tag_name.split(':').next_back().unwrap_or(&tag_name);
 
                     match state {
                         ParseState::Schema => {
@@ -222,17 +223,16 @@ impl FormatParser for Parser {
                                         }
                                     }
 
-                                    let format_ext = if data.type_name.is_some()
-                                        || data.mimetype.is_some()
-                                    {
-                                        Some(FormatExtension::Resx(ResxExt {
-                                            type_name: data.type_name,
-                                            mimetype: data.mimetype,
-                                            schema: None,
-                                        }))
-                                    } else {
-                                        None
-                                    };
+                                    let format_ext =
+                                        if data.type_name.is_some() || data.mimetype.is_some() {
+                                            Some(FormatExtension::Resx(ResxExt {
+                                                type_name: data.type_name,
+                                                mimetype: data.mimetype,
+                                                schema: None,
+                                            }))
+                                        } else {
+                                            None
+                                        };
 
                                     let entry = I18nEntry {
                                         key: data.name.clone(),
@@ -305,10 +305,7 @@ impl FormatWriter for Writer {
             .map_err(|e| WriteError::Serialization(e.to_string()))?;
 
         // Write resheaders from metadata
-        let default_headers = vec![
-            ("resmimetype", "text/microsoft-resx"),
-            ("version", "2.0"),
-        ];
+        let default_headers = vec![("resmimetype", "text/microsoft-resx"), ("version", "2.0")];
 
         // Merge: use metadata headers if present, otherwise use defaults
         let mut written_headers = std::collections::HashSet::new();

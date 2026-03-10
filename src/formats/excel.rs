@@ -82,29 +82,32 @@ impl FormatParser for Parser {
     }
 
     fn parse(&self, content: &[u8]) -> Result<I18nResource, ParseError> {
-        use calamine::{Reader, DataType};
+        use calamine::{DataType, Reader};
 
         let cursor = Cursor::new(content.to_vec());
-        let mut workbook = calamine::open_workbook_auto_from_rs(cursor)
-            .map_err(|e| ParseError::InvalidFormat(format!("Failed to open Excel workbook: {e}")))?;
+        let mut workbook = calamine::open_workbook_auto_from_rs(cursor).map_err(|e| {
+            ParseError::InvalidFormat(format!("Failed to open Excel workbook: {e}"))
+        })?;
 
         // Get first sheet
         let sheet_names = workbook.sheet_names().to_vec();
         if sheet_names.is_empty() {
-            return Err(ParseError::InvalidFormat("No sheets found in workbook".to_string()));
+            return Err(ParseError::InvalidFormat(
+                "No sheets found in workbook".to_string(),
+            ));
         }
         let sheet_name = sheet_names[0].clone();
 
-        let range = workbook
-            .worksheet_range(&sheet_name)
-            .map_err(|e| ParseError::InvalidFormat(format!("Failed to read sheet '{}': {e}", sheet_name)))?;
+        let range = workbook.worksheet_range(&sheet_name).map_err(|e| {
+            ParseError::InvalidFormat(format!("Failed to read sheet '{sheet_name}': {e}"))
+        })?;
 
         let mut rows_iter = range.rows();
 
         // First row is the header
-        let header_row = rows_iter
-            .next()
-            .ok_or_else(|| ParseError::InvalidFormat("Sheet is empty — no header row".to_string()))?;
+        let header_row = rows_iter.next().ok_or_else(|| {
+            ParseError::InvalidFormat("Sheet is empty — no header row".to_string())
+        })?;
 
         // Detect column roles from header
         let mut key_col: Option<usize> = None;
@@ -143,15 +146,13 @@ impl FormatParser for Parser {
         let mut entries = IndexMap::new();
 
         for row in rows_iter {
-            let key = row
-                .get(key_col)
-                .and_then(|c| {
-                    if c.is_empty() {
-                        None
-                    } else {
-                        cell_to_string(c)
-                    }
-                });
+            let key = row.get(key_col).and_then(|c| {
+                if c.is_empty() {
+                    None
+                } else {
+                    cell_to_string(c)
+                }
+            });
 
             let key = match key {
                 Some(k) if !k.is_empty() => k,
@@ -160,12 +161,12 @@ impl FormatParser for Parser {
 
             let value = row
                 .get(value_col)
-                .and_then(|c| cell_to_string(c))
+                .and_then(cell_to_string)
                 .unwrap_or_default();
 
             let comment_text = comment_col
                 .and_then(|col| row.get(col))
-                .and_then(|c| cell_to_string(c));
+                .and_then(cell_to_string);
 
             let mut entry = I18nEntry {
                 key: key.clone(),
@@ -259,9 +260,7 @@ impl FormatWriter for Writer {
                 EntryValue::Simple(s) => s.clone(),
                 EntryValue::Plural(ps) => ps.other.clone(),
                 EntryValue::Array(arr) => arr.join(", "),
-                EntryValue::Select(ss) => {
-                    ss.cases.get("other").cloned().unwrap_or_default()
-                }
+                EntryValue::Select(ss) => ss.cases.get("other").cloned().unwrap_or_default(),
                 EntryValue::MultiVariablePlural(mvp) => mvp.pattern.clone(),
             };
 
@@ -277,11 +276,9 @@ impl FormatWriter for Writer {
                     .collect::<Vec<_>>()
                     .join("; ");
                 if !comment_text.is_empty() {
-                    worksheet
-                        .write_string(row, 2, &comment_text)
-                        .map_err(|e| {
-                            WriteError::Serialization(format!("Failed to write comment: {e}"))
-                        })?;
+                    worksheet.write_string(row, 2, &comment_text).map_err(|e| {
+                        WriteError::Serialization(format!("Failed to write comment: {e}"))
+                    })?;
                 }
             }
         }
@@ -289,9 +286,9 @@ impl FormatWriter for Writer {
         // Set sheet name from extension data if available
         if let Some(FormatExtension::Excel(ext)) = &resource.metadata.format_ext {
             if let Some(name) = &ext.sheet_name {
-                worksheet
-                    .set_name(name)
-                    .map_err(|e| WriteError::Serialization(format!("Failed to set sheet name: {e}")))?;
+                worksheet.set_name(name).map_err(|e| {
+                    WriteError::Serialization(format!("Failed to set sheet name: {e}"))
+                })?;
             }
         }
 

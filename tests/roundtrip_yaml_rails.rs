@@ -86,7 +86,7 @@ fn parse_plurals() {
             assert_eq!(ps.many, Some("many items".to_string()));
             assert_eq!(ps.other, "%{count} items");
         }
-        other => panic!("Expected Plural for 'items', got {:?}", other),
+        other => panic!("Expected Plural for 'items', got {other:?}"),
     }
 
     // "messages" should be a Plural with one/other only
@@ -99,7 +99,7 @@ fn parse_plurals() {
             assert_eq!(ps.few, None);
             assert_eq!(ps.many, None);
         }
-        other => panic!("Expected Plural for 'messages', got {:?}", other),
+        other => panic!("Expected Plural for 'messages', got {other:?}"),
     }
 
     // "simple_key" should be a Simple value
@@ -270,11 +270,14 @@ fn writer_reconstructs_nested_structure() {
 #[test]
 fn writer_uses_locale_from_metadata() {
     let mut entries = indexmap::IndexMap::new();
-    entries.insert("greeting".to_string(), I18nEntry {
-        key: "greeting".to_string(),
-        value: EntryValue::Simple("Hallo".to_string()),
-        ..Default::default()
-    });
+    entries.insert(
+        "greeting".to_string(),
+        I18nEntry {
+            key: "greeting".to_string(),
+            value: EntryValue::Simple("Hallo".to_string()),
+            ..Default::default()
+        },
+    );
 
     let resource = I18nResource {
         metadata: ResourceMetadata {
@@ -297,11 +300,14 @@ fn writer_uses_locale_from_metadata() {
 #[test]
 fn writer_defaults_to_en_locale() {
     let mut entries = indexmap::IndexMap::new();
-    entries.insert("key".to_string(), I18nEntry {
-        key: "key".to_string(),
-        value: EntryValue::Simple("value".to_string()),
-        ..Default::default()
-    });
+    entries.insert(
+        "key".to_string(),
+        I18nEntry {
+            key: "key".to_string(),
+            value: EntryValue::Simple("value".to_string()),
+            ..Default::default()
+        },
+    );
 
     let resource = I18nResource {
         metadata: ResourceMetadata {
@@ -340,20 +346,32 @@ fn writer_outputs_plural_sub_keys() {
 fn detect_high_confidence_with_locale_key() {
     let parser = yaml_rails::Parser;
     let content = b"en:\n  greeting: Hello\n";
-    assert_eq!(parser.detect(".yml", content), i18n_convert::formats::Confidence::High);
-    assert_eq!(parser.detect(".yaml", content), i18n_convert::formats::Confidence::High);
+    assert_eq!(
+        parser.detect(".yml", content),
+        i18n_convert::formats::Confidence::High
+    );
+    assert_eq!(
+        parser.detect(".yaml", content),
+        i18n_convert::formats::Confidence::High
+    );
 }
 
 #[test]
 fn detect_low_confidence_yml_without_locale() {
     let parser = yaml_rails::Parser;
     let content = b"config:\n  debug: true\n";
-    assert_eq!(parser.detect(".yml", content), i18n_convert::formats::Confidence::Low);
+    assert_eq!(
+        parser.detect(".yml", content),
+        i18n_convert::formats::Confidence::Low
+    );
 }
 
 #[test]
 fn detect_none_for_non_yaml() {
     let parser = yaml_rails::Parser;
     let content = b"en:\n  greeting: Hello\n";
-    assert_eq!(parser.detect(".json", content), i18n_convert::formats::Confidence::None);
+    assert_eq!(
+        parser.detect(".json", content),
+        i18n_convert::formats::Confidence::None
+    );
 }

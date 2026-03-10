@@ -69,7 +69,9 @@ fn capabilities() {
 #[test]
 fn parse_simple() {
     let content = load_fixture("simple.xliff");
-    let resource = xliff2::Parser.parse(&content).expect("should parse simple.xliff");
+    let resource = xliff2::Parser
+        .parse(&content)
+        .expect("should parse simple.xliff");
 
     assert_eq!(resource.entries.len(), 3);
     assert_eq!(resource.metadata.source_locale, Some("en".to_string()));
@@ -85,7 +87,10 @@ fn parse_simple() {
     // Check farewell
     let farewell = &resource.entries["farewell"];
     assert_eq!(farewell.source, Some("Goodbye".to_string()));
-    assert_eq!(farewell.value, EntryValue::Simple("Auf Wiedersehen".to_string()));
+    assert_eq!(
+        farewell.value,
+        EntryValue::Simple("Auf Wiedersehen".to_string())
+    );
 
     // Untranslated entry has empty target
     let untranslated = &resource.entries["untranslated"];
@@ -97,16 +102,21 @@ fn parse_simple() {
 #[test]
 fn parse_simple_metadata() {
     let content = load_fixture("simple.xliff");
-    let resource = xliff2::Parser.parse(&content).expect("should parse simple.xliff");
+    let resource = xliff2::Parser
+        .parse(&content)
+        .expect("should parse simple.xliff");
 
     assert_eq!(resource.metadata.source_format, FormatId::Xliff2);
 
     // Check format extension
     match &resource.metadata.format_ext {
         Some(FormatExtension::Xliff2(ext)) => {
-            assert_eq!(ext.original_data.get("original"), Some(&"messages.json".to_string()));
+            assert_eq!(
+                ext.original_data.get("original"),
+                Some(&"messages.json".to_string())
+            );
         }
-        other => panic!("Expected Xliff2Ext, got {:?}", other),
+        other => panic!("Expected Xliff2Ext, got {other:?}"),
     }
 }
 
@@ -117,7 +127,9 @@ fn parse_simple_metadata() {
 #[test]
 fn parse_notes() {
     let content = load_fixture("notes.xliff");
-    let resource = xliff2::Parser.parse(&content).expect("should parse notes.xliff");
+    let resource = xliff2::Parser
+        .parse(&content)
+        .expect("should parse notes.xliff");
 
     assert_eq!(resource.entries.len(), 3);
 
@@ -135,7 +147,10 @@ fn parse_notes() {
     assert_eq!(btn_cancel.comments[0].role, CommentRole::Translator);
     assert_eq!(btn_cancel.comments[0].text, "Keep it short");
     assert_eq!(btn_cancel.comments[1].role, CommentRole::General);
-    assert_eq!(btn_cancel.comments[1].text, "General note about this string");
+    assert_eq!(
+        btn_cancel.comments[1].text,
+        "General note about this string"
+    );
 
     // menu_file: two notes
     let menu_file = &resource.entries["menu_file"];
@@ -152,7 +167,9 @@ fn parse_notes() {
 #[test]
 fn parse_states() {
     let content = load_fixture("states.xliff");
-    let resource = xliff2::Parser.parse(&content).expect("should parse states.xliff");
+    let resource = xliff2::Parser
+        .parse(&content)
+        .expect("should parse states.xliff");
 
     assert_eq!(resource.entries.len(), 4);
 
@@ -176,7 +193,9 @@ fn parse_states() {
 #[test]
 fn parse_full() {
     let content = load_fixture("full.xliff");
-    let resource = xliff2::Parser.parse(&content).expect("should parse full.xliff");
+    let resource = xliff2::Parser
+        .parse(&content)
+        .expect("should parse full.xliff");
 
     assert_eq!(resource.entries.len(), 5);
     assert_eq!(resource.metadata.source_locale, Some("en".to_string()));
@@ -214,9 +233,12 @@ fn parse_full() {
     // Check original in extension
     match &resource.metadata.format_ext {
         Some(FormatExtension::Xliff2(ext)) => {
-            assert_eq!(ext.original_data.get("original"), Some(&"app.json".to_string()));
+            assert_eq!(
+                ext.original_data.get("original"),
+                Some(&"app.json".to_string())
+            );
         }
-        other => panic!("Expected Xliff2Ext, got {:?}", other),
+        other => panic!("Expected Xliff2Ext, got {other:?}"),
     }
 }
 
@@ -247,7 +269,10 @@ fn roundtrip_simple() {
             "State mismatch for key: {key}"
         );
     }
-    assert_eq!(resource.metadata.source_locale, reparsed.metadata.source_locale);
+    assert_eq!(
+        resource.metadata.source_locale,
+        reparsed.metadata.source_locale
+    );
     assert_eq!(resource.metadata.locale, reparsed.metadata.locale);
 }
 
@@ -261,7 +286,8 @@ fn roundtrip_notes() {
     for (key, entry) in &resource.entries {
         let reparsed_entry = &reparsed.entries[key];
         assert_eq!(
-            entry.comments.len(), reparsed_entry.comments.len(),
+            entry.comments.len(),
+            reparsed_entry.comments.len(),
             "Comment count mismatch for key: {key}"
         );
         for (i, comment) in entry.comments.iter().enumerate() {
@@ -321,17 +347,24 @@ fn roundtrip_full() {
             "State mismatch for key: {key}"
         );
         assert_eq!(
-            entry.comments.len(), reparsed_entry.comments.len(),
+            entry.comments.len(),
+            reparsed_entry.comments.len(),
             "Comment count mismatch for key: {key}"
         );
     }
 
     // Verify metadata round-trips
-    assert_eq!(resource.metadata.source_locale, reparsed.metadata.source_locale);
+    assert_eq!(
+        resource.metadata.source_locale,
+        reparsed.metadata.source_locale
+    );
     assert_eq!(resource.metadata.locale, reparsed.metadata.locale);
     match (&resource.metadata.format_ext, &reparsed.metadata.format_ext) {
         (Some(FormatExtension::Xliff2(orig)), Some(FormatExtension::Xliff2(rt))) => {
-            assert_eq!(orig.original_data.get("original"), rt.original_data.get("original"));
+            assert_eq!(
+                orig.original_data.get("original"),
+                rt.original_data.get("original")
+            );
         }
         _ => panic!("Expected Xliff2 extensions in both"),
     }
@@ -364,5 +397,8 @@ fn writer_omits_empty_target() {
     let resource = xliff2::Parser.parse(&content).expect("should parse");
     let written = xliff2::Writer.write(&resource).expect("should write");
     let reparsed = xliff2::Parser.parse(&written).expect("should reparse");
-    assert_eq!(reparsed.entries["untranslated"].value, EntryValue::Simple(String::new()));
+    assert_eq!(
+        reparsed.entries["untranslated"].value,
+        EntryValue::Simple(String::new())
+    );
 }

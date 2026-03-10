@@ -14,9 +14,7 @@ fn is_plural_mapping(mapping: &serde_yaml::Mapping) -> bool {
         return false;
     }
     // Must have "other" key and all keys must be plural categories
-    let has_other = mapping.iter().any(|(k, _)| {
-        k.as_str().map_or(false, |s| s == "other")
-    });
+    let has_other = mapping.iter().any(|(k, _)| k.as_str() == Some("other"));
     if !has_other {
         return false;
     }
@@ -51,17 +49,25 @@ fn value_to_string(value: &serde_yaml::Value) -> String {
     }
 }
 
-static RE_YAML_PLACEHOLDER: LazyLock<Regex> = LazyLock::new(|| {
-    Regex::new(r"%\{([^}]+)\}").expect("valid regex pattern")
-});
+static RE_YAML_PLACEHOLDER: LazyLock<Regex> =
+    LazyLock::new(|| Regex::new(r"%\{([^}]+)\}").expect("valid regex pattern"));
 
 /// Extract %{name} style placeholders from a string
 fn extract_placeholders(text: &str) -> Vec<Placeholder> {
-    RE_YAML_PLACEHOLDER.captures_iter(text)
+    RE_YAML_PLACEHOLDER
+        .captures_iter(text)
         .enumerate()
         .map(|(i, cap)| {
-            let name = cap.get(1).expect("regex group 1 always captures").as_str().to_string();
-            let original = cap.get(0).expect("regex group 0 always captures").as_str().to_string();
+            let name = cap
+                .get(1)
+                .expect("regex group 1 always captures")
+                .as_str()
+                .to_string();
+            let original = cap
+                .get(0)
+                .expect("regex group 0 always captures")
+                .as_str()
+                .to_string();
             Placeholder {
                 name,
                 original_syntax: original,
@@ -92,7 +98,7 @@ fn flatten_yaml(
         let full_key = if prefix.is_empty() {
             key_str.to_string()
         } else {
-            format!("{}.{}", prefix, key_str)
+            format!("{prefix}.{key_str}")
         };
 
         match value {
@@ -123,12 +129,15 @@ fn flatten_yaml(
                     let mut seen = std::collections::HashSet::new();
                     all_placeholders.retain(|p| seen.insert(p.name.clone()));
 
-                    entries.insert(full_key.clone(), I18nEntry {
-                        key: full_key,
-                        value: EntryValue::Plural(plural_set),
-                        placeholders: all_placeholders,
-                        ..Default::default()
-                    });
+                    entries.insert(
+                        full_key.clone(),
+                        I18nEntry {
+                            key: full_key,
+                            value: EntryValue::Plural(plural_set),
+                            placeholders: all_placeholders,
+                            ..Default::default()
+                        },
+                    );
                 } else {
                     // Recurse into nested mapping
                     flatten_yaml(child_map, &full_key, entries);
@@ -137,22 +146,28 @@ fn flatten_yaml(
             serde_yaml::Value::Sequence(seq) => {
                 // Convert YAML arrays to EntryValue::Array
                 let items: Vec<String> = seq.iter().map(value_to_string).collect();
-                entries.insert(full_key.clone(), I18nEntry {
-                    key: full_key,
-                    value: EntryValue::Array(items),
-                    ..Default::default()
-                });
+                entries.insert(
+                    full_key.clone(),
+                    I18nEntry {
+                        key: full_key,
+                        value: EntryValue::Array(items),
+                        ..Default::default()
+                    },
+                );
             }
             _ => {
                 // Leaf value → Simple entry
                 let text = value_to_string(value);
                 let placeholders = extract_placeholders(&text);
-                entries.insert(full_key.clone(), I18nEntry {
-                    key: full_key,
-                    value: EntryValue::Simple(text),
-                    placeholders,
-                    ..Default::default()
-                });
+                entries.insert(
+                    full_key.clone(),
+                    I18nEntry {
+                        key: full_key,
+                        value: EntryValue::Simple(text),
+                        placeholders,
+                        ..Default::default()
+                    },
+                );
             }
         }
     }
@@ -172,11 +187,7 @@ fn unflatten_to_yaml(entries: &IndexMap<String, I18nEntry>) -> serde_yaml::Mappi
 }
 
 /// Insert a value into a nested YAML mapping at the given key path.
-fn insert_nested(
-    mapping: &mut serde_yaml::Mapping,
-    parts: &[&str],
-    value: &EntryValue,
-) {
+fn insert_nested(mapping: &mut serde_yaml::Mapping, parts: &[&str], value: &EntryValue) {
     if parts.is_empty() {
         return;
     }
@@ -283,10 +294,10 @@ impl FormatParser for Parser {
 
     fn parse(&self, content: &[u8]) -> Result<I18nResource, ParseError> {
         let text = std::str::from_utf8(content)
-            .map_err(|e| ParseError::InvalidFormat(format!("Invalid UTF-8: {}", e)))?;
+            .map_err(|e| ParseError::InvalidFormat(format!("Invalid UTF-8: {e}")))?;
 
-        let yaml_value: serde_yaml::Value = serde_yaml::from_str(text)
-            .map_err(|e| ParseError::Yaml(format!("{}", e)))?;
+        let yaml_value: serde_yaml::Value =
+            serde_yaml::from_str(text).map_err(|e| ParseError::Yaml(format!("{e}")))?;
 
         let root_mapping = yaml_value
             .as_mapping()
@@ -300,7 +311,8 @@ impl FormatParser for Parser {
             )));
         }
 
-        let (locale_key, locale_value) = root_mapping.iter().next().expect("len == 1 checked above");
+        let (locale_key, locale_value) =
+            root_mapping.iter().next().expect("len == 1 checked above");
         let locale = locale_key
             .as_str()
             .ok_or_else(|| ParseError::Yaml("Locale key must be a string".to_string()))?
@@ -347,11 +359,7 @@ impl FormatParser for Parser {
 
 impl FormatWriter for Writer {
     fn write(&self, resource: &I18nResource) -> Result<Vec<u8>, WriteError> {
-        let locale = resource
-            .metadata
-            .locale
-            .as_deref()
-            .unwrap_or("en");
+        let locale = resource.metadata.locale.as_deref().unwrap_or("en");
 
         let inner_mapping = unflatten_to_yaml(&resource.entries);
 
@@ -363,7 +371,7 @@ impl FormatWriter for Writer {
         );
 
         let yaml_str = serde_yaml::to_string(&serde_yaml::Value::Mapping(root))
-            .map_err(|e| WriteError::Serialization(format!("{}", e)))?;
+            .map_err(|e| WriteError::Serialization(format!("{e}")))?;
 
         Ok(yaml_str.into_bytes())
     }
@@ -452,7 +460,7 @@ mod tests {
                 assert_eq!(ps.one, Some("one item".to_string()));
                 assert_eq!(ps.other, "%{count} items".to_string());
             }
-            other => panic!("Expected Plural, got {:?}", other),
+            other => panic!("Expected Plural, got {other:?}"),
         }
     }
 
@@ -472,11 +480,14 @@ mod tests {
     fn test_write_simple() {
         let writer = Writer;
         let mut entries = IndexMap::new();
-        entries.insert("greeting".to_string(), I18nEntry {
-            key: "greeting".to_string(),
-            value: EntryValue::Simple("Hello".to_string()),
-            ..Default::default()
-        });
+        entries.insert(
+            "greeting".to_string(),
+            I18nEntry {
+                key: "greeting".to_string(),
+                value: EntryValue::Simple("Hello".to_string()),
+                ..Default::default()
+            },
+        );
 
         let resource = I18nResource {
             metadata: ResourceMetadata {

@@ -67,9 +67,7 @@ fn state_to_qt_type(state: &TranslationState) -> Option<&'static str> {
         | TranslationState::NeedsTranslation => Some("unfinished"),
         TranslationState::Obsolete => Some("obsolete"),
         TranslationState::Vanished => Some("vanished"),
-        TranslationState::Translated
-        | TranslationState::Reviewed
-        | TranslationState::Final => None,
+        TranslationState::Translated | TranslationState::Reviewed | TranslationState::Final => None,
         _ => Some("unfinished"),
     }
 }
@@ -207,9 +205,8 @@ impl FormatParser for Parser {
                         }
                         "message" if state == ParseState::Context => {
                             state = ParseState::Message;
-                            let numerus = get_attr(e, b"numerus")
-                                .map(|v| v == "yes")
-                                .unwrap_or(false);
+                            let numerus =
+                                get_attr(e, b"numerus").map(|v| v == "yes").unwrap_or(false);
                             current_message = Some(MessageBuilder {
                                 numerus,
                                 ..Default::default()
@@ -250,14 +247,11 @@ impl FormatParser for Parser {
                             // <location> can be a start tag (will get an End event)
                             if let Some(ref mut msg) = current_message {
                                 let file = get_attr(e, b"filename").unwrap_or_default();
-                                let line = get_attr(e, b"line")
-                                    .and_then(|v| v.parse::<u32>().ok());
+                                let line = get_attr(e, b"line").and_then(|v| v.parse::<u32>().ok());
                                 msg.locations.push(SourceRef { file, line });
                             }
                         }
-                        other if state == ParseState::Message
-                            && other.starts_with("extra-") =>
-                        {
+                        other if state == ParseState::Message && other.starts_with("extra-") => {
                             state = ParseState::ExtraElement;
                             current_extra_name = Some(other.to_string());
                             text_buf.clear();
@@ -273,8 +267,7 @@ impl FormatParser for Parser {
                         "location" if state == ParseState::Message => {
                             if let Some(ref mut msg) = current_message {
                                 let file = get_attr(e, b"filename").unwrap_or_default();
-                                let line = get_attr(e, b"line")
-                                    .and_then(|v| v.parse::<u32>().ok());
+                                let line = get_attr(e, b"line").and_then(|v| v.parse::<u32>().ok());
                                 msg.locations.push(SourceRef { file, line });
                             }
                         }
@@ -347,8 +340,9 @@ impl FormatParser for Parser {
                             text_buf.clear();
                             state = ParseState::Message;
                         }
-                        other if state == ParseState::ExtraElement
-                            && current_extra_name.as_deref() == Some(other) =>
+                        other
+                            if state == ParseState::ExtraElement
+                                && current_extra_name.as_deref() == Some(other) =>
                         {
                             if let Some(ref mut msg) = current_message {
                                 if let Some(ref extra_name) = current_extra_name {
@@ -377,16 +371,13 @@ impl FormatParser for Parser {
                                     msg.translation_type.as_deref(),
                                     Some("obsolete") | Some("vanished")
                                 );
-                                let ir_state =
-                                    map_qt_state(msg.translation_type.as_deref());
+                                let ir_state = map_qt_state(msg.translation_type.as_deref());
 
                                 // Build value
                                 let value = if msg.numerus && !msg.numerus_forms.is_empty() {
                                     EntryValue::Plural(build_plural_set(&msg.numerus_forms))
                                 } else {
-                                    EntryValue::Simple(
-                                        msg.translation.clone().unwrap_or_default(),
-                                    )
+                                    EntryValue::Simple(msg.translation.clone().unwrap_or_default())
                                 };
 
                                 // Build comments
@@ -428,8 +419,7 @@ impl FormatParser for Parser {
                                         numerus: if msg.numerus { Some(true) } else { None },
                                         extra_elements: msg.extra_elements,
                                     };
-                                    if ext.numerus.is_some() || !ext.extra_elements.is_empty()
-                                    {
+                                    if ext.numerus.is_some() || !ext.extra_elements.is_empty() {
                                         Some(FormatExtension::QtLinguist(ext))
                                     } else {
                                         None
@@ -518,7 +508,7 @@ impl FormatWriter for Writer {
             .metadata
             .properties
             .get("ts_version")
-            .map(|s| s.clone())
+            .cloned()
             .unwrap_or_else(|| "2.1".to_string());
         ts_start.push_attribute(("version", version.as_str()));
 
@@ -542,10 +532,7 @@ impl FormatWriter for Writer {
                 .find(|c| c.context_type == ContextType::Disambiguation)
                 .map(|c| c.value.clone())
                 .unwrap_or_default();
-            context_groups
-                .entry(context_name)
-                .or_default()
-                .push(entry);
+            context_groups.entry(context_name).or_default().push(entry);
         }
 
         // Write each context group
@@ -583,8 +570,8 @@ impl FormatWriter for Writer {
 
         // Insert <!DOCTYPE TS> after the XML declaration.
         // Find the end of the XML declaration (?>), then insert the DOCTYPE line.
-        let xml_str = String::from_utf8(buf)
-            .map_err(|e| WriteError::Serialization(e.to_string()))?;
+        let xml_str =
+            String::from_utf8(buf).map_err(|e| WriteError::Serialization(e.to_string()))?;
         let result = if let Some(pos) = xml_str.find("?>") {
             let insert_pos = pos + 2;
             let mut output = String::with_capacity(xml_str.len() + 16);

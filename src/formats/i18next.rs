@@ -133,8 +133,7 @@ impl FormatWriter for Writer {
                 }
                 EntryValue::Array(arr) => {
                     // i18next doesn't natively support arrays, serialize as JSON array string
-                    let json_arr = serde_json::to_string(arr)
-                        .unwrap_or_else(|_| "[]".to_string());
+                    let json_arr = serde_json::to_string(arr).unwrap_or_else(|_| "[]".to_string());
                     flat.insert(key.clone(), json_arr);
                 }
                 EntryValue::Select(_) | EntryValue::MultiVariablePlural(_) => {
@@ -281,8 +280,7 @@ fn group_entries(flat: &IndexMap<String, String>) -> IndexMap<String, I18nEntry>
 /// Strip a cardinal plural suffix from a key, returning the base key and category.
 fn strip_cardinal_suffix(key: &str) -> Option<(&str, PluralCategory)> {
     for (suffix, cat) in PLURAL_SUFFIXES {
-        if key.ends_with(suffix) {
-            let base = &key[..key.len() - suffix.len()];
+        if let Some(base) = key.strip_suffix(suffix) {
             if !base.is_empty() {
                 return Some((base, *cat));
             }
@@ -294,8 +292,7 @@ fn strip_cardinal_suffix(key: &str) -> Option<(&str, PluralCategory)> {
 /// Strip an ordinal plural suffix from a key, returning the base key.
 fn strip_ordinal_suffix(key: &str) -> Option<&str> {
     for (suffix, _) in ORDINAL_SUFFIXES {
-        if key.ends_with(suffix) {
-            let base = &key[..key.len() - suffix.len()];
+        if let Some(base) = key.strip_suffix(suffix) {
             if !base.is_empty() {
                 return Some(base);
             }
@@ -380,9 +377,18 @@ fn extract_placeholders(value: &str) -> Vec<Placeholder> {
 
     for cap in RE_I18NEXT_PLACEHOLDER.captures_iter(value) {
         let full_match = cap.get(0).expect("regex group 0 always captures").as_str();
-        let inner = cap.get(1).expect("regex group 1 always captures").as_str().trim();
+        let inner = cap
+            .get(1)
+            .expect("regex group 1 always captures")
+            .as_str()
+            .trim();
         // The name is the part before any comma (format hint)
-        let name = inner.split(',').next().expect("split always yields at least one element").trim().to_string();
+        let name = inner
+            .split(',')
+            .next()
+            .expect("split always yields at least one element")
+            .trim()
+            .to_string();
         if seen.contains(&name) {
             continue;
         }
@@ -404,21 +410,18 @@ fn extract_placeholders(value: &str) -> Vec<Placeholder> {
 /// Extract placeholders from all forms of a PluralSet.
 fn extract_placeholders_from_plural(ps: &PluralSet) -> Vec<Placeholder> {
     let mut all_text = ps.other.clone();
-    for opt in [&ps.zero, &ps.one, &ps.two, &ps.few, &ps.many] {
-        if let Some(v) = opt {
-            all_text.push(' ');
-            all_text.push_str(v);
-        }
+    for v in [&ps.zero, &ps.one, &ps.two, &ps.few, &ps.many]
+        .into_iter()
+        .flatten()
+    {
+        all_text.push(' ');
+        all_text.push_str(v);
     }
     extract_placeholders(&all_text)
 }
 
 /// Write ordinal plural suffixed keys.
-fn write_ordinal_plural(
-    base: &str,
-    ps: &PluralSet,
-    flat: &mut IndexMap<String, String>,
-) {
+fn write_ordinal_plural(base: &str, ps: &PluralSet, flat: &mut IndexMap<String, String>) {
     if let Some(ref v) = ps.zero {
         flat.insert(format!("{base}_ordinal_zero"), v.clone());
     }
@@ -518,7 +521,8 @@ mod tests {
 
     #[test]
     fn test_flatten_json() {
-        let json: serde_json::Value = serde_json::from_str(r#"{"a": {"b": "c", "d": "e"}, "f": "g"}"#).unwrap();
+        let json: serde_json::Value =
+            serde_json::from_str(r#"{"a": {"b": "c", "d": "e"}, "f": "g"}"#).unwrap();
         let obj = json.as_object().unwrap();
         let mut flat = IndexMap::new();
         flatten_json(obj, "", &mut flat);

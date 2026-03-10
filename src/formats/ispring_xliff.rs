@@ -148,7 +148,7 @@ impl FormatParser for Parser {
                 Ok(Event::Eof) => break,
                 Ok(Event::Start(ref e)) => {
                     let tag_name = String::from_utf8_lossy(e.name().as_ref()).to_string();
-                    let local_name = tag_name.split(':').last().unwrap_or(&tag_name);
+                    let local_name = tag_name.split(':').next_back().unwrap_or(&tag_name);
 
                     match local_name {
                         "xliff" => {
@@ -213,18 +213,15 @@ impl FormatParser for Parser {
                 }
                 Ok(Event::Empty(ref e)) => {
                     let tag_name = String::from_utf8_lossy(e.name().as_ref()).to_string();
-                    let local_name = tag_name.split(':').last().unwrap_or(&tag_name);
+                    let local_name = tag_name.split(':').next_back().unwrap_or(&tag_name);
 
-                    match local_name {
-                        "tool" => {
-                            if let Some(tool_name) = get_attr(e, b"tool-name") {
-                                metadata.tool_name = Some(tool_name);
-                            }
-                            if let Some(tool_version) = get_attr(e, b"tool-version") {
-                                metadata.tool_version = Some(tool_version);
-                            }
+                    if local_name == "tool" {
+                        if let Some(tool_name) = get_attr(e, b"tool-name") {
+                            metadata.tool_name = Some(tool_name);
                         }
-                        _ => {}
+                        if let Some(tool_version) = get_attr(e, b"tool-version") {
+                            metadata.tool_version = Some(tool_version);
+                        }
                     }
                 }
                 Ok(Event::Text(ref e)) => {
@@ -233,7 +230,7 @@ impl FormatParser for Parser {
                 }
                 Ok(Event::End(ref e)) => {
                     let tag_name = String::from_utf8_lossy(e.name().as_ref()).to_string();
-                    let local_name = tag_name.split(':').last().unwrap_or(&tag_name);
+                    let local_name = tag_name.split(':').next_back().unwrap_or(&tag_name);
 
                     match local_name {
                         "source" => {

@@ -74,12 +74,15 @@ fn parse_simple_metadata() {
 
     assert_eq!(resource.metadata.source_format, FormatId::CaptivateXml);
     assert_eq!(resource.metadata.source_locale, Some("en".to_string()));
-    assert_eq!(resource.metadata.tool_name, Some("Adobe Captivate".to_string()));
+    assert_eq!(
+        resource.metadata.tool_name,
+        Some("Adobe Captivate".to_string())
+    );
 
     // Check format extension
     match &resource.metadata.format_ext {
         Some(FormatExtension::CaptivateXml(_)) => {}
-        other => panic!("Expected CaptivateXmlExt, got {:?}", other),
+        other => panic!("Expected CaptivateXmlExt, got {other:?}"),
     }
 }
 
@@ -91,13 +94,19 @@ fn parse_simple_source_values() {
     let e1 = &resource.entries["slide_1_item_1"];
     assert_eq!(e1.source, Some("Welcome to this course".to_string()));
     // Mono-lingual: value should equal source
-    assert_eq!(e1.value, EntryValue::Simple("Welcome to this course".to_string()));
+    assert_eq!(
+        e1.value,
+        EntryValue::Simple("Welcome to this course".to_string())
+    );
 
     let e2 = &resource.entries["slide_1_item_2"];
     assert_eq!(e2.source, Some("This module covers the basics".to_string()));
 
     let e3 = &resource.entries["slide_2_item_1"];
-    assert_eq!(e3.source, Some("Click the button below to continue".to_string()));
+    assert_eq!(
+        e3.source,
+        Some("Click the button below to continue".to_string())
+    );
 }
 
 #[test]
@@ -112,7 +121,7 @@ fn parse_simple_slide_item_ext() {
             assert_eq!(ext.item_id, Some("1".to_string()));
             assert_eq!(ext.css_style, None);
         }
-        other => panic!("Expected CaptivateXmlExt, got {:?}", other),
+        other => panic!("Expected CaptivateXmlExt, got {other:?}"),
     }
 
     let e3 = &resource.entries["slide_2_item_1"];
@@ -121,7 +130,7 @@ fn parse_simple_slide_item_ext() {
             assert_eq!(ext.slide_id, Some("2".to_string()));
             assert_eq!(ext.item_id, Some("1".to_string()));
         }
-        other => panic!("Expected CaptivateXmlExt, got {:?}", other),
+        other => panic!("Expected CaptivateXmlExt, got {other:?}"),
     }
 }
 
@@ -143,10 +152,22 @@ fn parse_formatted_inline_bold() {
 
     let e1 = &resource.entries["slide_1_item_1"];
     let source = e1.source.as_deref().unwrap();
-    assert!(source.contains("<g"), "Source should contain <g> element: {source}");
-    assert!(source.contains("ctype=\"bold\""), "Should preserve ctype: {source}");
-    assert!(source.contains("Important:"), "Should contain text content: {source}");
-    assert!(source.contains("Pay attention to this section"), "Should contain trailing text: {source}");
+    assert!(
+        source.contains("<g"),
+        "Source should contain <g> element: {source}"
+    );
+    assert!(
+        source.contains("ctype=\"bold\""),
+        "Should preserve ctype: {source}"
+    );
+    assert!(
+        source.contains("Important:"),
+        "Should contain text content: {source}"
+    );
+    assert!(
+        source.contains("Pay attention to this section"),
+        "Should contain trailing text: {source}"
+    );
 }
 
 #[test]
@@ -156,9 +177,18 @@ fn parse_formatted_inline_italic() {
 
     let e2 = &resource.entries["slide_1_item_2"];
     let source = e2.source.as_deref().unwrap();
-    assert!(source.contains("<g"), "Source should contain <g> element: {source}");
-    assert!(source.contains("ctype=\"italic\""), "Should preserve italic ctype: {source}");
-    assert!(source.contains("emphasized"), "Should contain emphasized text: {source}");
+    assert!(
+        source.contains("<g"),
+        "Source should contain <g> element: {source}"
+    );
+    assert!(
+        source.contains("ctype=\"italic\""),
+        "Should preserve italic ctype: {source}"
+    );
+    assert!(
+        source.contains("emphasized"),
+        "Should contain emphasized text: {source}"
+    );
 }
 
 #[test]
@@ -170,9 +200,18 @@ fn parse_formatted_multiple_g_elements() {
     let source = e3.source.as_deref().unwrap();
     // Should have two <g> elements
     let g_count = source.matches("<g ").count();
-    assert_eq!(g_count, 2, "Should have 2 <g> elements, got {g_count} in: {source}");
-    assert!(source.contains("Step 1:"), "Should contain Step 1: {source}");
-    assert!(source.contains("Settings"), "Should contain Settings: {source}");
+    assert_eq!(
+        g_count, 2,
+        "Should have 2 <g> elements, got {g_count} in: {source}"
+    );
+    assert!(
+        source.contains("Step 1:"),
+        "Should contain Step 1: {source}"
+    );
+    assert!(
+        source.contains("Settings"),
+        "Should contain Settings: {source}"
+    );
 }
 
 #[test]
@@ -182,7 +221,10 @@ fn parse_formatted_plain_text_entry() {
 
     let e4 = &resource.entries["slide_2_item_2"];
     let source = e4.source.as_deref().unwrap();
-    assert!(!source.contains("<g"), "Plain text should not have <g> elements");
+    assert!(
+        !source.contains("<g"),
+        "Plain text should not have <g> elements"
+    );
     assert_eq!(source, "Plain text without formatting");
 }
 
@@ -257,17 +299,23 @@ fn parse_styled_css_attributes() {
     let title = &resource.entries["slide_1_item_1"];
     match &title.format_ext {
         Some(FormatExtension::CaptivateXml(ext)) => {
-            assert_eq!(ext.css_style, Some("font-family:Arial;font-size:24px;".to_string()));
+            assert_eq!(
+                ext.css_style,
+                Some("font-family:Arial;font-size:24px;".to_string())
+            );
         }
-        other => panic!("Expected CaptivateXmlExt, got {:?}", other),
+        other => panic!("Expected CaptivateXmlExt, got {other:?}"),
     }
 
     let subtitle = &resource.entries["slide_1_item_2"];
     match &subtitle.format_ext {
         Some(FormatExtension::CaptivateXml(ext)) => {
-            assert_eq!(ext.css_style, Some("font-family:Verdana;color:#333333;".to_string()));
+            assert_eq!(
+                ext.css_style,
+                Some("font-family:Verdana;color:#333333;".to_string())
+            );
         }
-        other => panic!("Expected CaptivateXmlExt, got {:?}", other),
+        other => panic!("Expected CaptivateXmlExt, got {other:?}"),
     }
 }
 
@@ -281,7 +329,7 @@ fn parse_styled_no_css_style() {
         Some(FormatExtension::CaptivateXml(ext)) => {
             assert_eq!(ext.css_style, None);
         }
-        other => panic!("Expected CaptivateXmlExt with no css_style, got {:?}", other),
+        other => panic!("Expected CaptivateXmlExt with no css_style, got {other:?}"),
     }
 }
 
@@ -292,14 +340,23 @@ fn parse_styled_with_inline_markup_and_css() {
 
     let exam = &resource.entries["slide_3_item_1"];
     let source = exam.source.as_deref().unwrap();
-    assert!(source.contains("<g"), "Should contain inline markup: {source}");
-    assert!(source.contains("Final Exam"), "Should contain text: {source}");
+    assert!(
+        source.contains("<g"),
+        "Should contain inline markup: {source}"
+    );
+    assert!(
+        source.contains("Final Exam"),
+        "Should contain text: {source}"
+    );
 
     match &exam.format_ext {
         Some(FormatExtension::CaptivateXml(ext)) => {
-            assert_eq!(ext.css_style, Some("text-align:center;font-size:18px;".to_string()));
+            assert_eq!(
+                ext.css_style,
+                Some("text-align:center;font-size:18px;".to_string())
+            );
         }
-        other => panic!("Expected CaptivateXmlExt, got {:?}", other),
+        other => panic!("Expected CaptivateXmlExt, got {other:?}"),
     }
 }
 
@@ -334,18 +391,30 @@ fn writer_produces_valid_xliff() {
     let written = captivate_xml::Writer.write(&resource).unwrap();
     let xml_str = String::from_utf8(written).expect("Writer should produce valid UTF-8");
 
-    assert!(xml_str.contains("<?xml version=\"1.0\" encoding=\"UTF-8\"?>"),
-        "Should have XML declaration");
-    assert!(xml_str.contains("<xliff version=\"1.2\""),
-        "Should have xliff root element");
-    assert!(xml_str.contains("xmlns=\"urn:oasis:names:tc:xliff:document:1.2\""),
-        "Should have XLIFF namespace");
-    assert!(xml_str.contains("original=\"captivate_project\""),
-        "Should have captivate original attribute");
-    assert!(xml_str.contains("tool-id=\"captivate\""),
-        "Should have captivate tool-id");
-    assert!(xml_str.contains("tool-name=\"Adobe Captivate\""),
-        "Should have Adobe Captivate tool-name");
+    assert!(
+        xml_str.contains("<?xml version=\"1.0\" encoding=\"UTF-8\"?>"),
+        "Should have XML declaration"
+    );
+    assert!(
+        xml_str.contains("<xliff version=\"1.2\""),
+        "Should have xliff root element"
+    );
+    assert!(
+        xml_str.contains("xmlns=\"urn:oasis:names:tc:xliff:document:1.2\""),
+        "Should have XLIFF namespace"
+    );
+    assert!(
+        xml_str.contains("original=\"captivate_project\""),
+        "Should have captivate original attribute"
+    );
+    assert!(
+        xml_str.contains("tool-id=\"captivate\""),
+        "Should have captivate tool-id"
+    );
+    assert!(
+        xml_str.contains("tool-name=\"Adobe Captivate\""),
+        "Should have Adobe Captivate tool-name"
+    );
 }
 
 #[test]
@@ -355,12 +424,18 @@ fn writer_includes_trans_units() {
     let written = captivate_xml::Writer.write(&resource).unwrap();
     let xml_str = String::from_utf8(written).unwrap();
 
-    assert!(xml_str.contains("id=\"slide_1_item_1\""),
-        "Should contain slide_1_item_1 trans-unit");
-    assert!(xml_str.contains("id=\"slide_2_item_1\""),
-        "Should contain slide_2_item_1 trans-unit");
-    assert!(xml_str.contains("<source>Welcome to this course</source>"),
-        "Should contain source text");
+    assert!(
+        xml_str.contains("id=\"slide_1_item_1\""),
+        "Should contain slide_1_item_1 trans-unit"
+    );
+    assert!(
+        xml_str.contains("id=\"slide_2_item_1\""),
+        "Should contain slide_2_item_1 trans-unit"
+    );
+    assert!(
+        xml_str.contains("<source>Welcome to this course</source>"),
+        "Should contain source text"
+    );
 }
 
 #[test]
@@ -371,8 +446,10 @@ fn writer_omits_target_when_same_as_source() {
     let xml_str = String::from_utf8(written).unwrap();
 
     // In mono-lingual mode, value == source, so no <target> should be written
-    assert!(!xml_str.contains("<target>"),
-        "Should not write <target> when value equals source");
+    assert!(
+        !xml_str.contains("<target>"),
+        "Should not write <target> when value equals source"
+    );
 }
 
 #[test]
@@ -382,8 +459,10 @@ fn writer_includes_css_style() {
     let written = captivate_xml::Writer.write(&resource).unwrap();
     let xml_str = String::from_utf8(written).unwrap();
 
-    assert!(xml_str.contains("css-style=\"font-family:Arial;font-size:24px;\""),
-        "Should preserve css-style attribute");
+    assert!(
+        xml_str.contains("css-style=\"font-family:Arial;font-size:24px;\""),
+        "Should preserve css-style attribute"
+    );
 }
 
 #[test]
@@ -393,10 +472,14 @@ fn writer_includes_notes() {
     let written = captivate_xml::Writer.write(&resource).unwrap();
     let xml_str = String::from_utf8(written).unwrap();
 
-    assert!(xml_str.contains("<note>Multiple choice question</note>"),
-        "Should include general notes");
-    assert!(xml_str.contains("from=\"developer\""),
-        "Should include developer role on notes");
+    assert!(
+        xml_str.contains("<note>Multiple choice question</note>"),
+        "Should include general notes"
+    );
+    assert!(
+        xml_str.contains("from=\"developer\""),
+        "Should include developer role on notes"
+    );
 }
 
 #[test]
@@ -406,8 +489,14 @@ fn writer_preserves_inline_markup() {
     let written = captivate_xml::Writer.write(&resource).unwrap();
     let xml_str = String::from_utf8(written).unwrap();
 
-    assert!(xml_str.contains("<g "), "Should preserve <g> elements in output");
-    assert!(xml_str.contains("ctype=\"bold\""), "Should preserve ctype attribute");
+    assert!(
+        xml_str.contains("<g "),
+        "Should preserve <g> elements in output"
+    );
+    assert!(
+        xml_str.contains("ctype=\"bold\""),
+        "Should preserve ctype attribute"
+    );
 }
 
 // ===========================================================================
@@ -433,7 +522,10 @@ fn roundtrip_simple() {
             "Source mismatch for key: {key}"
         );
     }
-    assert_eq!(resource.metadata.source_locale, reparsed.metadata.source_locale);
+    assert_eq!(
+        resource.metadata.source_locale,
+        reparsed.metadata.source_locale
+    );
 }
 
 #[test]
@@ -464,7 +556,8 @@ fn roundtrip_quiz_notes() {
     for (key, entry) in &resource.entries {
         let reparsed_entry = &reparsed.entries[key];
         assert_eq!(
-            entry.comments.len(), reparsed_entry.comments.len(),
+            entry.comments.len(),
+            reparsed_entry.comments.len(),
             "Comment count mismatch for key: {key}"
         );
         for (i, comment) in entry.comments.iter().enumerate() {
@@ -493,13 +586,22 @@ fn roundtrip_styled_css() {
 
         // Compare format extensions (css_style, slide_id, item_id)
         match (&entry.format_ext, &reparsed_entry.format_ext) {
-            (Some(FormatExtension::CaptivateXml(orig)), Some(FormatExtension::CaptivateXml(rt))) => {
-                assert_eq!(orig.css_style, rt.css_style, "css_style mismatch for key: {key}");
-                assert_eq!(orig.slide_id, rt.slide_id, "slide_id mismatch for key: {key}");
+            (
+                Some(FormatExtension::CaptivateXml(orig)),
+                Some(FormatExtension::CaptivateXml(rt)),
+            ) => {
+                assert_eq!(
+                    orig.css_style, rt.css_style,
+                    "css_style mismatch for key: {key}"
+                );
+                assert_eq!(
+                    orig.slide_id, rt.slide_id,
+                    "slide_id mismatch for key: {key}"
+                );
                 assert_eq!(orig.item_id, rt.item_id, "item_id mismatch for key: {key}");
             }
             (None, None) => {}
-            (orig, rt) => panic!("Format ext mismatch for key {key}: {:?} vs {:?}", orig, rt),
+            (orig, rt) => panic!("Format ext mismatch for key {key}: {orig:?} vs {rt:?}"),
         }
     }
 }
@@ -558,7 +660,7 @@ fn parse_malformed_id_no_slide_pattern() {
             assert_eq!(ext.slide_id, None);
             assert_eq!(ext.item_id, None);
         }
-        other => panic!("Unexpected format_ext: {:?}", other),
+        other => panic!("Unexpected format_ext: {other:?}"),
     }
 }
 
@@ -618,10 +720,14 @@ fn roundtrip_with_target_writes_target() {
     let xml_str = String::from_utf8(written).unwrap();
 
     // Since value ("Willkommen") differs from source ("Welcome"), target should be written
-    assert!(xml_str.contains("<target>Willkommen</target>"),
-        "Should write <target> when value differs from source. Output:\n{xml_str}");
-    assert!(xml_str.contains("<source>Welcome</source>"),
-        "Should write <source>");
+    assert!(
+        xml_str.contains("<target>Willkommen</target>"),
+        "Should write <target> when value differs from source. Output:\n{xml_str}"
+    );
+    assert!(
+        xml_str.contains("<source>Welcome</source>"),
+        "Should write <source>"
+    );
 
     // Roundtrip
     let reparsed = captivate_xml::Parser.parse(xml_str.as_bytes()).unwrap();
@@ -671,6 +777,8 @@ fn writer_preserves_original_attribute() {
     let written = captivate_xml::Writer.write(&resource).unwrap();
     let xml_str = String::from_utf8(written).unwrap();
 
-    assert!(xml_str.contains("original=\"captivate_project\""),
-        "Should preserve the original attribute in output");
+    assert!(
+        xml_str.contains("original=\"captivate_project\""),
+        "Should preserve the original attribute in output"
+    );
 }

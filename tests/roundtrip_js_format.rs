@@ -1,5 +1,5 @@
-use i18n_convert::formats::{Confidence, FormatParser, FormatWriter};
 use i18n_convert::formats::js_format::{Parser, Writer};
+use i18n_convert::formats::{Confidence, FormatParser, FormatWriter};
 use i18n_convert::ir::*;
 use indexmap::IndexMap;
 
@@ -129,7 +129,7 @@ fn parse_plurals_fixture() {
             assert_eq!(ps.other, "{count} items".to_string());
             assert!(ps.zero.is_none());
         }
-        other => panic!("Expected Plural, got {:?}", other),
+        other => panic!("Expected Plural, got {other:?}"),
     }
 
     let files = &resource.entries["files"];
@@ -139,7 +139,7 @@ fn parse_plurals_fixture() {
             assert_eq!(ps.one, Some("1 file".to_string()));
             assert_eq!(ps.other, "{count} files".to_string());
         }
-        other => panic!("Expected Plural, got {:?}", other),
+        other => panic!("Expected Plural, got {other:?}"),
     }
 }
 
@@ -165,7 +165,7 @@ fn parse_esmodule_fixture() {
         Some(FormatExtension::JavaScript(ext)) => {
             assert_eq!(ext.export_style, Some("export default".to_string()));
         }
-        other => panic!("Expected JavaScript extension, got {:?}", other),
+        other => panic!("Expected JavaScript extension, got {other:?}"),
     }
 }
 
@@ -181,7 +181,7 @@ fn preserve_module_exports_style() {
         Some(FormatExtension::JavaScript(ext)) => {
             assert_eq!(ext.export_style, Some("module.exports".to_string()));
         }
-        other => panic!("Expected JavaScript extension, got {:?}", other),
+        other => panic!("Expected JavaScript extension, got {other:?}"),
     }
 }
 
@@ -193,7 +193,7 @@ fn preserve_export_default_style() {
         Some(FormatExtension::JavaScript(ext)) => {
             assert_eq!(ext.export_style, Some("export default".to_string()));
         }
-        other => panic!("Expected JavaScript extension, got {:?}", other),
+        other => panic!("Expected JavaScript extension, got {other:?}"),
     }
 }
 
@@ -205,7 +205,7 @@ fn preserve_double_quote_style() {
         Some(FormatExtension::JavaScript(ext)) => {
             assert_eq!(ext.quote_style, Some('"'));
         }
-        other => panic!("Expected JavaScript extension, got {:?}", other),
+        other => panic!("Expected JavaScript extension, got {other:?}"),
     }
 }
 
@@ -217,7 +217,7 @@ fn preserve_single_quote_style() {
         Some(FormatExtension::JavaScript(ext)) => {
             assert_eq!(ext.quote_style, Some('\''));
         }
-        other => panic!("Expected JavaScript extension, got {:?}", other),
+        other => panic!("Expected JavaScript extension, got {other:?}"),
     }
 }
 

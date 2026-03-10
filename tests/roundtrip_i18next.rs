@@ -1,7 +1,7 @@
 use i18n_convert::formats::i18next;
+use i18n_convert::formats::Confidence;
 use i18n_convert::formats::FormatParser;
 use i18n_convert::formats::FormatWriter;
-use i18n_convert::formats::Confidence;
 use i18n_convert::ir::*;
 
 fn load_fixture(name: &str) -> Vec<u8> {
@@ -73,7 +73,7 @@ fn parse_cardinal_plurals_all_forms() {
             assert_eq!(ps.many, Some("{{count}} items (many)".to_string()));
             assert_eq!(ps.other, "{{count}} items");
         }
-        other => panic!("Expected Plural for 'item', got: {:?}", other),
+        other => panic!("Expected Plural for 'item', got: {other:?}"),
     }
 }
 
@@ -93,7 +93,7 @@ fn parse_cardinal_plurals_two_forms() {
             assert!(ps.few.is_none());
             assert!(ps.many.is_none());
         }
-        other => panic!("Expected Plural for 'message', got: {:?}", other),
+        other => panic!("Expected Plural for 'message', got: {other:?}"),
     }
 }
 
@@ -112,7 +112,7 @@ fn parse_ordinal_plurals() {
             assert_eq!(ps.few, Some("{{count}}rd".to_string()));
             assert_eq!(ps.other, "{{count}}th");
         }
-        other => panic!("Expected Plural for 'ordinal', got: {:?}", other),
+        other => panic!("Expected Plural for 'ordinal', got: {other:?}"),
     }
 }
 
@@ -161,7 +161,7 @@ fn parse_nested_plurals() {
             assert_eq!(ps.one, Some("{{count}} user".to_string()));
             assert_eq!(ps.other, "{{count}} users");
         }
-        other => panic!("Expected Plural for 'dashboard.stats.user', got: {:?}", other),
+        other => panic!("Expected Plural for 'dashboard.stats.user', got: {other:?}"),
     }
 
     match &resource.entries["dashboard.stats.session"].value {
@@ -169,7 +169,7 @@ fn parse_nested_plurals() {
             assert_eq!(ps.one, Some("{{count}} active session".to_string()));
             assert_eq!(ps.other, "{{count}} active sessions");
         }
-        other => panic!("Expected Plural for 'dashboard.stats.session', got: {:?}", other),
+        other => panic!("Expected Plural for 'dashboard.stats.session', got: {other:?}"),
     }
 }
 
@@ -238,7 +238,7 @@ fn parse_plural_with_interpolation() {
             assert_eq!(ps.one, Some("{{name}} has {{count}} new email".to_string()));
             assert_eq!(ps.other, "{{name}} has {{count}} new emails");
         }
-        other => panic!("Expected Plural for 'email_count', got: {:?}", other),
+        other => panic!("Expected Plural for 'email_count', got: {other:?}"),
     }
 
     // Should extract both placeholders from plural forms
@@ -290,7 +290,10 @@ fn write_nested_structure_reconstructed() {
     assert_eq!(reparsed["common"]["cancel"], "Cancel");
     assert_eq!(reparsed["dashboard"]["title"], "Dashboard");
     assert_eq!(reparsed["dashboard"]["stats"]["user_one"], "{{count}} user");
-    assert_eq!(reparsed["dashboard"]["stats"]["user_other"], "{{count}} users");
+    assert_eq!(
+        reparsed["dashboard"]["stats"]["user_other"],
+        "{{count}} users"
+    );
 }
 
 // ─── Full roundtrip test ─────────────────────────────────────────
@@ -314,7 +317,7 @@ fn roundtrip_full() {
 
     for (key, entry) in &resource.entries {
         let reparsed_entry = reparsed.entries.get(key).unwrap_or_else(|| {
-            panic!("Key '{}' missing in reparsed output", key);
+            panic!("Key '{key}' missing in reparsed output");
         });
         assert_eq!(
             entry.value, reparsed_entry.value,
@@ -333,8 +336,7 @@ fn roundtrip_simple() {
     assert_eq!(resource.entries.len(), reparsed.entries.len());
     for (key, entry) in &resource.entries {
         assert_eq!(
-            entry.value,
-            reparsed.entries[key].value,
+            entry.value, reparsed.entries[key].value,
             "Value mismatch for key: {key}"
         );
     }
@@ -350,8 +352,7 @@ fn roundtrip_nested() {
     assert_eq!(resource.entries.len(), reparsed.entries.len());
     for (key, entry) in &resource.entries {
         assert_eq!(
-            entry.value,
-            reparsed.entries[key].value,
+            entry.value, reparsed.entries[key].value,
             "Value mismatch for key: {key}"
         );
     }
@@ -367,8 +368,7 @@ fn roundtrip_interpolation() {
     assert_eq!(resource.entries.len(), reparsed.entries.len());
     for (key, entry) in &resource.entries {
         assert_eq!(
-            entry.value,
-            reparsed.entries[key].value,
+            entry.value, reparsed.entries[key].value,
             "Value mismatch for key: {key}"
         );
     }

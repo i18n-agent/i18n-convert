@@ -278,15 +278,13 @@ fn kitchen_sink_roundtrip_android_xml() {
 
     // Simple string value
     assert_eq!(
-        ir.entries["simple"].value,
-        parsed.entries["simple"].value,
+        ir.entries["simple"].value, parsed.entries["simple"].value,
         "Simple string value should survive Android XML roundtrip"
     );
 
     // Translatable flag
     assert_eq!(
-        ir.entries["api_key"].translatable,
-        parsed.entries["api_key"].translatable,
+        ir.entries["api_key"].translatable, parsed.entries["api_key"].translatable,
         "Translatable flag should survive"
     );
 
@@ -305,8 +303,7 @@ fn kitchen_sink_roundtrip_android_xml() {
 
     // Arrays survive
     assert_eq!(
-        ir.entries["colors"].value,
-        parsed.entries["colors"].value,
+        ir.entries["colors"].value, parsed.entries["colors"].value,
         "Array should survive Android XML roundtrip"
     );
 
@@ -328,8 +325,7 @@ fn kitchen_sink_roundtrip_xcstrings() {
 
     // Simple string value
     assert_eq!(
-        ir.entries["simple"].value,
-        parsed.entries["simple"].value,
+        ir.entries["simple"].value, parsed.entries["simple"].value,
         "Simple string should survive xcstrings roundtrip"
     );
 
@@ -350,8 +346,7 @@ fn kitchen_sink_roundtrip_xcstrings() {
 
     // Translatable flag
     assert_eq!(
-        ir.entries["api_key"].translatable,
-        parsed.entries["api_key"].translatable,
+        ir.entries["api_key"].translatable, parsed.entries["api_key"].translatable,
         "Translatable flag should survive xcstrings roundtrip"
     );
 
@@ -375,8 +370,7 @@ fn kitchen_sink_roundtrip_ios_strings() {
 
     // Simple string values should survive (the writer falls back to string for non-simple)
     assert_eq!(
-        ir.entries["simple"].value,
-        parsed.entries["simple"].value,
+        ir.entries["simple"].value, parsed.entries["simple"].value,
         "Simple string should survive iOS strings roundtrip"
     );
 
@@ -440,8 +434,7 @@ fn kitchen_sink_roundtrip_arb() {
 
     // Simple string value
     assert_eq!(
-        ir.entries["simple"].value,
-        parsed.entries["simple"].value,
+        ir.entries["simple"].value, parsed.entries["simple"].value,
         "Simple string should survive ARB roundtrip"
     );
 
@@ -459,8 +452,7 @@ fn kitchen_sink_roundtrip_arb() {
 
     // Locale metadata survives
     assert_eq!(
-        ir.metadata.locale,
-        parsed.metadata.locale,
+        ir.metadata.locale, parsed.metadata.locale,
         "Locale should survive ARB roundtrip"
     );
 }
@@ -476,22 +468,19 @@ fn kitchen_sink_roundtrip_json_structured() {
 
     // Simple string value
     assert_eq!(
-        ir.entries["simple"].value,
-        parsed.entries["simple"].value,
+        ir.entries["simple"].value, parsed.entries["simple"].value,
         "Simple string should survive JSON roundtrip"
     );
 
     // Untranslatable entry value
     assert_eq!(
-        ir.entries["api_key"].value,
-        parsed.entries["api_key"].value,
+        ir.entries["api_key"].value, parsed.entries["api_key"].value,
         "API key value should survive JSON roundtrip"
     );
 
     // Welcome message with placeholder
     assert_eq!(
-        ir.entries["welcome"].value,
-        parsed.entries["welcome"].value,
+        ir.entries["welcome"].value, parsed.entries["welcome"].value,
         "Placeholder string should survive JSON roundtrip"
     );
 }
@@ -507,8 +496,7 @@ fn kitchen_sink_roundtrip_i18next() {
 
     // Simple string value
     assert_eq!(
-        ir.entries["simple"].value,
-        parsed.entries["simple"].value,
+        ir.entries["simple"].value, parsed.entries["simple"].value,
         "Simple string should survive i18next roundtrip"
     );
 
@@ -538,15 +526,13 @@ fn kitchen_sink_roundtrip_xliff() {
 
     // Simple string value
     assert_eq!(
-        ir.entries["simple"].value,
-        parsed.entries["simple"].value,
+        ir.entries["simple"].value, parsed.entries["simple"].value,
         "Simple string should survive XLIFF roundtrip"
     );
 
     // Source string
     assert_eq!(
-        ir.entries["simple"].source,
-        parsed.entries["simple"].source,
+        ir.entries["simple"].source, parsed.entries["simple"].source,
         "Source string should survive XLIFF roundtrip"
     );
 
@@ -564,8 +550,7 @@ fn kitchen_sink_roundtrip_xliff() {
 
     // Max width
     assert_eq!(
-        ir.entries["simple"].max_width,
-        parsed.entries["simple"].max_width,
+        ir.entries["simple"].max_width, parsed.entries["simple"].max_width,
         "Max width should survive XLIFF roundtrip"
     );
 
@@ -579,15 +564,13 @@ fn kitchen_sink_roundtrip_xliff() {
 
     // Resource name
     assert_eq!(
-        ir.entries["simple"].resource_name,
-        parsed.entries["simple"].resource_name,
+        ir.entries["simple"].resource_name, parsed.entries["simple"].resource_name,
         "Resource name should survive XLIFF roundtrip"
     );
 
     // Resource type
     assert_eq!(
-        ir.entries["simple"].resource_type,
-        parsed.entries["simple"].resource_type,
+        ir.entries["simple"].resource_type, parsed.entries["simple"].resource_type,
         "Resource type should survive XLIFF roundtrip"
     );
 }
@@ -647,8 +630,7 @@ fn kitchen_sink_roundtrip_yaml_rails() {
 
     // Simple string value
     assert_eq!(
-        ir.entries["simple"].value,
-        parsed.entries["simple"].value,
+        ir.entries["simple"].value, parsed.entries["simple"].value,
         "Simple string should survive YAML Rails roundtrip"
     );
 
@@ -668,8 +650,7 @@ fn kitchen_sink_roundtrip_yaml_rails() {
 
     // Arrays survive
     assert_eq!(
-        ir.entries["colors"].value,
-        parsed.entries["colors"].value,
+        ir.entries["colors"].value, parsed.entries["colors"].value,
         "Array should survive YAML Rails roundtrip"
     );
 }

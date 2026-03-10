@@ -200,15 +200,17 @@ fn parse_placeholder(name: &str, obj: &Map<String, Value>) -> Placeholder {
         .and_then(|v| v.as_str())
         .map(|s| s.to_string());
 
-    let placeholder_type = raw_type.as_deref().map(|t| match t.to_lowercase().as_str() {
-        "string" => PlaceholderType::String,
-        "int" | "integer" => PlaceholderType::Integer,
-        "double" => PlaceholderType::Double,
-        "float" => PlaceholderType::Float,
-        "datetime" => PlaceholderType::DateTime,
-        "object" => PlaceholderType::Object,
-        other => PlaceholderType::Other(other.to_string()),
-    });
+    let placeholder_type = raw_type
+        .as_deref()
+        .map(|t| match t.to_lowercase().as_str() {
+            "string" => PlaceholderType::String,
+            "int" | "integer" => PlaceholderType::Integer,
+            "double" => PlaceholderType::Double,
+            "float" => PlaceholderType::Float,
+            "datetime" => PlaceholderType::DateTime,
+            "object" => PlaceholderType::Object,
+            other => PlaceholderType::Other(other.to_string()),
+        });
 
     let format = obj
         .get("format")
@@ -264,7 +266,10 @@ impl FormatWriter for Writer {
 
         // Write @@last_modified
         if let Some(modified) = &resource.metadata.modified_at {
-            root.insert("@@last_modified".to_string(), Value::String(modified.clone()));
+            root.insert(
+                "@@last_modified".to_string(),
+                Value::String(modified.clone()),
+            );
         }
 
         // Write @@author
@@ -313,7 +318,10 @@ impl FormatWriter for Writer {
             // description from Extracted comments
             for comment in &entry.comments {
                 if comment.role == CommentRole::Extracted {
-                    meta.insert("description".to_string(), Value::String(comment.text.clone()));
+                    meta.insert(
+                        "description".to_string(),
+                        Value::String(comment.text.clone()),
+                    );
                     has_meta = true;
                     break;
                 }
@@ -439,7 +447,11 @@ fn plural_set_to_icu(ps: &PluralSet, var_name: &str) -> String {
     }
     parts.push(format!("other{{{}}}", ps.other));
 
-    let keyword = if ps.ordinal { "selectordinal" } else { "plural" };
+    let keyword = if ps.ordinal {
+        "selectordinal"
+    } else {
+        "plural"
+    };
     format!("{{{var_name}, {keyword}, {}}}", parts.join(" "))
 }
 

@@ -132,7 +132,7 @@ fn parse_full() {
             assert_eq!(ext.type_name, Some("System.String".to_string()));
             assert_eq!(ext.mimetype, Some("text/plain".to_string()));
         }
-        other => panic!("Expected ResxExt, got {:?}", other),
+        other => panic!("Expected ResxExt, got {other:?}"),
     }
 
     // Check special chars are decoded

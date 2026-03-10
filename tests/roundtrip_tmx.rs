@@ -59,7 +59,9 @@ fn capabilities() {
 #[test]
 fn parse_simple() {
     let content = load_fixture("simple.tmx");
-    let resource = tmx::Parser.parse(&content).expect("should parse simple.tmx");
+    let resource = tmx::Parser
+        .parse(&content)
+        .expect("should parse simple.tmx");
 
     assert_eq!(resource.entries.len(), 3);
     assert_eq!(resource.metadata.source_locale, Some("en".to_string()));
@@ -74,7 +76,10 @@ fn parse_simple() {
     // Check farewell
     let farewell = &resource.entries["farewell"];
     assert_eq!(farewell.source, Some("Goodbye".to_string()));
-    assert_eq!(farewell.value, EntryValue::Simple("Auf Wiedersehen".to_string()));
+    assert_eq!(
+        farewell.value,
+        EntryValue::Simple("Auf Wiedersehen".to_string())
+    );
 
     // Untranslated entry has empty target
     let untranslated = &resource.entries["untranslated"];
@@ -85,10 +90,15 @@ fn parse_simple() {
 #[test]
 fn parse_simple_metadata() {
     let content = load_fixture("simple.tmx");
-    let resource = tmx::Parser.parse(&content).expect("should parse simple.tmx");
+    let resource = tmx::Parser
+        .parse(&content)
+        .expect("should parse simple.tmx");
 
     assert_eq!(resource.metadata.source_format, FormatId::Tmx);
-    assert_eq!(resource.metadata.tool_name, Some("i18n-convert".to_string()));
+    assert_eq!(
+        resource.metadata.tool_name,
+        Some("i18n-convert".to_string())
+    );
     assert_eq!(resource.metadata.tool_version, Some("0.1.0".to_string()));
 
     // Check format extension
@@ -97,7 +107,7 @@ fn parse_simple_metadata() {
             assert_eq!(ext.seg_type, Some("sentence".to_string()));
             assert_eq!(ext.o_tmf, Some("undefined".to_string()));
         }
-        other => panic!("Expected TmxExt, got {:?}", other),
+        other => panic!("Expected TmxExt, got {other:?}"),
     }
 }
 
@@ -137,7 +147,9 @@ fn parse_notes() {
 #[test]
 fn parse_properties() {
     let content = load_fixture("properties.tmx");
-    let resource = tmx::Parser.parse(&content).expect("should parse properties.tmx");
+    let resource = tmx::Parser
+        .parse(&content)
+        .expect("should parse properties.tmx");
 
     assert_eq!(resource.entries.len(), 2);
     assert_eq!(resource.metadata.tool_name, Some("MyTool".to_string()));
@@ -145,17 +157,35 @@ fn parse_properties() {
 
     // greeting: has props and change metadata
     let greeting = &resource.entries["greeting"];
-    assert_eq!(greeting.properties.get("domain"), Some(&"general".to_string()));
-    assert_eq!(greeting.properties.get("project"), Some(&"webapp".to_string()));
-    assert_eq!(greeting.properties.get("changedate"), Some(&"20240101T120000Z".to_string()));
-    assert_eq!(greeting.properties.get("changeid"), Some(&"translator1".to_string()));
+    assert_eq!(
+        greeting.properties.get("domain"),
+        Some(&"general".to_string())
+    );
+    assert_eq!(
+        greeting.properties.get("project"),
+        Some(&"webapp".to_string())
+    );
+    assert_eq!(
+        greeting.properties.get("changedate"),
+        Some(&"20240101T120000Z".to_string())
+    );
+    assert_eq!(
+        greeting.properties.get("changeid"),
+        Some(&"translator1".to_string())
+    );
     assert_eq!(greeting.comments.len(), 1);
     assert_eq!(greeting.comments[0].text, "A greeting message");
 
     // farewell: has prop and change metadata, no notes
     let farewell = &resource.entries["farewell"];
-    assert_eq!(farewell.properties.get("domain"), Some(&"general".to_string()));
-    assert_eq!(farewell.properties.get("changedate"), Some(&"20240215T083000Z".to_string()));
+    assert_eq!(
+        farewell.properties.get("domain"),
+        Some(&"general".to_string())
+    );
+    assert_eq!(
+        farewell.properties.get("changedate"),
+        Some(&"20240215T083000Z".to_string())
+    );
     assert_eq!(farewell.comments.len(), 0);
 
     // Check format extension: paragraph segtype, custom o-tmf
@@ -164,7 +194,7 @@ fn parse_properties() {
             assert_eq!(ext.seg_type, Some("paragraph".to_string()));
             assert_eq!(ext.o_tmf, Some("ABCTransMem".to_string()));
         }
-        other => panic!("Expected TmxExt, got {:?}", other),
+        other => panic!("Expected TmxExt, got {other:?}"),
     }
 }
 
@@ -183,12 +213,21 @@ fn parse_full() {
 
     // welcome
     let welcome = &resource.entries["welcome"];
-    assert_eq!(welcome.source, Some("Welcome to our application".to_string()));
-    assert_eq!(welcome.value, EntryValue::Simple("Bienvenido a nuestra aplicación".to_string()));
+    assert_eq!(
+        welcome.source,
+        Some("Welcome to our application".to_string())
+    );
+    assert_eq!(
+        welcome.value,
+        EntryValue::Simple("Bienvenido a nuestra aplicación".to_string())
+    );
     assert_eq!(welcome.comments.len(), 1);
     assert_eq!(welcome.properties.get("domain"), Some(&"web".to_string()));
     assert_eq!(welcome.properties.get("client"), Some(&"acme".to_string()));
-    assert_eq!(welcome.properties.get("changedate"), Some(&"20240301T100000Z".to_string()));
+    assert_eq!(
+        welcome.properties.get("changedate"),
+        Some(&"20240301T100000Z".to_string())
+    );
 
     // items_count
     let items = &resource.entries["items_count"];
@@ -229,7 +268,10 @@ fn roundtrip_simple() {
             "Source mismatch for key: {key}"
         );
     }
-    assert_eq!(resource.metadata.source_locale, reparsed.metadata.source_locale);
+    assert_eq!(
+        resource.metadata.source_locale,
+        reparsed.metadata.source_locale
+    );
     assert_eq!(resource.metadata.locale, reparsed.metadata.locale);
 }
 
@@ -243,7 +285,8 @@ fn roundtrip_notes() {
     for (key, entry) in &resource.entries {
         let reparsed_entry = &reparsed.entries[key];
         assert_eq!(
-            entry.comments.len(), reparsed_entry.comments.len(),
+            entry.comments.len(),
+            reparsed_entry.comments.len(),
             "Comment count mismatch for key: {key}"
         );
         for (i, comment) in entry.comments.iter().enumerate() {
@@ -276,7 +319,8 @@ fn roundtrip_properties() {
         // Check custom properties round-trip (domain, project)
         for (prop_key, prop_val) in &entry.properties {
             assert_eq!(
-                reparsed_entry.properties.get(prop_key), Some(prop_val),
+                reparsed_entry.properties.get(prop_key),
+                Some(prop_val),
                 "Property '{prop_key}' mismatch for key: {key}"
             );
         }
@@ -284,7 +328,10 @@ fn roundtrip_properties() {
 
     // Verify metadata round-trips
     assert_eq!(resource.metadata.tool_name, reparsed.metadata.tool_name);
-    assert_eq!(resource.metadata.tool_version, reparsed.metadata.tool_version);
+    assert_eq!(
+        resource.metadata.tool_version,
+        reparsed.metadata.tool_version
+    );
     match (&resource.metadata.format_ext, &reparsed.metadata.format_ext) {
         (Some(FormatExtension::Tmx(orig)), Some(FormatExtension::Tmx(rt))) => {
             assert_eq!(orig.seg_type, rt.seg_type);
@@ -313,7 +360,8 @@ fn roundtrip_full() {
             "Source mismatch for key: {key}"
         );
         assert_eq!(
-            entry.comments.len(), reparsed_entry.comments.len(),
+            entry.comments.len(),
+            reparsed_entry.comments.len(),
             "Comment count mismatch for key: {key}"
         );
     }
@@ -346,5 +394,8 @@ fn writer_omits_empty_target() {
     let resource = tmx::Parser.parse(&content).expect("should parse");
     let written = tmx::Writer.write(&resource).expect("should write");
     let reparsed = tmx::Parser.parse(&written).expect("should reparse");
-    assert_eq!(reparsed.entries["untranslated"].value, EntryValue::Simple(String::new()));
+    assert_eq!(
+        reparsed.entries["untranslated"].value,
+        EntryValue::Simple(String::new())
+    );
 }

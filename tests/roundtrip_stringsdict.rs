@@ -1,6 +1,6 @@
-use i18n_convert::ir::*;
-use i18n_convert::formats::{Confidence, FormatParser, FormatWriter};
 use i18n_convert::formats::stringsdict::{Parser, Writer};
+use i18n_convert::formats::{Confidence, FormatParser, FormatWriter};
+use i18n_convert::ir::*;
 use indexmap::IndexMap;
 
 // ─── Fixture loading helpers ──────────────────────────────────────────────────
@@ -11,7 +11,7 @@ fn fixture(name: &str) -> Vec<u8> {
         env!("CARGO_MANIFEST_DIR"),
         name
     );
-    std::fs::read(&path).unwrap_or_else(|e| panic!("Failed to read fixture {}: {}", path, e))
+    std::fs::read(&path).unwrap_or_else(|e| panic!("Failed to read fixture {path}: {e}"))
 }
 
 // ─── Parse tests ──────────────────────────────────────────────────────────────
@@ -25,7 +25,10 @@ fn parse_single_var() {
     assert_eq!(resource.metadata.source_format, FormatId::Stringsdict);
     assert_eq!(resource.entries.len(), 1);
 
-    let entry = resource.entries.get("item_count").expect("should have item_count");
+    let entry = resource
+        .entries
+        .get("item_count")
+        .expect("should have item_count");
     assert_eq!(entry.key, "item_count");
 
     match &entry.value {
@@ -37,7 +40,7 @@ fn parse_single_var() {
             assert!(ps.few.is_none());
             assert!(ps.many.is_none());
         }
-        other => panic!("Expected Plural, got {:?}", other),
+        other => panic!("Expected Plural, got {other:?}"),
     }
 }
 
@@ -64,12 +67,15 @@ fn parse_multi_var() {
             assert_eq!(files_var.plural_set.one, Some("%d file".to_string()));
             assert_eq!(files_var.plural_set.other, "%d files");
 
-            let folders_var = mvp.variables.get("folders").expect("should have folders var");
+            let folders_var = mvp
+                .variables
+                .get("folders")
+                .expect("should have folders var");
             assert_eq!(folders_var.format_specifier, Some("d".to_string()));
             assert_eq!(folders_var.plural_set.one, Some("%d folder".to_string()));
             assert_eq!(folders_var.plural_set.other, "%d folders");
         }
-        other => panic!("Expected MultiVariablePlural, got {:?}", other),
+        other => panic!("Expected MultiVariablePlural, got {other:?}"),
     }
 }
 
@@ -95,7 +101,7 @@ fn parse_all_categories() {
             assert_eq!(ps.many, Some("%d messages (many)".to_string()));
             assert_eq!(ps.other, "%d messages");
         }
-        other => panic!("Expected Plural, got {:?}", other),
+        other => panic!("Expected Plural, got {other:?}"),
     }
 }
 
@@ -139,7 +145,9 @@ fn write_single_var_produces_valid_plist() {
     assert!(output_str.contains("%d items"));
 
     // Verify it can be re-parsed
-    let reparsed = parser.parse(&output).expect("should reparse written output");
+    let reparsed = parser
+        .parse(&output)
+        .expect("should reparse written output");
     assert_eq!(reparsed.entries.len(), 1);
 }
 
@@ -200,7 +208,9 @@ fn write_multi_var_produces_valid_plist() {
     let output = writer.write(&resource).expect("should write");
 
     // Verify it can be re-parsed
-    let reparsed = parser.parse(&output).expect("should reparse written output");
+    let reparsed = parser
+        .parse(&output)
+        .expect("should reparse written output");
     assert_eq!(reparsed.entries.len(), 1);
 
     let entry = reparsed
@@ -213,7 +223,7 @@ fn write_multi_var_produces_valid_plist() {
             assert_eq!(mvp.pattern, "%#@files@ in %#@folders@");
             assert_eq!(mvp.variables.len(), 2);
         }
-        other => panic!("Expected MultiVariablePlural, got {:?}", other),
+        other => panic!("Expected MultiVariablePlural, got {other:?}"),
     }
 }
 
@@ -234,13 +244,9 @@ fn roundtrip_single_var() {
 
     for (key, entry1) in &resource1.entries {
         let entry2 = resource2.entries.get(key).unwrap_or_else(|| {
-            panic!("Key '{}' missing after round-trip", key);
+            panic!("Key '{key}' missing after round-trip");
         });
-        assert_eq!(
-            entry1.value, entry2.value,
-            "Value mismatch for key '{}'",
-            key
-        );
+        assert_eq!(entry1.value, entry2.value, "Value mismatch for key '{key}'");
     }
 }
 
@@ -258,13 +264,9 @@ fn roundtrip_multi_var() {
 
     for (key, entry1) in &resource1.entries {
         let entry2 = resource2.entries.get(key).unwrap_or_else(|| {
-            panic!("Key '{}' missing after round-trip", key);
+            panic!("Key '{key}' missing after round-trip");
         });
-        assert_eq!(
-            entry1.value, entry2.value,
-            "Value mismatch for key '{}'",
-            key
-        );
+        assert_eq!(entry1.value, entry2.value, "Value mismatch for key '{key}'");
     }
 }
 
@@ -282,13 +284,9 @@ fn roundtrip_all_categories() {
 
     for (key, entry1) in &resource1.entries {
         let entry2 = resource2.entries.get(key).unwrap_or_else(|| {
-            panic!("Key '{}' missing after round-trip", key);
+            panic!("Key '{key}' missing after round-trip");
         });
-        assert_eq!(
-            entry1.value, entry2.value,
-            "Value mismatch for key '{}'",
-            key
-        );
+        assert_eq!(entry1.value, entry2.value, "Value mismatch for key '{key}'");
     }
 }
 
@@ -339,7 +337,7 @@ fn roundtrip_all_six_categories_preserved() {
             assert_eq!(ps.many, Some("many val".to_string()));
             assert_eq!(ps.other, "other val");
         }
-        other => panic!("Expected Plural, got {:?}", other),
+        other => panic!("Expected Plural, got {other:?}"),
     }
 }
 
@@ -417,13 +415,16 @@ fn roundtrip_multiple_entries() {
     assert_eq!(reparsed.entries.len(), 2);
 
     // Check single-var entry
-    let greeting = reparsed.entries.get("greeting").expect("should have greeting");
+    let greeting = reparsed
+        .entries
+        .get("greeting")
+        .expect("should have greeting");
     match &greeting.value {
         EntryValue::Plural(ps) => {
             assert_eq!(ps.one, Some("%d greeting".to_string()));
             assert_eq!(ps.other, "%d greetings");
         }
-        other => panic!("Expected Plural for greeting, got {:?}", other),
+        other => panic!("Expected Plural for greeting, got {other:?}"),
     }
 
     // Check multi-var entry
@@ -438,7 +439,7 @@ fn roundtrip_multiple_entries() {
             assert!(mvp.variables.contains_key("photos"));
             assert!(mvp.variables.contains_key("albums"));
         }
-        other => panic!("Expected MultiVariablePlural for photo_album, got {:?}", other),
+        other => panic!("Expected MultiVariablePlural for photo_album, got {other:?}"),
     }
 }
 
@@ -504,7 +505,7 @@ fn write_preserves_format_specifier_lld() {
             assert_eq!(ps.one, Some("%lld byte".to_string()));
             assert_eq!(ps.other, "%lld bytes");
         }
-        other => panic!("Expected Plural, got {:?}", other),
+        other => panic!("Expected Plural, got {other:?}"),
     }
 }
 
@@ -522,7 +523,10 @@ fn parse_empty_dict_fails() {
 </plist>"#;
 
     let result = parser.parse(content);
-    assert!(result.is_err(), "Should fail on entry missing NSStringLocalizedFormatKey");
+    assert!(
+        result.is_err(),
+        "Should fail on entry missing NSStringLocalizedFormatKey"
+    );
 }
 
 #[test]
@@ -530,7 +534,10 @@ fn detection_confidence() {
     let parser = Parser;
 
     // .stringsdict extension is always Definite
-    assert_eq!(parser.detect(".stringsdict", b"anything"), Confidence::Definite);
+    assert_eq!(
+        parser.detect(".stringsdict", b"anything"),
+        Confidence::Definite
+    );
 
     // .plist with NSStringLocalizedFormatKey content
     assert_eq!(
@@ -539,11 +546,20 @@ fn detection_confidence() {
     );
 
     // .plist without the key
-    assert_eq!(parser.detect(".plist", b"some other content"), Confidence::None);
+    assert_eq!(
+        parser.detect(".plist", b"some other content"),
+        Confidence::None
+    );
 
     // Unrelated extension
-    assert_eq!(parser.detect(".json", b"NSStringLocalizedFormatKey"), Confidence::None);
-    assert_eq!(parser.detect(".xml", b"NSStringLocalizedFormatKey"), Confidence::Definite);
+    assert_eq!(
+        parser.detect(".json", b"NSStringLocalizedFormatKey"),
+        Confidence::None
+    );
+    assert_eq!(
+        parser.detect(".xml", b"NSStringLocalizedFormatKey"),
+        Confidence::Definite
+    );
 }
 
 #[test]

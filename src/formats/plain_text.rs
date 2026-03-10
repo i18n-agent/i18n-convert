@@ -50,7 +50,7 @@ impl FormatParser for Parser {
 
     fn parse(&self, content: &[u8]) -> Result<I18nResource, ParseError> {
         let text = std::str::from_utf8(content)
-            .map_err(|e| ParseError::InvalidFormat(format!("Invalid UTF-8: {}", e)))?;
+            .map_err(|e| ParseError::InvalidFormat(format!("Invalid UTF-8: {e}")))?;
 
         let line_ending = detect_line_ending(text);
         let normalized = normalize_line_endings(text);
@@ -94,7 +94,7 @@ impl FormatParser for Parser {
             sections.push(current_section.trim_end_matches('\n').to_string());
 
             for (i, section) in sections.iter().enumerate() {
-                let key = format!("content.{}", i);
+                let key = format!("content.{i}");
                 entries.insert(
                     key.clone(),
                     I18nEntry {
@@ -108,7 +108,10 @@ impl FormatParser for Parser {
             // Single content entry: the entire file content
             // Strip a single trailing newline if present (common in text files),
             // but preserve internal content exactly.
-            let value = normalized.strip_suffix('\n').unwrap_or(&normalized).to_string();
+            let value = normalized
+                .strip_suffix('\n')
+                .unwrap_or(&normalized)
+                .to_string();
             entries.insert(
                 "content".to_string(),
                 I18nEntry {
@@ -156,9 +159,7 @@ impl FormatWriter for Writer {
     fn write(&self, resource: &I18nResource) -> Result<Vec<u8>, WriteError> {
         // Determine line ending from extension
         let line_ending = match &resource.metadata.format_ext {
-            Some(FormatExtension::PlainText(ext)) => {
-                ext.line_ending.as_deref().unwrap_or("\n")
-            }
+            Some(FormatExtension::PlainText(ext)) => ext.line_ending.as_deref().unwrap_or("\n"),
             _ => "\n",
         };
 
@@ -187,7 +188,7 @@ impl FormatWriter for Writer {
                 .iter()
                 .map(|(_, s)| *s)
                 .collect::<Vec<_>>()
-                .join(&format!("\n{}\n", SECTION_DELIMITER));
+                .join(&format!("\n{SECTION_DELIMITER}\n"));
 
             restore_line_endings(&joined, line_ending)
         } else {

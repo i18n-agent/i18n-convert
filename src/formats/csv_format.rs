@@ -15,13 +15,11 @@ const COMMENT_COLUMN_NAMES: &[&str] = &["comment", "comments", "note", "notes", 
 
 /// Known locale codes (common ones) used to detect value columns.
 const LOCALE_PATTERNS: &[&str] = &[
-    "en", "de", "fr", "es", "it", "pt", "ja", "ko", "zh", "ru", "ar", "nl", "pl", "sv", "da",
-    "fi", "nb", "tr", "th", "vi", "id", "ms", "hi", "bn", "uk", "cs", "ro", "hu", "el", "he",
-    "ca", "hr", "sk", "sl", "bg", "sr", "lt", "lv", "et",
-    // With regions
-    "en-us", "en-gb", "en-au", "pt-br", "zh-cn", "zh-tw", "zh-hans", "zh-hant",
-    "es-mx", "es-ar", "fr-ca", "fr-fr", "de-de", "de-at", "de-ch",
-    // Underscore variants
+    "en", "de", "fr", "es", "it", "pt", "ja", "ko", "zh", "ru", "ar", "nl", "pl", "sv", "da", "fi",
+    "nb", "tr", "th", "vi", "id", "ms", "hi", "bn", "uk", "cs", "ro", "hu", "el", "he", "ca", "hr",
+    "sk", "sl", "bg", "sr", "lt", "lv", "et", // With regions
+    "en-us", "en-gb", "en-au", "pt-br", "zh-cn", "zh-tw", "zh-hans", "zh-hant", "es-mx", "es-ar",
+    "fr-ca", "fr-fr", "de-de", "de-at", "de-ch", // Underscore variants
     "en_us", "en_gb", "pt_br", "zh_cn", "zh_tw",
 ];
 
@@ -75,7 +73,7 @@ fn parse_csv(content: &[u8], extension: &str) -> Result<I18nResource, ParseError
     let clean_content = strip_bom(content);
 
     let text = std::str::from_utf8(clean_content)
-        .map_err(|e| ParseError::InvalidFormat(format!("Invalid UTF-8: {}", e)))?;
+        .map_err(|e| ParseError::InvalidFormat(format!("Invalid UTF-8: {e}")))?;
 
     let delimiter = detect_delimiter(text, extension);
 
@@ -88,7 +86,7 @@ fn parse_csv(content: &[u8], extension: &str) -> Result<I18nResource, ParseError
     // Read headers
     let headers = reader
         .headers()
-        .map_err(|e| ParseError::InvalidFormat(format!("Failed to read CSV headers: {}", e)))?
+        .map_err(|e| ParseError::InvalidFormat(format!("Failed to read CSV headers: {e}")))?
         .clone();
 
     if headers.is_empty() {
@@ -146,12 +144,10 @@ fn parse_csv(content: &[u8], extension: &str) -> Result<I18nResource, ParseError
         }
     }
 
-    let key_col = key_col.ok_or_else(|| {
-        ParseError::InvalidFormat("Could not determine key column".to_string())
-    })?;
-    let value_col = value_col.ok_or_else(|| {
-        ParseError::InvalidFormat("Could not determine value column".to_string())
-    })?;
+    let key_col = key_col
+        .ok_or_else(|| ParseError::InvalidFormat("Could not determine key column".to_string()))?;
+    let value_col = value_col
+        .ok_or_else(|| ParseError::InvalidFormat("Could not determine value column".to_string()))?;
 
     // Determine locale from value column name
     let locale = value_col_name.as_ref().and_then(|name| {
@@ -167,8 +163,8 @@ fn parse_csv(content: &[u8], extension: &str) -> Result<I18nResource, ParseError
     let mut entries = IndexMap::new();
 
     for result in reader.records() {
-        let record = result
-            .map_err(|e| ParseError::InvalidFormat(format!("CSV parse error: {}", e)))?;
+        let record =
+            result.map_err(|e| ParseError::InvalidFormat(format!("CSV parse error: {e}")))?;
 
         let key = record.get(key_col).unwrap_or("").trim().to_string();
         if key.is_empty() {
@@ -225,40 +221,30 @@ fn parse_csv(content: &[u8], extension: &str) -> Result<I18nResource, ParseError
 
 fn write_csv(resource: &I18nResource) -> Result<Vec<u8>, WriteError> {
     // Determine column names from metadata
-    let (key_col_name, value_col_name, delimiter) = if let Some(FormatExtension::Csv(ext)) =
-        &resource.metadata.format_ext
-    {
-        let kc = ext
-            .key_column
-            .clone()
-            .unwrap_or_else(|| "key".to_string());
-        let vc = ext
-            .value_column
-            .clone()
-            .unwrap_or_else(|| "value".to_string());
-        let delim = ext.delimiter.map(|c| {
-            if c == '\t' {
-                b'\t'
-            } else {
-                b','
-            }
-        }).unwrap_or(b',');
-        (kc, vc, delim)
-    } else {
-        // Use locale from metadata if available
-        let vc = resource
-            .metadata
-            .locale
-            .clone()
-            .unwrap_or_else(|| "value".to_string());
-        ("key".to_string(), vc, b',')
-    };
+    let (key_col_name, value_col_name, delimiter) =
+        if let Some(FormatExtension::Csv(ext)) = &resource.metadata.format_ext {
+            let kc = ext.key_column.clone().unwrap_or_else(|| "key".to_string());
+            let vc = ext
+                .value_column
+                .clone()
+                .unwrap_or_else(|| "value".to_string());
+            let delim = ext
+                .delimiter
+                .map(|c| if c == '\t' { b'\t' } else { b',' })
+                .unwrap_or(b',');
+            (kc, vc, delim)
+        } else {
+            // Use locale from metadata if available
+            let vc = resource
+                .metadata
+                .locale
+                .clone()
+                .unwrap_or_else(|| "value".to_string());
+            ("key".to_string(), vc, b',')
+        };
 
     // Check if any entries have comments
-    let has_comments = resource
-        .entries
-        .values()
-        .any(|e| !e.comments.is_empty());
+    let has_comments = resource.entries.values().any(|e| !e.comments.is_empty());
 
     let mut wtr = csv::WriterBuilder::new()
         .delimiter(delimiter)
@@ -267,10 +253,10 @@ fn write_csv(resource: &I18nResource) -> Result<Vec<u8>, WriteError> {
     // Write header
     if has_comments {
         wtr.write_record([&key_col_name, &value_col_name, "comment"])
-            .map_err(|e| WriteError::Serialization(format!("CSV write error: {}", e)))?;
+            .map_err(|e| WriteError::Serialization(format!("CSV write error: {e}")))?;
     } else {
         wtr.write_record([&key_col_name, &value_col_name])
-            .map_err(|e| WriteError::Serialization(format!("CSV write error: {}", e)))?;
+            .map_err(|e| WriteError::Serialization(format!("CSV write error: {e}")))?;
     }
 
     // Write entries
@@ -290,19 +276,19 @@ fn write_csv(resource: &I18nResource) -> Result<Vec<u8>, WriteError> {
                 .map(|c| c.text.clone())
                 .unwrap_or_default();
             wtr.write_record([&entry.key, &value_str, &comment])
-                .map_err(|e| WriteError::Serialization(format!("CSV write error: {}", e)))?;
+                .map_err(|e| WriteError::Serialization(format!("CSV write error: {e}")))?;
         } else {
             wtr.write_record([&entry.key, &value_str])
-                .map_err(|e| WriteError::Serialization(format!("CSV write error: {}", e)))?;
+                .map_err(|e| WriteError::Serialization(format!("CSV write error: {e}")))?;
         }
     }
 
     wtr.flush()
-        .map_err(|e| WriteError::Serialization(format!("CSV flush error: {}", e)))?;
+        .map_err(|e| WriteError::Serialization(format!("CSV flush error: {e}")))?;
 
     let output = wtr
         .into_inner()
-        .map_err(|e| WriteError::Serialization(format!("CSV finalize error: {}", e)))?;
+        .map_err(|e| WriteError::Serialization(format!("CSV finalize error: {e}")))?;
 
     Ok(output)
 }

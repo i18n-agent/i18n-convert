@@ -1,5 +1,5 @@
-use i18n_convert::formats::{Confidence, FormatParser, FormatWriter};
 use i18n_convert::formats::srt;
+use i18n_convert::formats::{Confidence, FormatParser, FormatWriter};
 use i18n_convert::ir::*;
 use indexmap::IndexMap;
 
@@ -12,10 +12,7 @@ fn writer() -> srt::Writer {
 }
 
 fn fixture(name: &str) -> Vec<u8> {
-    let path = format!(
-        "{}/tests/fixtures/srt/{name}",
-        env!("CARGO_MANIFEST_DIR")
-    );
+    let path = format!("{}/tests/fixtures/srt/{name}", env!("CARGO_MANIFEST_DIR"));
     std::fs::read(&path).unwrap_or_else(|e| panic!("Failed to read fixture {path}: {e}"))
 }
 
@@ -139,7 +136,7 @@ fn parse_srt_format_extension() {
             assert_eq!(ext.start_time, Some("00:00:01,000".to_string()));
             assert_eq!(ext.end_time, Some("00:00:04,000".to_string()));
         }
-        other => panic!("Expected SrtExt, got {:?}", other),
+        other => panic!("Expected SrtExt, got {other:?}"),
     }
 }
 
@@ -177,9 +174,15 @@ fn write_basic_srt() {
         value: EntryValue::Simple("Hello, world!".to_string()),
         ..Default::default()
     };
-    entry1.properties.insert("srt.sequence".to_string(), "1".to_string());
-    entry1.properties.insert("srt.start_time".to_string(), "00:00:01,000".to_string());
-    entry1.properties.insert("srt.end_time".to_string(), "00:00:04,000".to_string());
+    entry1
+        .properties
+        .insert("srt.sequence".to_string(), "1".to_string());
+    entry1
+        .properties
+        .insert("srt.start_time".to_string(), "00:00:01,000".to_string());
+    entry1
+        .properties
+        .insert("srt.end_time".to_string(), "00:00:04,000".to_string());
     entries.insert("1".to_string(), entry1);
 
     let mut entry2 = I18nEntry {
@@ -187,9 +190,15 @@ fn write_basic_srt() {
         value: EntryValue::Simple("Goodbye!".to_string()),
         ..Default::default()
     };
-    entry2.properties.insert("srt.sequence".to_string(), "2".to_string());
-    entry2.properties.insert("srt.start_time".to_string(), "00:00:05,000".to_string());
-    entry2.properties.insert("srt.end_time".to_string(), "00:00:08,000".to_string());
+    entry2
+        .properties
+        .insert("srt.sequence".to_string(), "2".to_string());
+    entry2
+        .properties
+        .insert("srt.start_time".to_string(), "00:00:05,000".to_string());
+    entry2
+        .properties
+        .insert("srt.end_time".to_string(), "00:00:08,000".to_string());
     entries.insert("2".to_string(), entry2);
 
     let resource = I18nResource {
@@ -386,9 +395,15 @@ fn write_multiline_text() {
         value: EntryValue::Simple("Line one\nLine two".to_string()),
         ..Default::default()
     };
-    entry.properties.insert("srt.sequence".to_string(), "1".to_string());
-    entry.properties.insert("srt.start_time".to_string(), "00:00:01,000".to_string());
-    entry.properties.insert("srt.end_time".to_string(), "00:00:04,000".to_string());
+    entry
+        .properties
+        .insert("srt.sequence".to_string(), "1".to_string());
+    entry
+        .properties
+        .insert("srt.start_time".to_string(), "00:00:01,000".to_string());
+    entry
+        .properties
+        .insert("srt.end_time".to_string(), "00:00:04,000".to_string());
     entries.insert("1".to_string(), entry);
 
     let resource = I18nResource {

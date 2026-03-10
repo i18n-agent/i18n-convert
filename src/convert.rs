@@ -83,7 +83,12 @@ pub fn check_data_loss(
         }
     }
 
-    push_warning(&mut warnings, plural_keys, "plurals", WarningSeverity::Error);
+    push_warning(
+        &mut warnings,
+        plural_keys,
+        "plurals",
+        WarningSeverity::Error,
+    );
     push_warning(&mut warnings, array_keys, "arrays", WarningSeverity::Error);
     push_warning(
         &mut warnings,

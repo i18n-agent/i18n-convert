@@ -41,7 +41,11 @@ fn parse_ini_content(content: &str) -> Result<I18nResource, ParseError> {
                 first_comment_char = Some(ch);
             }
             let text = &trimmed[1..];
-            let text = if text.starts_with(' ') { &text[1..] } else { text };
+            let text = if let Some(stripped) = text.strip_prefix(' ') {
+                stripped
+            } else {
+                text
+            };
             pending_comments.push((text.to_string(), ch));
             continue;
         }
@@ -96,10 +100,22 @@ fn unescape_ini_value(s: &str) -> String {
     while let Some(ch) = chars.next() {
         if ch == '\\' {
             match chars.peek() {
-                Some(&'n') => { chars.next(); out.push('\n'); }
-                Some(&'t') => { chars.next(); out.push('\t'); }
-                Some(&'r') => { chars.next(); out.push('\r'); }
-                Some(&'\\') => { chars.next(); out.push('\\'); }
+                Some(&'n') => {
+                    chars.next();
+                    out.push('\n');
+                }
+                Some(&'t') => {
+                    chars.next();
+                    out.push('\t');
+                }
+                Some(&'r') => {
+                    chars.next();
+                    out.push('\r');
+                }
+                Some(&'\\') => {
+                    chars.next();
+                    out.push('\\');
+                }
                 _ => out.push('\\'),
             }
         } else {
@@ -147,7 +163,7 @@ fn split_ini_kv(line: &str) -> Option<(String, String, char)> {
 /// Build the full IR key from section and key name.
 fn make_full_key(section: &Option<String>, key: &str) -> String {
     match section {
-        Some(sec) => format!("{}.{}", sec, key),
+        Some(sec) => format!("{sec}.{key}"),
         None => key.to_string(),
     }
 }
@@ -296,11 +312,7 @@ fn write_ini(resource: &I18nResource) -> String {
             Some(FormatExtension::Ini(ext)) => ext.section.clone(),
             _ => {
                 // Try to derive section from dotted key
-                if let Some(dot_pos) = key.find('.') {
-                    Some(key[..dot_pos].to_string())
-                } else {
-                    None
-                }
+                key.find('.').map(|dot_pos| key[..dot_pos].to_string())
             }
         };
         sections.entry(section).or_default().push((key, entry));
@@ -315,7 +327,7 @@ fn write_ini(resource: &I18nResource) -> String {
 
         // Write section header
         if let Some(sec) = section {
-            out.push_str(&format!("[{}]\n", sec));
+            out.push_str(&format!("[{sec}]\n"));
         }
 
         for (full_key, entry) in section_entries {
@@ -327,7 +339,7 @@ fn write_ini(resource: &I18nResource) -> String {
             // Determine the local key (strip section prefix)
             let local_key = match section {
                 Some(sec) => {
-                    let prefix = format!("{}.", sec);
+                    let prefix = format!("{sec}.");
                     if full_key.starts_with(&prefix) {
                         &full_key[prefix.len()..]
                     } else {
@@ -344,36 +356,86 @@ fn write_ini(resource: &I18nResource) -> String {
 
             match &entry.value {
                 EntryValue::Simple(val) => {
-                    out.push_str(&format!("{} {} {}\n", local_key, delim, escape_ini_value(val)));
+                    out.push_str(&format!(
+                        "{} {} {}\n",
+                        local_key,
+                        delim,
+                        escape_ini_value(val)
+                    ));
                 }
                 EntryValue::Plural(ps) => {
                     // Write each plural form as separate key with suffix
                     if let Some(ref zero) = ps.zero {
-                        out.push_str(&format!("{}_zero {} {}\n", local_key, delim, escape_ini_value(zero)));
+                        out.push_str(&format!(
+                            "{}_zero {} {}\n",
+                            local_key,
+                            delim,
+                            escape_ini_value(zero)
+                        ));
                     }
                     if let Some(ref one) = ps.one {
-                        out.push_str(&format!("{}_one {} {}\n", local_key, delim, escape_ini_value(one)));
+                        out.push_str(&format!(
+                            "{}_one {} {}\n",
+                            local_key,
+                            delim,
+                            escape_ini_value(one)
+                        ));
                     }
                     if let Some(ref two) = ps.two {
-                        out.push_str(&format!("{}_two {} {}\n", local_key, delim, escape_ini_value(two)));
+                        out.push_str(&format!(
+                            "{}_two {} {}\n",
+                            local_key,
+                            delim,
+                            escape_ini_value(two)
+                        ));
                     }
                     if let Some(ref few) = ps.few {
-                        out.push_str(&format!("{}_few {} {}\n", local_key, delim, escape_ini_value(few)));
+                        out.push_str(&format!(
+                            "{}_few {} {}\n",
+                            local_key,
+                            delim,
+                            escape_ini_value(few)
+                        ));
                     }
                     if let Some(ref many) = ps.many {
-                        out.push_str(&format!("{}_many {} {}\n", local_key, delim, escape_ini_value(many)));
+                        out.push_str(&format!(
+                            "{}_many {} {}\n",
+                            local_key,
+                            delim,
+                            escape_ini_value(many)
+                        ));
                     }
-                    out.push_str(&format!("{}_other {} {}\n", local_key, delim, escape_ini_value(&ps.other)));
+                    out.push_str(&format!(
+                        "{}_other {} {}\n",
+                        local_key,
+                        delim,
+                        escape_ini_value(&ps.other)
+                    ));
                 }
                 EntryValue::Array(arr) => {
-                    out.push_str(&format!("{} {} {}\n", local_key, delim, escape_ini_value(&arr.join(", "))));
+                    out.push_str(&format!(
+                        "{} {} {}\n",
+                        local_key,
+                        delim,
+                        escape_ini_value(&arr.join(", "))
+                    ));
                 }
                 EntryValue::Select(ss) => {
                     let val = ss.cases.values().next().cloned().unwrap_or_default();
-                    out.push_str(&format!("{} {} {}\n", local_key, delim, escape_ini_value(&val)));
+                    out.push_str(&format!(
+                        "{} {} {}\n",
+                        local_key,
+                        delim,
+                        escape_ini_value(&val)
+                    ));
                 }
                 EntryValue::MultiVariablePlural(mvp) => {
-                    out.push_str(&format!("{} {} {}\n", local_key, delim, escape_ini_value(&mvp.pattern)));
+                    out.push_str(&format!(
+                        "{} {} {}\n",
+                        local_key,
+                        delim,
+                        escape_ini_value(&mvp.pattern)
+                    ));
                 }
             }
         }
@@ -414,7 +476,7 @@ impl FormatParser for Parser {
 
     fn parse(&self, content: &[u8]) -> Result<I18nResource, ParseError> {
         let text = std::str::from_utf8(content)
-            .map_err(|e| ParseError::InvalidFormat(format!("Invalid UTF-8: {}", e)))?;
+            .map_err(|e| ParseError::InvalidFormat(format!("Invalid UTF-8: {e}")))?;
         parse_ini_content(text)
     }
 
@@ -489,7 +551,8 @@ mod tests {
 
     #[test]
     fn test_parse_basic_sections() {
-        let input = "[general]\ngreeting = Hello\nfarewell = Goodbye\n\n[messages]\nwelcome = Welcome";
+        let input =
+            "[general]\ngreeting = Hello\nfarewell = Goodbye\n\n[messages]\nwelcome = Welcome";
         let resource = parse_ini_content(input).expect("should parse");
         assert_eq!(resource.entries.len(), 3);
         assert!(resource.entries.contains_key("general.greeting"));
@@ -532,7 +595,10 @@ mod tests {
 
     #[test]
     fn test_make_full_key() {
-        assert_eq!(make_full_key(&Some("general".to_string()), "greeting"), "general.greeting");
+        assert_eq!(
+            make_full_key(&Some("general".to_string()), "greeting"),
+            "general.greeting"
+        );
         assert_eq!(make_full_key(&None, "greeting"), "greeting");
     }
 }

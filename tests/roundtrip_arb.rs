@@ -1,5 +1,5 @@
 use i18n_convert::formats::arb;
-use i18n_convert::formats::{FormatParser, FormatWriter, Confidence};
+use i18n_convert::formats::{Confidence, FormatParser, FormatWriter};
 use i18n_convert::ir::*;
 use indexmap::IndexMap;
 
@@ -28,7 +28,10 @@ fn detect_json_without_locale() {
 
 #[test]
 fn detect_unrelated_extension() {
-    assert_eq!(arb::Parser.detect(".xml", b"<resources/>"), Confidence::None);
+    assert_eq!(
+        arb::Parser.detect(".xml", b"<resources/>"),
+        Confidence::None
+    );
 }
 
 // ── Simple parse tests ───────────────────────────────────────────────
@@ -141,7 +144,10 @@ fn parse_metadata_entry_placeholder() {
     let entry = &resource.entries["welcomeMessage"];
     assert_eq!(entry.placeholders.len(), 1);
     assert_eq!(entry.placeholders[0].name, "userName");
-    assert_eq!(entry.placeholders[0].placeholder_type, Some(PlaceholderType::String));
+    assert_eq!(
+        entry.placeholders[0].placeholder_type,
+        Some(PlaceholderType::String)
+    );
     assert_eq!(entry.placeholders[0].example, Some("John".to_string()));
 }
 
@@ -171,7 +177,10 @@ fn parse_plurals_has_placeholders() {
     let entry = &resource.entries["itemCount"];
     assert_eq!(entry.placeholders.len(), 1);
     assert_eq!(entry.placeholders[0].name, "count");
-    assert_eq!(entry.placeholders[0].placeholder_type, Some(PlaceholderType::Integer));
+    assert_eq!(
+        entry.placeholders[0].placeholder_type,
+        Some(PlaceholderType::Integer)
+    );
 }
 
 #[test]
@@ -225,11 +234,17 @@ fn parse_placeholders_optional_parameters() {
 
     let entry = &resource.entries["totalPrice"];
     let ph = &entry.placeholders[0];
-    let opt = ph.optional_parameters.as_ref().expect("Expected optional parameters");
+    let opt = ph
+        .optional_parameters
+        .as_ref()
+        .expect("Expected optional parameters");
     assert_eq!(opt.get("decimalDigits"), Some(&"2".to_string()));
     assert_eq!(opt.get("name"), Some(&"USD".to_string()));
     assert_eq!(opt.get("symbol"), Some(&"$".to_string()));
-    assert_eq!(opt.get("customPattern"), Some(&"\u{a4}#,##0.00".to_string()));
+    assert_eq!(
+        opt.get("customPattern"),
+        Some(&"\u{a4}#,##0.00".to_string())
+    );
 }
 
 #[test]
@@ -286,8 +301,14 @@ fn write_metadata() {
     assert_eq!(parsed["@appTitle"]["context"], "App bar title");
 
     // Check placeholder in @welcomeMessage
-    assert_eq!(parsed["@welcomeMessage"]["placeholders"]["userName"]["type"], "String");
-    assert_eq!(parsed["@welcomeMessage"]["placeholders"]["userName"]["example"], "John");
+    assert_eq!(
+        parsed["@welcomeMessage"]["placeholders"]["userName"]["type"],
+        "String"
+    );
+    assert_eq!(
+        parsed["@welcomeMessage"]["placeholders"]["userName"]["example"],
+        "John"
+    );
 }
 
 #[test]
@@ -370,7 +391,10 @@ fn roundtrip_metadata() {
         );
         for (i, ph) in entry.placeholders.iter().enumerate() {
             let rph = &reparsed_entry.placeholders[i];
-            assert_eq!(ph.name, rph.name, "Placeholder name mismatch for key: {key}[{i}]");
+            assert_eq!(
+                ph.name, rph.name,
+                "Placeholder name mismatch for key: {key}[{i}]"
+            );
             assert_eq!(
                 ph.placeholder_type, rph.placeholder_type,
                 "Placeholder type mismatch for key: {key}[{i}]"

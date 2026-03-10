@@ -48,7 +48,10 @@ fn parse_simple() {
     // Check farewell
     let farewell = &resource.entries["farewell"];
     assert_eq!(farewell.source, Some("Goodbye".to_string()));
-    assert_eq!(farewell.value, EntryValue::Simple("Auf Wiedersehen".to_string()));
+    assert_eq!(
+        farewell.value,
+        EntryValue::Simple("Auf Wiedersehen".to_string())
+    );
 
     // Untranslated entry has empty target
     let untranslated = &resource.entries["untranslated"];
@@ -69,7 +72,7 @@ fn parse_simple_metadata() {
             assert_eq!(ext.datatype, Some("plaintext".to_string()));
             assert_eq!(ext.original, Some("messages.properties".to_string()));
         }
-        other => panic!("Expected Xliff1Ext, got {:?}", other),
+        other => panic!("Expected Xliff1Ext, got {other:?}"),
     }
 }
 
@@ -97,9 +100,15 @@ fn parse_notes() {
     let btn_cancel = &resource.entries["btn_cancel"];
     assert_eq!(btn_cancel.comments.len(), 2);
     assert_eq!(btn_cancel.comments[0].role, CommentRole::Translator);
-    assert_eq!(btn_cancel.comments[0].annotates, Some(AnnotationTarget::Target));
+    assert_eq!(
+        btn_cancel.comments[0].annotates,
+        Some(AnnotationTarget::Target)
+    );
     assert_eq!(btn_cancel.comments[1].role, CommentRole::General);
-    assert_eq!(btn_cancel.comments[1].text, "General note about this string");
+    assert_eq!(
+        btn_cancel.comments[1].text,
+        "General note about this string"
+    );
 
     // menu_file: two notes
     let menu_file = &resource.entries["menu_file"];
@@ -147,7 +156,10 @@ fn parse_states() {
     // needs-review-translation with state-qualifier
     let needs_review = &resource.entries["needs_review"];
     assert_eq!(needs_review.state, Some(TranslationState::NeedsReview));
-    assert_eq!(needs_review.state_qualifier, Some("leveraged-inherited".to_string()));
+    assert_eq!(
+        needs_review.state_qualifier,
+        Some("leveraged-inherited".to_string())
+    );
 
     // needs-adaptation
     let needs_adapt = &resource.entries["needs_adapt"];
@@ -159,11 +171,17 @@ fn parse_states() {
 
     // needs-review-adaptation
     let needs_review_adapt = &resource.entries["needs_review_adapt"];
-    assert_eq!(needs_review_adapt.state, Some(TranslationState::NeedsReviewAdaptation));
+    assert_eq!(
+        needs_review_adapt.state,
+        Some(TranslationState::NeedsReviewAdaptation)
+    );
 
     // needs-review-l10n
     let needs_review_l10n = &resource.entries["needs_review_l10n"];
-    assert_eq!(needs_review_l10n.state, Some(TranslationState::NeedsReviewL10n));
+    assert_eq!(
+        needs_review_l10n.state,
+        Some(TranslationState::NeedsReviewL10n)
+    );
 }
 
 // ---------------------------------------------------------------------------
@@ -187,7 +205,10 @@ fn parse_full() {
     assert_eq!(title.resource_name, Some("page_title".to_string()));
     assert_eq!(title.state, Some(TranslationState::Final));
     assert_eq!(title.source, Some("Welcome to our app".to_string()));
-    assert_eq!(title.value, EntryValue::Simple("Bienvenido a nuestra aplicación".to_string()));
+    assert_eq!(
+        title.value,
+        EntryValue::Simple("Bienvenido a nuestra aplicación".to_string())
+    );
 
     // Notes
     assert_eq!(title.comments.len(), 2);
@@ -206,8 +227,14 @@ fn parse_full() {
     // Alt-trans
     assert_eq!(title.alternatives.len(), 1);
     assert_eq!(title.alternatives[0].match_quality, Some(85.0));
-    assert_eq!(title.alternatives[0].origin, Some("tm-database".to_string()));
-    assert_eq!(title.alternatives[0].source, Some("Welcome to the app".to_string()));
+    assert_eq!(
+        title.alternatives[0].origin,
+        Some("tm-database".to_string())
+    );
+    assert_eq!(
+        title.alternatives[0].source,
+        Some("Welcome to the app".to_string())
+    );
     assert_eq!(title.alternatives[0].value, "Bienvenido a la app");
 
     // description entry: maxwidth + size-unit in pixels, contexts with different purpose
@@ -217,7 +244,10 @@ fn parse_full() {
     assert_eq!(desc.contexts.len(), 2);
     assert_eq!(desc.contexts[0].context_type, ContextType::Element);
     assert_eq!(desc.contexts[0].value, "p");
-    assert_eq!(desc.contexts[1].context_type, ContextType::Custom("x-url".to_string()));
+    assert_eq!(
+        desc.contexts[1].context_type,
+        ContextType::Custom("x-url".to_string())
+    );
     assert_eq!(desc.contexts[1].value, "/about");
     assert_eq!(desc.contexts[0].purpose, Some("information".to_string()));
 
@@ -231,9 +261,15 @@ fn parse_full() {
     assert_eq!(with_alt.state, Some(TranslationState::NeedsReview));
     assert_eq!(with_alt.alternatives.len(), 2);
     assert_eq!(with_alt.alternatives[0].match_quality, Some(72.0));
-    assert_eq!(with_alt.alternatives[0].origin, Some("mt-engine".to_string()));
+    assert_eq!(
+        with_alt.alternatives[0].origin,
+        Some("mt-engine".to_string())
+    );
     assert_eq!(with_alt.alternatives[1].match_quality, Some(60.0));
-    assert_eq!(with_alt.alternatives[1].origin, Some("tm-legacy".to_string()));
+    assert_eq!(
+        with_alt.alternatives[1].origin,
+        Some("tm-legacy".to_string())
+    );
 }
 
 // ---------------------------------------------------------------------------
@@ -259,7 +295,10 @@ fn roundtrip_simple() {
             "Source mismatch for key: {key}"
         );
     }
-    assert_eq!(resource.metadata.source_locale, reparsed.metadata.source_locale);
+    assert_eq!(
+        resource.metadata.source_locale,
+        reparsed.metadata.source_locale
+    );
     assert_eq!(resource.metadata.locale, reparsed.metadata.locale);
 }
 
@@ -273,7 +312,8 @@ fn roundtrip_notes() {
     for (key, entry) in &resource.entries {
         let reparsed_entry = &reparsed.entries[key];
         assert_eq!(
-            entry.comments.len(), reparsed_entry.comments.len(),
+            entry.comments.len(),
+            reparsed_entry.comments.len(),
             "Comment count mismatch for key: {key}"
         );
         for (i, comment) in entry.comments.iter().enumerate() {
@@ -369,23 +409,38 @@ fn roundtrip_full() {
             "Resource name mismatch for key: {key}"
         );
         assert_eq!(
-            entry.comments.len(), reparsed_entry.comments.len(),
+            entry.comments.len(),
+            reparsed_entry.comments.len(),
             "Comment count mismatch for key: {key}"
         );
         assert_eq!(
-            entry.contexts.len(), reparsed_entry.contexts.len(),
+            entry.contexts.len(),
+            reparsed_entry.contexts.len(),
             "Context count mismatch for key: {key}"
         );
         assert_eq!(
-            entry.alternatives.len(), reparsed_entry.alternatives.len(),
+            entry.alternatives.len(),
+            reparsed_entry.alternatives.len(),
             "Alternatives count mismatch for key: {key}"
         );
         for (i, alt) in entry.alternatives.iter().enumerate() {
             let reparsed_alt = &reparsed_entry.alternatives[i];
-            assert_eq!(alt.value, reparsed_alt.value, "Alt value mismatch for key: {key}[{i}]");
-            assert_eq!(alt.source, reparsed_alt.source, "Alt source mismatch for key: {key}[{i}]");
-            assert_eq!(alt.match_quality, reparsed_alt.match_quality, "Alt match_quality mismatch for key: {key}[{i}]");
-            assert_eq!(alt.origin, reparsed_alt.origin, "Alt origin mismatch for key: {key}[{i}]");
+            assert_eq!(
+                alt.value, reparsed_alt.value,
+                "Alt value mismatch for key: {key}[{i}]"
+            );
+            assert_eq!(
+                alt.source, reparsed_alt.source,
+                "Alt source mismatch for key: {key}[{i}]"
+            );
+            assert_eq!(
+                alt.match_quality, reparsed_alt.match_quality,
+                "Alt match_quality mismatch for key: {key}[{i}]"
+            );
+            assert_eq!(
+                alt.origin, reparsed_alt.origin,
+                "Alt origin mismatch for key: {key}[{i}]"
+            );
         }
     }
 
@@ -432,5 +487,8 @@ fn writer_omits_empty_target_without_state() {
     // Check there's no <target></target> or <target/> for this entry
     // We'll verify by parsing - the empty string should round-trip
     let reparsed = xliff1::Parser.parse(xml_str.as_bytes()).unwrap();
-    assert_eq!(reparsed.entries["untranslated"].value, EntryValue::Simple(String::new()));
+    assert_eq!(
+        reparsed.entries["untranslated"].value,
+        EntryValue::Simple(String::new())
+    );
 }

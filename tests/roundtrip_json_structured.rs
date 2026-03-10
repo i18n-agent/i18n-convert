@@ -1,5 +1,5 @@
-use i18n_convert::formats::{Confidence, FormatParser, FormatWriter};
 use i18n_convert::formats::json_structured;
+use i18n_convert::formats::{Confidence, FormatParser, FormatWriter};
 use i18n_convert::ir::*;
 use indexmap::IndexMap;
 
@@ -101,9 +101,7 @@ fn parse_icu_json() {
     );
     assert_eq!(
         resource.entries["items_count"].value,
-        EntryValue::Simple(
-            "{count, plural, one {# item} other {# items}}".to_string()
-        )
+        EntryValue::Simple("{count, plural, one {# item} other {# items}}".to_string())
     );
     assert_eq!(
         resource.entries["gender_msg"].value,

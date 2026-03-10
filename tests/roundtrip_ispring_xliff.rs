@@ -65,7 +65,10 @@ fn parse_simple_entries() {
     assert_eq!(resource.metadata.locale, Some("fr".to_string()));
 
     let slide1_title = &resource.entries["slide1_title"];
-    assert_eq!(slide1_title.source, Some("Introduction to the Course".to_string()));
+    assert_eq!(
+        slide1_title.source,
+        Some("Introduction to the Course".to_string())
+    );
     assert_eq!(
         slide1_title.value,
         EntryValue::Simple("Introduction au cours".to_string())
@@ -82,14 +85,17 @@ fn parse_simple_metadata() {
     let resource = ispring_xliff::Parser.parse(&content).unwrap();
 
     assert_eq!(resource.metadata.source_format, FormatId::IspringXliff);
-    assert_eq!(resource.metadata.tool_name, Some("iSpring Suite".to_string()));
+    assert_eq!(
+        resource.metadata.tool_name,
+        Some("iSpring Suite".to_string())
+    );
 
     match &resource.metadata.format_ext {
         Some(FormatExtension::IspringXliff(ext)) => {
             assert_eq!(ext.xliff_version, Some("1.2".to_string()));
             assert_eq!(ext.source_language, Some("en".to_string()));
         }
-        other => panic!("Expected IspringXliffExt, got {:?}", other),
+        other => panic!("Expected IspringXliffExt, got {other:?}"),
     }
 }
 
@@ -150,10 +156,7 @@ fn parse_quiz_tool_version() {
     let content = load_fixture("quiz.xliff");
     let resource = ispring_xliff::Parser.parse(&content).unwrap();
 
-    assert_eq!(
-        resource.metadata.tool_version,
-        Some("11.3".to_string())
-    );
+    assert_eq!(resource.metadata.tool_version, Some("11.3".to_string()));
 }
 
 // ---------------------------------------------------------------------------
@@ -178,10 +181,7 @@ fn parse_source_only_uses_source_as_value() {
 
     let nav_finish = &resource.entries["nav_finish"];
     assert_eq!(nav_finish.source, Some("Finish".to_string()));
-    assert_eq!(
-        nav_finish.value,
-        EntryValue::Simple("Finish".to_string())
-    );
+    assert_eq!(nav_finish.value, EntryValue::Simple("Finish".to_string()));
 }
 
 #[test]
@@ -206,10 +206,7 @@ fn format_extension_roundtrip() {
     let reparsed = ispring_xliff::Parser.parse(&written).unwrap();
 
     match (&resource.metadata.format_ext, &reparsed.metadata.format_ext) {
-        (
-            Some(FormatExtension::IspringXliff(orig)),
-            Some(FormatExtension::IspringXliff(rt)),
-        ) => {
+        (Some(FormatExtension::IspringXliff(orig)), Some(FormatExtension::IspringXliff(rt))) => {
             assert_eq!(orig.xliff_version, rt.xliff_version);
             assert_eq!(orig.source_language, rt.source_language);
         }
@@ -468,10 +465,7 @@ fn parse_target_with_state() {
 
     let translated = &resource.entries["translated_entry"];
     assert_eq!(translated.state, Some(TranslationState::Translated));
-    assert_eq!(
-        translated.value,
-        EntryValue::Simple("Bonjour".to_string())
-    );
+    assert_eq!(translated.value, EntryValue::Simple("Bonjour".to_string()));
 
     let new_entry = &resource.entries["new_entry"];
     assert_eq!(new_entry.state, Some(TranslationState::New));

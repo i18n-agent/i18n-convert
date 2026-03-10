@@ -30,10 +30,7 @@ fn detect_txt_extension() {
 
 #[test]
 fn detect_txt_extension_with_content() {
-    assert_eq!(
-        parser().detect(".txt", b"Hello, world!"),
-        Confidence::High
-    );
+    assert_eq!(parser().detect(".txt", b"Hello, world!"), Confidence::High);
 }
 
 #[test]
@@ -313,7 +310,7 @@ fn roundtrip_sections() {
     assert_eq!(resource.entries.len(), reparsed.entries.len());
     for (key, entry) in &resource.entries {
         let reparsed_entry = reparsed.entries.get(key).unwrap_or_else(|| {
-            panic!("Key '{}' missing after round-trip", key);
+            panic!("Key '{key}' missing after round-trip");
         });
         assert_eq!(entry.value, reparsed_entry.value, "Mismatch for key: {key}");
     }
@@ -349,7 +346,7 @@ fn line_ending_detected_lf() {
         Some(FormatExtension::PlainText(ext)) => {
             assert_eq!(ext.line_ending, Some("\n".to_string()));
         }
-        other => panic!("Expected PlainText extension, got {:?}", other),
+        other => panic!("Expected PlainText extension, got {other:?}"),
     }
 }
 
@@ -362,7 +359,7 @@ fn line_ending_detected_crlf() {
         Some(FormatExtension::PlainText(ext)) => {
             assert_eq!(ext.line_ending, Some("\r\n".to_string()));
         }
-        other => panic!("Expected PlainText extension, got {:?}", other),
+        other => panic!("Expected PlainText extension, got {other:?}"),
     }
 }
 
@@ -375,7 +372,10 @@ fn crlf_roundtrip_preserves_content() {
 
     assert_eq!(resource.entries.len(), reparsed.entries.len());
     for (key, entry) in &resource.entries {
-        assert_eq!(entry.value, reparsed.entries[key].value, "Mismatch for key: {key}");
+        assert_eq!(
+            entry.value, reparsed.entries[key].value,
+            "Mismatch for key: {key}"
+        );
     }
 }
 

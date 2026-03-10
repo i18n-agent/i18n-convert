@@ -226,8 +226,7 @@ fn parse_php_array_contents(
         match chars.peek() {
             None => {
                 return Err(ParseError::InvalidFormat(format!(
-                    "Unexpected end of input, expected '{}'",
-                    closing
+                    "Unexpected end of input, expected '{closing}'"
                 )));
             }
             Some(&c) if c == closing => {
@@ -255,8 +254,7 @@ fn parse_php_array_contents(
                     (Some('='), Some('>')) => {}
                     _ => {
                         return Err(ParseError::InvalidFormat(format!(
-                            "Expected '=>' after key '{}'",
-                            key
+                            "Expected '=>' after key '{key}'"
                         )));
                     }
                 }
@@ -303,8 +301,7 @@ fn parse_php_array_contents(
                             }
                         } else {
                             return Err(ParseError::InvalidFormat(format!(
-                                "Unexpected token after '=>' for key '{}'",
-                                key
+                                "Unexpected token after '=>' for key '{key}'"
                             )));
                         }
                     }
@@ -319,8 +316,7 @@ fn parse_php_array_contents(
                     }
                     other => {
                         return Err(ParseError::InvalidFormat(format!(
-                            "Unexpected character {:?} after '=>' for key '{}'",
-                            other, key
+                            "Unexpected character {other:?} after '=>' for key '{key}'"
                         )));
                     }
                 }
@@ -334,8 +330,7 @@ fn parse_php_array_contents(
             }
             Some(&c) => {
                 return Err(ParseError::InvalidFormat(format!(
-                    "Unexpected character '{}' in PHP array",
-                    c
+                    "Unexpected character '{c}' in PHP array"
                 )));
             }
         }
@@ -343,18 +338,18 @@ fn parse_php_array_contents(
 }
 
 /// Flatten PhpTokens into IR entries with dot-separated keys.
-fn flatten_tokens(
-    tokens: &[PhpToken],
-    prefix: &str,
-    entries: &mut IndexMap<String, I18nEntry>,
-) {
+fn flatten_tokens(tokens: &[PhpToken], prefix: &str, entries: &mut IndexMap<String, I18nEntry>) {
     for token in tokens {
         match token {
-            PhpToken::Entry { key, value, comment } => {
+            PhpToken::Entry {
+                key,
+                value,
+                comment,
+            } => {
                 let full_key = if prefix.is_empty() {
                     key.clone()
                 } else {
-                    format!("{}.{}", prefix, key)
+                    format!("{prefix}.{key}")
                 };
                 let mut entry = I18nEntry {
                     key: full_key.clone(),
@@ -381,7 +376,7 @@ fn flatten_tokens(
                 let new_prefix = if prefix.is_empty() {
                     key.clone()
                 } else {
-                    format!("{}.{}", prefix, key)
+                    format!("{prefix}.{key}")
                 };
                 // If there's a comment on the nested array itself, we attach it
                 // to the first entry inside (if any).
@@ -427,14 +422,14 @@ fn parse_php(content: &str) -> Result<I18nResource, ParseError> {
         let after_return = pos + "return [".len();
         let remaining = &trimmed[after_return..];
         let mut chars = remaining.chars().peekable();
-        let tokens = parse_php_array_contents(&mut chars, ']')?;
-        tokens
+
+        parse_php_array_contents(&mut chars, ']')?
     } else if let Some(pos) = trimmed.find("return array(") {
         let after_return = pos + "return array(".len();
         let remaining = &trimmed[after_return..];
         let mut chars = remaining.chars().peekable();
-        let tokens = parse_php_array_contents(&mut chars, ')')?;
-        tokens
+
+        parse_php_array_contents(&mut chars, ')')?
     } else {
         return Err(ParseError::InvalidFormat(
             "PHP file must contain 'return [' or 'return array('".to_string(),
@@ -450,9 +445,7 @@ fn parse_php(content: &str) -> Result<I18nResource, ParseError> {
     Ok(I18nResource {
         metadata: ResourceMetadata {
             source_format: FormatId::PhpLaravel,
-            format_ext: Some(FormatExtension::PhpLaravel(PhpLaravelExt {
-                quote_style,
-            })),
+            format_ext: Some(FormatExtension::PhpLaravel(PhpLaravelExt { quote_style })),
             ..Default::default()
         },
         entries,
@@ -514,11 +507,7 @@ fn build_tree(entries: &IndexMap<String, I18nEntry>) -> IndexMap<String, TreeNod
     root
 }
 
-fn insert_into_tree(
-    node: &mut IndexMap<String, TreeNode>,
-    parts: &[&str],
-    full_key: &str,
-) {
+fn insert_into_tree(node: &mut IndexMap<String, TreeNode>, parts: &[&str], full_key: &str) {
     if parts.len() == 1 {
         node.insert(parts[0].to_string(), TreeNode::Leaf(full_key.to_string()));
         return;
@@ -542,6 +531,8 @@ fn insert_into_tree(
     }
 }
 
+type QuoteStyle = (char, fn(&str) -> String, fn(&str) -> String);
+
 fn write_tree_entries(
     tree: &IndexMap<String, TreeNode>,
     entries: &IndexMap<String, I18nEntry>,
@@ -550,7 +541,7 @@ fn write_tree_entries(
     use_double: bool,
 ) {
     let indent_str = "    ".repeat(indent);
-    let (q, esc_key, esc_val): (char, fn(&str) -> String, fn(&str) -> String) = if use_double {
+    let (q, esc_key, esc_val): QuoteStyle = if use_double {
         ('"', escape_double_quoted, escape_double_quoted)
     } else {
         ('\'', escape_single_quoted, escape_single_quoted)
@@ -586,7 +577,7 @@ fn write_tree_entries(
             TreeNode::Branch(children) => {
                 out.push_str(&format!("{}{q}{}{q} => [\n", indent_str, esc_key(key)));
                 write_tree_entries(children, entries, out, indent + 1, use_double);
-                out.push_str(&format!("{}],\n", indent_str));
+                out.push_str(&format!("{indent_str}],\n"));
             }
         }
     }
@@ -620,7 +611,7 @@ impl FormatParser for Parser {
 
     fn parse(&self, content: &[u8]) -> Result<I18nResource, ParseError> {
         let text = std::str::from_utf8(content)
-            .map_err(|e| ParseError::InvalidFormat(format!("Invalid UTF-8: {}", e)))?;
+            .map_err(|e| ParseError::InvalidFormat(format!("Invalid UTF-8: {e}")))?;
         parse_php(text)
     }
 

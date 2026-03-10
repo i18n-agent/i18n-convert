@@ -1,5 +1,5 @@
-use i18n_convert::formats::{Confidence, FormatParser, FormatWriter};
 use i18n_convert::formats::ts_format::{Parser, Writer};
+use i18n_convert::formats::{Confidence, FormatParser, FormatWriter};
 use i18n_convert::ir::*;
 use indexmap::IndexMap;
 
@@ -128,7 +128,7 @@ fn parse_plurals_fixture() {
             assert_eq!(ps.other, "{count} items".to_string());
             assert!(ps.zero.is_none());
         }
-        other => panic!("Expected Plural, got {:?}", other),
+        other => panic!("Expected Plural, got {other:?}"),
     }
 
     let files = &resource.entries["files"];
@@ -138,7 +138,7 @@ fn parse_plurals_fixture() {
             assert_eq!(ps.one, Some("1 file".to_string()));
             assert_eq!(ps.other, "{count} files".to_string());
         }
-        other => panic!("Expected Plural, got {:?}", other),
+        other => panic!("Expected Plural, got {other:?}"),
     }
 }
 
@@ -171,7 +171,7 @@ fn parse_typed_fixture() {
                 Some("Record<string, string>".to_string())
             );
         }
-        other => panic!("Expected TypeScript extension, got {:?}", other),
+        other => panic!("Expected TypeScript extension, got {other:?}"),
     }
 }
 
@@ -187,7 +187,7 @@ fn preserve_export_default_style() {
         Some(FormatExtension::TypeScript(ext)) => {
             assert_eq!(ext.export_style, Some("export default".to_string()));
         }
-        other => panic!("Expected TypeScript extension, got {:?}", other),
+        other => panic!("Expected TypeScript extension, got {other:?}"),
     }
 }
 
@@ -199,7 +199,7 @@ fn preserve_export_const_style() {
         Some(FormatExtension::TypeScript(ext)) => {
             assert_eq!(ext.export_style, Some("export const".to_string()));
         }
-        other => panic!("Expected TypeScript extension, got {:?}", other),
+        other => panic!("Expected TypeScript extension, got {other:?}"),
     }
 }
 
@@ -214,7 +214,7 @@ fn preserve_type_annotation() {
                 Some("Record<string, string>".to_string())
             );
         }
-        other => panic!("Expected TypeScript extension, got {:?}", other),
+        other => panic!("Expected TypeScript extension, got {other:?}"),
     }
 }
 

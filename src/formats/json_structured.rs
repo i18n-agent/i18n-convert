@@ -31,12 +31,12 @@ impl FormatParser for Parser {
         let s = std::str::from_utf8(content)
             .map_err(|e| ParseError::InvalidFormat(format!("Invalid UTF-8: {e}")))?;
 
-        let root: serde_json::Value = serde_json::from_str(s)
-            .map_err(|e| ParseError::Json(format!("{e}")))?;
+        let root: serde_json::Value =
+            serde_json::from_str(s).map_err(|e| ParseError::Json(format!("{e}")))?;
 
-        let obj = root.as_object().ok_or_else(|| {
-            ParseError::InvalidFormat("Root must be a JSON object".to_string())
-        })?;
+        let obj = root
+            .as_object()
+            .ok_or_else(|| ParseError::InvalidFormat("Root must be a JSON object".to_string()))?;
 
         let mut entries = IndexMap::new();
         flatten_object(obj, &mut String::new(), &mut entries);
@@ -137,9 +137,7 @@ impl FormatWriter for Writer {
                 // For non-simple values, use a reasonable string representation
                 EntryValue::Plural(ps) => ps.other.clone(),
                 EntryValue::Array(arr) => arr.join(", "),
-                EntryValue::Select(ss) => {
-                    ss.cases.get("other").cloned().unwrap_or_default()
-                }
+                EntryValue::Select(ss) => ss.cases.get("other").cloned().unwrap_or_default(),
                 EntryValue::MultiVariablePlural(mvp) => mvp.pattern.clone(),
             };
 

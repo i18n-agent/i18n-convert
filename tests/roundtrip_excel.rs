@@ -1,5 +1,5 @@
-use i18n_convert::formats::{FormatParser, FormatWriter, Confidence};
 use i18n_convert::formats::excel::{Parser, Writer};
+use i18n_convert::formats::{Confidence, FormatParser, FormatWriter};
 use i18n_convert::ir::*;
 use indexmap::IndexMap;
 
@@ -14,7 +14,9 @@ fn make_test_xlsx(rows: &[(&str, &str, Option<&str>)]) -> Vec<u8> {
     // Header
     worksheet.write_string(0, 0, "key").expect("write header");
     worksheet.write_string(0, 1, "value").expect("write header");
-    worksheet.write_string(0, 2, "comment").expect("write header");
+    worksheet
+        .write_string(0, 2, "comment")
+        .expect("write header");
 
     for (i, (key, value, comment)) in rows.iter().enumerate() {
         let row = (i + 1) as u32;
@@ -28,10 +30,7 @@ fn make_test_xlsx(rows: &[(&str, &str, Option<&str>)]) -> Vec<u8> {
     workbook.save_to_buffer().expect("save workbook")
 }
 
-fn make_test_xlsx_custom_headers(
-    headers: &[&str],
-    rows: &[Vec<&str>],
-) -> Vec<u8> {
+fn make_test_xlsx_custom_headers(headers: &[&str], rows: &[Vec<&str>]) -> Vec<u8> {
     let mut workbook = rust_xlsxwriter::Workbook::new();
     let worksheet = workbook.add_worksheet();
 
@@ -100,16 +99,28 @@ fn parse_simple() {
     assert_eq!(resource.metadata.source_format, FormatId::Excel);
     assert_eq!(resource.entries.len(), 3);
 
-    let greeting = resource.entries.get("greeting").expect("greeting should exist");
-    assert_eq!(greeting.value, EntryValue::Simple("Hello, World!".to_string()));
+    let greeting = resource
+        .entries
+        .get("greeting")
+        .expect("greeting should exist");
+    assert_eq!(
+        greeting.value,
+        EntryValue::Simple("Hello, World!".to_string())
+    );
     assert_eq!(greeting.comments.len(), 1);
     assert_eq!(greeting.comments[0].text, "Main greeting");
 
-    let farewell = resource.entries.get("farewell").expect("farewell should exist");
+    let farewell = resource
+        .entries
+        .get("farewell")
+        .expect("farewell should exist");
     assert_eq!(farewell.value, EntryValue::Simple("Goodbye!".to_string()));
     assert!(farewell.comments.is_empty());
 
-    let app_title = resource.entries.get("app.title").expect("app.title should exist");
+    let app_title = resource
+        .entries
+        .get("app.title")
+        .expect("app.title should exist");
     assert_eq!(
         app_title.value,
         EntryValue::Simple("My Application".to_string())
@@ -129,7 +140,7 @@ fn parse_stores_extension_data() {
             assert_eq!(ext.key_column, Some(0));
             assert_eq!(ext.value_column, Some(1));
         }
-        other => panic!("Expected ExcelExt, got {:?}", other),
+        other => panic!("Expected ExcelExt, got {other:?}"),
     }
 }
 
@@ -152,14 +163,14 @@ fn parse_case_insensitive_headers() {
 #[test]
 fn parse_locale_code_header() {
     let parser = Parser;
-    let xlsx_bytes = make_test_xlsx_custom_headers(
-        &["ID", "en"],
-        &[vec!["greeting", "Hello"]],
-    );
+    let xlsx_bytes = make_test_xlsx_custom_headers(&["ID", "en"], &[vec!["greeting", "Hello"]]);
 
     let resource = parser.parse(&xlsx_bytes).expect("parse should succeed");
     assert_eq!(resource.entries.len(), 1);
-    let entry = resource.entries.get("greeting").expect("greeting should exist");
+    let entry = resource
+        .entries
+        .get("greeting")
+        .expect("greeting should exist");
     assert_eq!(entry.value, EntryValue::Simple("Hello".to_string()));
 }
 
@@ -181,10 +192,7 @@ fn parse_skips_empty_key_rows() {
 #[test]
 fn parse_error_no_key_column() {
     let parser = Parser;
-    let xlsx_bytes = make_test_xlsx_custom_headers(
-        &["foo", "bar"],
-        &[vec!["a", "b"]],
-    );
+    let xlsx_bytes = make_test_xlsx_custom_headers(&["foo", "bar"], &[vec!["a", "b"]]);
     assert!(parser.parse(&xlsx_bytes).is_err());
 }
 
@@ -267,23 +275,20 @@ fn roundtrip_simple() {
         let reparsed_entry = reparsed
             .entries
             .get(key)
-            .unwrap_or_else(|| panic!("Key '{}' missing after round-trip", key));
+            .unwrap_or_else(|| panic!("Key '{key}' missing after round-trip"));
         assert_eq!(
             original.value, reparsed_entry.value,
-            "Value mismatch for key '{}'",
-            key
+            "Value mismatch for key '{key}'"
         );
         assert_eq!(
             original.comments.len(),
             reparsed_entry.comments.len(),
-            "Comment count mismatch for key '{}'",
-            key
+            "Comment count mismatch for key '{key}'"
         );
         for (i, comment) in original.comments.iter().enumerate() {
             assert_eq!(
                 comment.text, reparsed_entry.comments[i].text,
-                "Comment text mismatch for key '{}' comment {}",
-                key, i
+                "Comment text mismatch for key '{key}' comment {i}"
             );
         }
     }
@@ -294,10 +299,7 @@ fn roundtrip_no_comments() {
     let parser = Parser;
     let writer = Writer;
 
-    let original_xlsx = make_test_xlsx(&[
-        ("key1", "value1", None),
-        ("key2", "value2", None),
-    ]);
+    let original_xlsx = make_test_xlsx(&[("key1", "value1", None), ("key2", "value2", None)]);
 
     let resource = parser.parse(&original_xlsx).expect("parse should succeed");
     let output = writer.write(&resource).expect("write should succeed");
@@ -327,7 +329,10 @@ fn roundtrip_preserves_key_order() {
 
     let original_keys: Vec<_> = resource.entries.keys().collect();
     let reparsed_keys: Vec<_> = reparsed.entries.keys().collect();
-    assert_eq!(original_keys, reparsed_keys, "Key order should be preserved");
+    assert_eq!(
+        original_keys, reparsed_keys,
+        "Key order should be preserved"
+    );
 }
 
 // ---------------------------------------------------------------------------

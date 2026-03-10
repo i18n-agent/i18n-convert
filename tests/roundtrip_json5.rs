@@ -1,5 +1,5 @@
-use i18n_convert::formats::{Confidence, FormatParser, FormatWriter};
 use i18n_convert::formats::json5_format;
+use i18n_convert::formats::{Confidence, FormatParser, FormatWriter};
 use i18n_convert::ir::*;
 use indexmap::IndexMap;
 
@@ -12,10 +12,7 @@ fn writer() -> json5_format::Writer {
 }
 
 fn fixture(name: &str) -> Vec<u8> {
-    let path = format!(
-        "{}/tests/fixtures/json5/{name}",
-        env!("CARGO_MANIFEST_DIR")
-    );
+    let path = format!("{}/tests/fixtures/json5/{name}", env!("CARGO_MANIFEST_DIR"));
     std::fs::read(&path).unwrap_or_else(|e| panic!("Failed to read fixture {path}: {e}"))
 }
 
@@ -516,7 +513,9 @@ fn roundtrip_mixed_flat_and_nested() {
 #[test]
 fn parse_unicode_values() {
     let content = "{ japanese: '\u{3053}\u{3093}\u{306b}\u{3061}\u{306f}', accented: 'caf\u{e9}' }";
-    let resource = parser().parse(content.as_bytes()).expect("parse should succeed");
+    let resource = parser()
+        .parse(content.as_bytes())
+        .expect("parse should succeed");
     assert_eq!(resource.entries.len(), 2);
     assert_eq!(
         resource.entries["accented"].value,

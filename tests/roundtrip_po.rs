@@ -1,5 +1,5 @@
 use i18n_convert::formats::po;
-use i18n_convert::formats::{FormatParser, FormatWriter, Confidence};
+use i18n_convert::formats::{Confidence, FormatParser, FormatWriter};
 use i18n_convert::ir::*;
 
 fn load_fixture(name: &str) -> Vec<u8> {
@@ -47,10 +47,7 @@ fn parse_simple() {
         resource.entries["Hello"].value,
         EntryValue::Simple("Hallo".to_string())
     );
-    assert_eq!(
-        resource.entries["Hello"].source,
-        Some("Hello".to_string())
-    );
+    assert_eq!(resource.entries["Hello"].source, Some("Hello".to_string()));
     assert_eq!(
         resource.entries["Goodbye"].value,
         EntryValue::Simple("Auf Wiedersehen".to_string())
@@ -110,10 +107,7 @@ fn parse_comments() {
         .filter(|c| c.role == CommentRole::Extracted)
         .collect();
     assert_eq!(extracted.len(), 1);
-    assert_eq!(
-        extracted[0].text,
-        "Developer note: shown on settings page"
-    );
+    assert_eq!(extracted[0].text, "Developer note: shown on settings page");
 }
 
 // ---------------------------------------------------------------------------
@@ -175,14 +169,14 @@ fn parse_context() {
     let menu_open = &resource.entries["menu\x04Open"];
     assert_eq!(menu_open.value, EntryValue::Simple("Oeffnen".to_string()));
     assert_eq!(menu_open.contexts.len(), 1);
-    assert_eq!(menu_open.contexts[0].context_type, ContextType::Disambiguation);
+    assert_eq!(
+        menu_open.contexts[0].context_type,
+        ContextType::Disambiguation
+    );
     assert_eq!(menu_open.contexts[0].value, "menu");
 
     let button_open = &resource.entries["button\x04Open"];
-    assert_eq!(
-        button_open.value,
-        EntryValue::Simple("Oeffnen".to_string())
-    );
+    assert_eq!(button_open.value, EntryValue::Simple("Oeffnen".to_string()));
     assert_eq!(button_open.contexts[0].value, "button");
 
     let save_as = &resource.entries["window_title\x04Save As"];
@@ -216,14 +210,18 @@ fn parse_full() {
     );
     assert_eq!(greeting.source, Some("Welcome, %s!".to_string()));
     // Translator comment
-    assert!(greeting.comments.iter().any(|c| c.role == CommentRole::Translator
-        && c.text == "Translator comment for greeting"));
-    // Extracted comment
     assert!(greeting
         .comments
         .iter()
-        .any(|c| c.role == CommentRole::Extracted
-            && c.text == "Extracted: shown on the home page"));
+        .any(|c| c.role == CommentRole::Translator && c.text == "Translator comment for greeting"));
+    // Extracted comment
+    assert!(
+        greeting
+            .comments
+            .iter()
+            .any(|c| c.role == CommentRole::Extracted
+                && c.text == "Extracted: shown on the home page")
+    );
     // Source references
     assert_eq!(greeting.source_references.len(), 2);
     // Flags
@@ -247,10 +245,7 @@ fn parse_full() {
 
     // Context entry
     let file_entry = &resource.entries["menu\x04File"];
-    assert_eq!(
-        file_entry.value,
-        EntryValue::Simple("Datei".to_string())
-    );
+    assert_eq!(file_entry.value, EntryValue::Simple("Datei".to_string()));
     assert_eq!(file_entry.contexts[0].value, "menu");
 
     // Multiline entry
@@ -364,7 +359,10 @@ fn roundtrip_context() {
             "Context count mismatch for key: {key}"
         );
         for (ctx, rctx) in entry.contexts.iter().zip(reparsed_entry.contexts.iter()) {
-            assert_eq!(ctx.value, rctx.value, "Context value mismatch for key: {key}");
+            assert_eq!(
+                ctx.value, rctx.value,
+                "Context value mismatch for key: {key}"
+            );
             assert_eq!(
                 ctx.context_type, rctx.context_type,
                 "Context type mismatch for key: {key}"

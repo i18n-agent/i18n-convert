@@ -260,19 +260,14 @@ fn select_gender_warning() {
     };
 
     let warnings = check_data_loss(&resource, &target_caps);
-    assert!(warnings
-        .iter()
-        .any(|w| w.lost_attribute == "select/gender"));
+    assert!(warnings.iter().any(|w| w.lost_attribute == "select/gender"));
 }
 
 #[test]
 fn device_variants_warning() {
     let mut entries = IndexMap::new();
     let mut variants = IndexMap::new();
-    variants.insert(
-        DeviceType::Phone,
-        EntryValue::Simple("Tap".to_string()),
-    );
+    variants.insert(DeviceType::Phone, EntryValue::Simple("Tap".to_string()));
 
     entries.insert(
         "action".to_string(),

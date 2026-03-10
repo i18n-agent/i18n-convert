@@ -5,10 +5,7 @@ pub struct Parser;
 pub struct Writer;
 
 /// Keys that are stringsdict metadata, not plural categories.
-const META_KEYS: &[&str] = &[
-    "NSStringFormatSpecTypeKey",
-    "NSStringFormatValueTypeKey",
-];
+const META_KEYS: &[&str] = &["NSStringFormatSpecTypeKey", "NSStringFormatValueTypeKey"];
 
 /// Regex pattern for `%#@varname@` references in the format key.
 fn extract_variable_names(pattern: &str) -> Vec<String> {
@@ -27,10 +24,7 @@ fn extract_variable_names(pattern: &str) -> Vec<String> {
 }
 
 /// Parse a plist Dictionary representing a single variable's plural rules.
-fn parse_variable_dict(
-    name: &str,
-    dict: &plist::Dictionary,
-) -> Result<PluralVariable, ParseError> {
+fn parse_variable_dict(name: &str, dict: &plist::Dictionary) -> Result<PluralVariable, ParseError> {
     let format_spec_type = dict
         .get("NSStringFormatSpecTypeKey")
         .and_then(|v| v.as_string())
@@ -40,8 +34,7 @@ fn parse_variable_dict(
     if let Some(ref spec_type) = format_spec_type {
         if spec_type != "NSStringPluralRuleType" {
             return Err(ParseError::InvalidFormat(format!(
-                "Unsupported NSStringFormatSpecTypeKey: {}",
-                spec_type
+                "Unsupported NSStringFormatSpecTypeKey: {spec_type}"
             )));
         }
     }
@@ -80,18 +73,12 @@ fn parse_variable_dict(
 }
 
 /// Parse a single entry dict (the value for a top-level key).
-fn parse_entry_dict(
-    key: &str,
-    dict: &plist::Dictionary,
-) -> Result<I18nEntry, ParseError> {
+fn parse_entry_dict(key: &str, dict: &plist::Dictionary) -> Result<I18nEntry, ParseError> {
     let format_key = dict
         .get("NSStringLocalizedFormatKey")
         .and_then(|v| v.as_string())
         .ok_or_else(|| {
-            ParseError::InvalidFormat(format!(
-                "Entry '{}' missing NSStringLocalizedFormatKey",
-                key
-            ))
+            ParseError::InvalidFormat(format!("Entry '{key}' missing NSStringLocalizedFormatKey"))
         })?
         .to_string();
 
@@ -111,11 +98,16 @@ fn parse_entry_dict(
 
     // Determine whether this is a single-variable plural or multi-variable plural.
     // Single-variable: format key is exactly `%#@varname@` (one variable, nothing else)
-    let is_single_var = variables.len() == 1 && var_names.len() == 1 && format_key == format!("%#@{}@", var_names[0]);
+    let is_single_var = variables.len() == 1
+        && var_names.len() == 1
+        && format_key == format!("%#@{}@", var_names[0]);
 
     let value = if is_single_var {
         // Single variable → flatten to EntryValue::Plural
-        let var = variables.into_values().next().expect("len == 1 checked above");
+        let var = variables
+            .into_values()
+            .next()
+            .expect("len == 1 checked above");
         EntryValue::Plural(var.plural_set)
     } else {
         // Multi-variable → EntryValue::MultiVariablePlural
@@ -162,13 +154,11 @@ impl FormatParser for Parser {
 
     fn parse(&self, content: &[u8]) -> Result<I18nResource, ParseError> {
         let plist_value = plist::Value::from_reader_xml(Cursor::new(content))
-            .map_err(|e| ParseError::Xml(format!("Failed to parse plist XML: {}", e)))?;
+            .map_err(|e| ParseError::Xml(format!("Failed to parse plist XML: {e}")))?;
 
-        let root_dict = plist_value
-            .as_dictionary()
-            .ok_or_else(|| {
-                ParseError::InvalidFormat("Root plist value is not a dictionary".to_string())
-            })?;
+        let root_dict = plist_value.as_dictionary().ok_or_else(|| {
+            ParseError::InvalidFormat("Root plist value is not a dictionary".to_string())
+        })?;
 
         let mut entries = IndexMap::new();
 
@@ -230,7 +220,9 @@ fn write_variable_dict(var: &PluralVariable) -> plist::Dictionary {
     dict.insert(
         "NSStringFormatValueTypeKey".to_string(),
         plist::Value::String(
-            var.format_specifier.clone().unwrap_or_else(|| "d".to_string()),
+            var.format_specifier
+                .clone()
+                .unwrap_or_else(|| "d".to_string()),
         ),
     );
 
@@ -325,9 +317,12 @@ impl FormatWriter for Writer {
                     let mut dict = plist::Dictionary::new();
                     dict.insert(
                         "NSStringLocalizedFormatKey".to_string(),
-                        plist::Value::String(format!("%#@{}@", var_name)),
+                        plist::Value::String(format!("%#@{var_name}@")),
                     );
-                    dict.insert(var_name, plist::Value::Dictionary(write_variable_dict(&var)));
+                    dict.insert(
+                        var_name,
+                        plist::Value::Dictionary(write_variable_dict(&var)),
+                    );
                     dict
                 }
                 EntryValue::MultiVariablePlural(mvp) => {
@@ -356,8 +351,7 @@ impl FormatWriter for Writer {
                 }
                 _ => {
                     eprintln!(
-                        "Warning: skipping entry '{}' with unsupported value type for stringsdict",
-                        key
+                        "Warning: skipping entry '{key}' with unsupported value type for stringsdict"
                     );
                     continue;
                 }
@@ -370,7 +364,7 @@ impl FormatWriter for Writer {
         let mut buf = Vec::new();
         plist_value
             .to_writer_xml(&mut buf)
-            .map_err(|e| WriteError::Serialization(format!("Failed to write plist XML: {}", e)))?;
+            .map_err(|e| WriteError::Serialization(format!("Failed to write plist XML: {e}")))?;
 
         Ok(buf)
     }

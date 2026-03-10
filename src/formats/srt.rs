@@ -98,9 +98,7 @@ impl FormatParser for Parser {
             // Line 0: sequence number
             let seq_str = lines[0].trim();
             let sequence: u32 = seq_str.parse().map_err(|_| {
-                ParseError::InvalidFormat(format!(
-                    "Invalid SRT sequence number: '{seq_str}'"
-                ))
+                ParseError::InvalidFormat(format!("Invalid SRT sequence number: '{seq_str}'"))
             })?;
 
             // Line 1: timecodes
@@ -203,11 +201,9 @@ fn split_srt_blocks(s: &str) -> Vec<&str> {
                 }
                 in_blank_run = true;
             }
-        } else {
-            if in_blank_run {
-                start = line_start;
-                in_blank_run = false;
-            }
+        } else if in_blank_run {
+            start = line_start;
+            in_blank_run = false;
         }
     }
 
@@ -240,9 +236,7 @@ impl FormatWriter for Writer {
                 EntryValue::Simple(s) => s.clone(),
                 EntryValue::Plural(ps) => ps.other.clone(),
                 EntryValue::Array(arr) => arr.join("\n"),
-                EntryValue::Select(ss) => {
-                    ss.cases.get("other").cloned().unwrap_or_default()
-                }
+                EntryValue::Select(ss) => ss.cases.get("other").cloned().unwrap_or_default(),
                 EntryValue::MultiVariablePlural(mvp) => mvp.pattern.clone(),
             };
 
@@ -251,7 +245,7 @@ impl FormatWriter for Writer {
                 .properties
                 .get("srt.sequence")
                 .and_then(|s| s.parse::<u32>().ok())
-                .or_else(|| {
+                .or({
                     if let Some(FormatExtension::Srt(ext)) = &entry.format_ext {
                         ext.sequence_number
                     } else {
@@ -281,8 +275,8 @@ impl FormatWriter for Writer {
                     }
                 })
                 .unwrap_or_else(|| {
-                    let secs = (sequence - 1) as u32;
-                    format!("00:00:{:02},000", secs)
+                    let secs = sequence - 1;
+                    format!("00:00:{secs:02},000")
                 });
 
             let end_time = entry
@@ -297,13 +291,13 @@ impl FormatWriter for Writer {
                     }
                 })
                 .unwrap_or_else(|| {
-                    let secs = sequence as u32;
-                    format!("00:00:{:02},000", secs)
+                    let secs = sequence;
+                    format!("00:00:{secs:02},000")
                 });
 
             // Write entry
-            output.push_str(&format!("{}\n", sequence));
-            output.push_str(&format!("{} --> {}\n", start_time, end_time));
+            output.push_str(&format!("{sequence}\n"));
+            output.push_str(&format!("{start_time} --> {end_time}\n"));
             output.push_str(&text);
             output.push('\n');
         }

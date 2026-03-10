@@ -1,5 +1,5 @@
-use i18n_convert::formats::{FormatParser, FormatWriter, Confidence};
 use i18n_convert::formats::ios_strings::{Parser, Writer};
+use i18n_convert::formats::{Confidence, FormatParser, FormatWriter};
 use i18n_convert::ir::*;
 use indexmap::IndexMap;
 
@@ -40,14 +40,23 @@ fn parse_simple_fixture() {
     assert_eq!(resource.entries.len(), 5);
 
     // Check first entry
-    let app_title = resource.entries.get("app_title").expect("app_title should exist");
-    assert_eq!(app_title.value, EntryValue::Simple("My Application".to_string()));
+    let app_title = resource
+        .entries
+        .get("app_title")
+        .expect("app_title should exist");
+    assert_eq!(
+        app_title.value,
+        EntryValue::Simple("My Application".to_string())
+    );
     assert_eq!(app_title.comments.len(), 1);
     assert_eq!(app_title.comments[0].text, "App title");
     assert_eq!(app_title.comments[0].role, CommentRole::General);
 
     // Check entry with no comment
-    let no_comment = resource.entries.get("no_comment").expect("no_comment should exist");
+    let no_comment = resource
+        .entries
+        .get("no_comment")
+        .expect("no_comment should exist");
     assert_eq!(
         no_comment.value,
         EntryValue::Simple("This has no comment".to_string())
@@ -55,7 +64,10 @@ fn parse_simple_fixture() {
     assert!(no_comment.comments.is_empty());
 
     // Check empty value
-    let empty = resource.entries.get("empty_value").expect("empty_value should exist");
+    let empty = resource
+        .entries
+        .get("empty_value")
+        .expect("empty_value should exist");
     assert_eq!(empty.value, EntryValue::Simple("".to_string()));
 
     // Check dotted key
@@ -251,20 +263,21 @@ fn roundtrip_simple() {
     // Same keys, values, and comments
     for (key, original) in &resource.entries {
         let reparsed_entry = reparsed.entries.get(key).unwrap_or_else(|| {
-            panic!("Key '{}' missing after round-trip", key);
+            panic!("Key '{key}' missing after round-trip");
         });
-        assert_eq!(original.value, reparsed_entry.value, "Value mismatch for key '{}'", key);
+        assert_eq!(
+            original.value, reparsed_entry.value,
+            "Value mismatch for key '{key}'"
+        );
         assert_eq!(
             original.comments.len(),
             reparsed_entry.comments.len(),
-            "Comment count mismatch for key '{}'",
-            key
+            "Comment count mismatch for key '{key}'"
         );
         for (i, comment) in original.comments.iter().enumerate() {
             assert_eq!(
                 comment.text, reparsed_entry.comments[i].text,
-                "Comment text mismatch for key '{}' comment {}",
-                key, i
+                "Comment text mismatch for key '{key}' comment {i}"
             );
         }
     }
@@ -283,7 +296,10 @@ fn roundtrip_escapes() {
     assert_eq!(resource.entries.len(), reparsed.entries.len());
     for (key, original) in &resource.entries {
         let reparsed_entry = reparsed.entries.get(key).unwrap();
-        assert_eq!(original.value, reparsed_entry.value, "Value mismatch for key '{}'", key);
+        assert_eq!(
+            original.value, reparsed_entry.value,
+            "Value mismatch for key '{key}'"
+        );
     }
 }
 
@@ -300,7 +316,10 @@ fn roundtrip_unicode() {
     assert_eq!(resource.entries.len(), reparsed.entries.len());
     for (key, original) in &resource.entries {
         let reparsed_entry = reparsed.entries.get(key).unwrap();
-        assert_eq!(original.value, reparsed_entry.value, "Value mismatch for key '{}'", key);
+        assert_eq!(
+            original.value, reparsed_entry.value,
+            "Value mismatch for key '{key}'"
+        );
     }
 }
 

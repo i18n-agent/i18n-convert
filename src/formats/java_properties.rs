@@ -16,14 +16,38 @@ fn properties_unescape(s: &str) -> String {
     while let Some(ch) = chars.next() {
         if ch == '\\' {
             match chars.peek().copied() {
-                Some('n') => { chars.next(); out.push('\n'); }
-                Some('t') => { chars.next(); out.push('\t'); }
-                Some('\\') => { chars.next(); out.push('\\'); }
-                Some('=') => { chars.next(); out.push('='); }
-                Some(':') => { chars.next(); out.push(':'); }
-                Some('#') => { chars.next(); out.push('#'); }
-                Some('!') => { chars.next(); out.push('!'); }
-                Some(' ') => { chars.next(); out.push(' '); }
+                Some('n') => {
+                    chars.next();
+                    out.push('\n');
+                }
+                Some('t') => {
+                    chars.next();
+                    out.push('\t');
+                }
+                Some('\\') => {
+                    chars.next();
+                    out.push('\\');
+                }
+                Some('=') => {
+                    chars.next();
+                    out.push('=');
+                }
+                Some(':') => {
+                    chars.next();
+                    out.push(':');
+                }
+                Some('#') => {
+                    chars.next();
+                    out.push('#');
+                }
+                Some('!') => {
+                    chars.next();
+                    out.push('!');
+                }
+                Some(' ') => {
+                    chars.next();
+                    out.push(' ');
+                }
                 Some('u') => {
                     chars.next(); // consume 'u'
                     let mut hex = String::with_capacity(4);
@@ -98,11 +122,25 @@ fn escape_value(s: &str) -> String {
     let mut at_start = true;
     for ch in s.chars() {
         match ch {
-            '\\' => { out.push_str("\\\\"); at_start = false; }
-            '\n' => { out.push_str("\\n"); at_start = false; }
-            '\t' => { out.push_str("\\t"); at_start = false; }
-            ' ' if at_start => { out.push_str("\\ "); }
-            other => { out.push(other); at_start = false; }
+            '\\' => {
+                out.push_str("\\\\");
+                at_start = false;
+            }
+            '\n' => {
+                out.push_str("\\n");
+                at_start = false;
+            }
+            '\t' => {
+                out.push_str("\\t");
+                at_start = false;
+            }
+            ' ' if at_start => {
+                out.push_str("\\ ");
+            }
+            other => {
+                out.push(other);
+                at_start = false;
+            }
         }
     }
     out
@@ -254,7 +292,11 @@ fn parse_properties(content: &str) -> Result<I18nResource, ParseError> {
             }
             // Strip the comment char and optional leading space
             let text = &trimmed[1..];
-            let text = if text.starts_with(' ') { &text[1..] } else { text };
+            let text = if let Some(stripped) = text.strip_prefix(' ') {
+                stripped
+            } else {
+                text
+            };
             pending_comments.push((text.to_string(), comment_ch));
             continue;
         }
@@ -343,16 +385,14 @@ fn write_properties(resource: &I18nResource) -> String {
             EntryValue::Simple(s) => s.clone(),
             EntryValue::Plural(ps) => ps.other.clone(),
             EntryValue::Array(arr) => arr.join("\n"),
-            EntryValue::Select(ss) => {
-                ss.cases.values().next().cloned().unwrap_or_default()
-            }
+            EntryValue::Select(ss) => ss.cases.values().next().cloned().unwrap_or_default(),
             EntryValue::MultiVariablePlural(mvp) => mvp.pattern.clone(),
         };
 
         let sep_str = if sep == ' ' {
             " ".to_string()
         } else {
-            format!(" {} ", sep)
+            format!(" {sep} ")
         };
 
         out.push_str(&format!(
@@ -397,7 +437,7 @@ impl FormatParser for Parser {
 
     fn parse(&self, content: &[u8]) -> Result<I18nResource, ParseError> {
         let text = std::str::from_utf8(content)
-            .map_err(|e| ParseError::InvalidFormat(format!("Invalid UTF-8: {}", e)))?;
+            .map_err(|e| ParseError::InvalidFormat(format!("Invalid UTF-8: {e}")))?;
         parse_properties(text)
     }
 
@@ -502,17 +542,24 @@ mod tests {
 
     #[test]
     fn test_join_logical_lines_continuation() {
-        let input = "multiline.value = This is a \\\n    long value that spans \\\n    multiple lines";
+        let input =
+            "multiline.value = This is a \\\n    long value that spans \\\n    multiple lines";
         let lines = join_logical_lines(input);
         assert_eq!(lines.len(), 1);
-        assert_eq!(lines[0], "multiline.value = This is a long value that spans multiple lines");
+        assert_eq!(
+            lines[0],
+            "multiline.value = This is a long value that spans multiple lines"
+        );
     }
 
     #[test]
     fn test_parse_comments() {
         let input = "# This is a comment\ngreeting = Hello";
         let resource = parse_properties(input).expect("should parse");
-        let entry = resource.entries.get("greeting").expect("greeting should exist");
+        let entry = resource
+            .entries
+            .get("greeting")
+            .expect("greeting should exist");
         assert_eq!(entry.comments.len(), 1);
         assert_eq!(entry.comments[0].text, "This is a comment");
     }
@@ -521,7 +568,10 @@ mod tests {
     fn test_parse_exclamation_comment() {
         let input = "! This is also a comment\ngreeting = Hello";
         let resource = parse_properties(input).expect("should parse");
-        let entry = resource.entries.get("greeting").expect("greeting should exist");
+        let entry = resource
+            .entries
+            .get("greeting")
+            .expect("greeting should exist");
         assert_eq!(entry.comments.len(), 1);
         assert_eq!(entry.comments[0].text, "This is also a comment");
     }

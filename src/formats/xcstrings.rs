@@ -98,34 +98,29 @@ fn parse_plural_variations(plural_obj: &Value) -> Option<PluralSet> {
 }
 
 /// Parse device variations into an IndexMap<DeviceType, EntryValue>.
-fn parse_device_variations(
-    device_obj: &Value,
-) -> Option<IndexMap<DeviceType, EntryValue>> {
+fn parse_device_variations(device_obj: &Value) -> Option<IndexMap<DeviceType, EntryValue>> {
     let map = device_obj.as_object()?;
     let mut variants = IndexMap::new();
 
     for (device_key, variant) in map {
         let su = variant.get("stringUnit")?;
         let (_, value) = parse_string_unit(su)?;
-        variants.insert(
-            device_key_to_type(device_key),
-            EntryValue::Simple(value),
-        );
+        variants.insert(device_key_to_type(device_key), EntryValue::Simple(value));
     }
     Some(variants)
 }
 
 /// Parse substitutions into MultiVariablePlural.
-fn parse_substitutions(
-    subs_obj: &Value,
-    pattern: &str,
-) -> Option<MultiVariablePlural> {
+fn parse_substitutions(subs_obj: &Value, pattern: &str) -> Option<MultiVariablePlural> {
     let map = subs_obj.as_object()?;
     let mut variables = IndexMap::new();
 
     for (name, sub) in map {
         let sub_obj = sub.as_object()?;
-        let arg_num = sub_obj.get("argNum").and_then(|v| v.as_u64()).map(|n| n as u32);
+        let arg_num = sub_obj
+            .get("argNum")
+            .and_then(|v| v.as_u64())
+            .map(|n| n as u32);
         let format_specifier = sub_obj
             .get("formatSpecifier")
             .and_then(|v| v.as_str())
@@ -206,8 +201,8 @@ impl FormatParser for Parser {
     }
 
     fn parse(&self, content: &[u8]) -> Result<I18nResource, ParseError> {
-        let root: Value = serde_json::from_slice(content)
-            .map_err(|e| ParseError::Json(e.to_string()))?;
+        let root: Value =
+            serde_json::from_slice(content).map_err(|e| ParseError::Json(e.to_string()))?;
 
         let root_obj = root
             .as_object()
@@ -236,7 +231,10 @@ impl FormatParser for Parser {
                 None => continue,
             };
 
-            let comment = def.get("comment").and_then(|v| v.as_str()).map(|s| s.to_string());
+            let comment = def
+                .get("comment")
+                .and_then(|v| v.as_str())
+                .map(|s| s.to_string());
             let extraction_state = def
                 .get("extractionState")
                 .and_then(|v| v.as_str())
@@ -255,11 +253,7 @@ impl FormatParser for Parser {
             // Prefer source_language; if missing pick first available.
             let primary_locale = source_language
                 .as_deref()
-                .and_then(|sl| {
-                    localizations
-                        .and_then(|locs| locs.get(sl))
-                        .map(|_| sl)
-                });
+                .and_then(|sl| localizations.and_then(|locs| locs.get(sl)).map(|_| sl));
 
             let mut entry_value = EntryValue::Simple(String::new());
             let mut entry_state: Option<TranslationState> = None;
@@ -354,14 +348,19 @@ impl FormatParser for Parser {
                         if Some(locale.as_str()) == primary_locale {
                             continue;
                         }
-                        if locs.values().next().map(|v| std::ptr::eq(v, loc_data)).unwrap_or(false) {
+                        if locs
+                            .values()
+                            .next()
+                            .map(|v| std::ptr::eq(v, loc_data))
+                            .unwrap_or(false)
+                        {
                             continue;
                         }
                     }
                     // Store additional localizations as JSON in properties
                     let json_str = serde_json::to_string(loc_data).unwrap_or_default();
                     // We use a well-known prefix so the writer can reconstruct them
-                    let prop_key = format!("xcstrings.localization.{}", locale);
+                    let prop_key = format!("xcstrings.localization.{locale}");
                     // Will be set below on entry
                     entries.entry(key.clone()).or_insert_with(|| I18nEntry {
                         key: key.clone(),
@@ -465,28 +464,19 @@ impl FormatWriter for Writer {
 
             // comment
             if let Some(comment) = entry.comments.first() {
-                string_def.insert(
-                    "comment".to_string(),
-                    Value::String(comment.text.clone()),
-                );
+                string_def.insert("comment".to_string(), Value::String(comment.text.clone()));
             }
 
             // extractionState
             if let Some(FormatExtension::Xcstrings(ext)) = &entry.format_ext {
                 if let Some(es) = &ext.extraction_state {
-                    string_def.insert(
-                        "extractionState".to_string(),
-                        Value::String(es.clone()),
-                    );
+                    string_def.insert("extractionState".to_string(), Value::String(es.clone()));
                 }
             }
 
             // shouldTranslate
             if entry.translatable == Some(false) {
-                string_def.insert(
-                    "shouldTranslate".to_string(),
-                    Value::Bool(false),
-                );
+                string_def.insert("shouldTranslate".to_string(), Value::Bool(false));
             }
 
             // localizations
@@ -499,27 +489,15 @@ impl FormatWriter for Writer {
             match &entry.value {
                 EntryValue::Simple(value) => {
                     let mut loc = serde_json::Map::new();
-                    loc.insert(
-                        "stringUnit".to_string(),
-                        string_unit_json(state_ref, value),
-                    );
-                    localizations.insert(
-                        primary_locale.to_string(),
-                        Value::Object(loc),
-                    );
+                    loc.insert("stringUnit".to_string(), string_unit_json(state_ref, value));
+                    localizations.insert(primary_locale.to_string(), Value::Object(loc));
                 }
                 EntryValue::Plural(ps) => {
                     let mut loc = serde_json::Map::new();
                     let mut variations = serde_json::Map::new();
-                    variations.insert(
-                        "plural".to_string(),
-                        plural_set_to_json(ps, state_ref),
-                    );
+                    variations.insert("plural".to_string(), plural_set_to_json(ps, state_ref));
                     loc.insert("variations".to_string(), Value::Object(variations));
-                    localizations.insert(
-                        primary_locale.to_string(),
-                        Value::Object(loc),
-                    );
+                    localizations.insert(primary_locale.to_string(), Value::Object(loc));
                 }
                 EntryValue::MultiVariablePlural(mvp) => {
                     let mut loc = serde_json::Map::new();
@@ -541,10 +519,7 @@ impl FormatWriter for Writer {
                             );
                         }
                         if let Some(fs) = &var.format_specifier {
-                            sub.insert(
-                                "formatSpecifier".to_string(),
-                                Value::String(fs.clone()),
-                            );
+                            sub.insert("formatSpecifier".to_string(), Value::String(fs.clone()));
                         }
                         let mut variations = serde_json::Map::new();
                         variations.insert(
@@ -556,10 +531,7 @@ impl FormatWriter for Writer {
                     }
                     loc.insert("substitutions".to_string(), Value::Object(subs));
 
-                    localizations.insert(
-                        primary_locale.to_string(),
-                        Value::Object(loc),
-                    );
+                    localizations.insert(primary_locale.to_string(), Value::Object(loc));
                 }
                 EntryValue::Array(_) | EntryValue::Select(_) => {
                     // xcstrings doesn't support arrays or select; write as simple string fallback
@@ -575,10 +547,7 @@ impl FormatWriter for Writer {
                         "stringUnit".to_string(),
                         string_unit_json(state_ref, &fallback),
                     );
-                    localizations.insert(
-                        primary_locale.to_string(),
-                        Value::Object(loc),
-                    );
+                    localizations.insert(primary_locale.to_string(), Value::Object(loc));
                 }
             }
 
@@ -598,10 +567,8 @@ impl FormatWriter for Writer {
                             _ => String::new(),
                         };
                         let mut variant = serde_json::Map::new();
-                        variant.insert(
-                            "stringUnit".to_string(),
-                            string_unit_json(state_ref, &text),
-                        );
+                        variant
+                            .insert("stringUnit".to_string(), string_unit_json(state_ref, &text));
                         device_map.insert(dk.to_string(), Value::Object(variant));
                     }
 
@@ -623,10 +590,7 @@ impl FormatWriter for Writer {
                     let mut loc = serde_json::Map::new();
                     loc.insert("variations".to_string(), Value::Object(variations));
                     // Override the primary locale with device variations
-                    localizations.insert(
-                        primary_locale.to_string(),
-                        Value::Object(loc),
-                    );
+                    localizations.insert(primary_locale.to_string(), Value::Object(loc));
                 }
             }
 
@@ -640,10 +604,7 @@ impl FormatWriter for Writer {
             }
 
             if !localizations.is_empty() {
-                string_def.insert(
-                    "localizations".to_string(),
-                    Value::Object(localizations),
-                );
+                string_def.insert("localizations".to_string(), Value::Object(localizations));
             }
 
             strings.insert(key.clone(), Value::Object(string_def));

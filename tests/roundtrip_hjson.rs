@@ -1,5 +1,5 @@
-use i18n_convert::formats::{Confidence, FormatParser, FormatWriter};
 use i18n_convert::formats::hjson;
+use i18n_convert::formats::{Confidence, FormatParser, FormatWriter};
 use i18n_convert::ir::*;
 use indexmap::IndexMap;
 
@@ -12,10 +12,7 @@ fn writer() -> hjson::Writer {
 }
 
 fn fixture(name: &str) -> Vec<u8> {
-    let path = format!(
-        "{}/tests/fixtures/hjson/{name}",
-        env!("CARGO_MANIFEST_DIR")
-    );
+    let path = format!("{}/tests/fixtures/hjson/{name}", env!("CARGO_MANIFEST_DIR"));
     std::fs::read(&path).unwrap_or_else(|e| panic!("Failed to read fixture {path}: {e}"))
 }
 

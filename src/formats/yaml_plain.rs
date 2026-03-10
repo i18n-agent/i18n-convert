@@ -11,13 +11,11 @@ const PLURAL_KEYS: &[&str] = &["zero", "one", "two", "few", "many", "other"];
 
 /// Locale codes that would indicate a Rails-style YAML file.
 /// We check the first non-comment, non-blank YAML key against these patterns.
-static RE_LOCALE_ROOT: LazyLock<Regex> = LazyLock::new(|| {
-    Regex::new(r"^[a-zA-Z]{2,3}(-[a-zA-Z]{2,4})?:\s*$").expect("valid regex")
-});
+static RE_LOCALE_ROOT: LazyLock<Regex> =
+    LazyLock::new(|| Regex::new(r"^[a-zA-Z]{2,3}(-[a-zA-Z]{2,4})?:\s*$").expect("valid regex"));
 
-static RE_PLACEHOLDER: LazyLock<Regex> = LazyLock::new(|| {
-    Regex::new(r"\{([^}]+)\}").expect("valid regex")
-});
+static RE_PLACEHOLDER: LazyLock<Regex> =
+    LazyLock::new(|| Regex::new(r"\{([^}]+)\}").expect("valid regex"));
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -28,9 +26,7 @@ fn is_plural_mapping(mapping: &serde_yaml::Mapping) -> bool {
     if mapping.is_empty() {
         return false;
     }
-    let has_other = mapping
-        .iter()
-        .any(|(k, _)| k.as_str().map_or(false, |s| s == "other"));
+    let has_other = mapping.iter().any(|(k, _)| k.as_str() == Some("other"));
     if !has_other {
         return false;
     }
@@ -107,8 +103,8 @@ fn extract_comments_from_text(text: &str) -> IndexMap<usize, Vec<String>> {
 
     for (line_num, line) in text.lines().enumerate() {
         let trimmed = line.trim();
-        if trimmed.starts_with('#') {
-            let comment_text = trimmed[1..].trim_start().to_string();
+        if let Some(stripped) = trimmed.strip_prefix('#') {
+            let comment_text = stripped.trim_start().to_string();
             pending_comments.push(comment_text);
         } else if trimmed.is_empty() {
             // Blank lines reset pending comments
@@ -195,7 +191,7 @@ fn flatten_yaml(
         let full_key = if prefix.is_empty() {
             key_str.to_string()
         } else {
-            format!("{}.{}", prefix, key_str)
+            format!("{prefix}.{key_str}")
         };
 
         match value {
@@ -275,10 +271,7 @@ fn flatten_yaml(
     }
 }
 
-fn build_comments_for_key(
-    key: &str,
-    key_comments: &IndexMap<String, Vec<String>>,
-) -> Vec<Comment> {
+fn build_comments_for_key(key: &str, key_comments: &IndexMap<String, Vec<String>>) -> Vec<Comment> {
     key_comments
         .get(key)
         .map(|texts| {
@@ -302,9 +295,7 @@ fn build_comments_for_key(
 
 /// After flattening, group keys like `items_one`, `items_other` into a single
 /// PluralSet entry keyed as `items`.
-fn group_plural_suffix_keys(
-    entries: IndexMap<String, I18nEntry>,
-) -> IndexMap<String, I18nEntry> {
+fn group_plural_suffix_keys(entries: IndexMap<String, I18nEntry>) -> IndexMap<String, I18nEntry> {
     // First pass: identify plural groups
     let mut plural_bases: IndexMap<String, IndexMap<String, usize>> = IndexMap::new();
     let keys: Vec<String> = entries.keys().cloned().collect();
@@ -405,7 +396,7 @@ fn unflatten_to_yaml(entries: &IndexMap<String, I18nEntry>) -> serde_yaml::Mappi
                 if let Some((&last, parent_parts)) = parts.split_last() {
                     let write_suffix =
                         |mapping: &mut serde_yaml::Mapping, suffix: &str, val: &str| {
-                            let suffixed_key = format!("{}_{}", last, suffix);
+                            let suffixed_key = format!("{last}_{suffix}");
                             let key = serde_yaml::Value::String(suffixed_key);
                             mapping.insert(key, serde_yaml::Value::String(val.to_string()));
                         };
@@ -454,18 +445,14 @@ fn get_or_create_parent<'a>(
             .or_insert_with(|| serde_yaml::Value::Mapping(serde_yaml::Mapping::new()));
         current = match child {
             serde_yaml::Value::Mapping(ref mut m) => m,
-            _ => panic!("Expected mapping at key {}", part),
+            _ => panic!("Expected mapping at key {part}"),
         };
     }
     current
 }
 
 /// Insert a value into a nested YAML mapping at the given key path.
-fn insert_nested(
-    mapping: &mut serde_yaml::Mapping,
-    parts: &[&str],
-    value: &EntryValue,
-) {
+fn insert_nested(mapping: &mut serde_yaml::Mapping, parts: &[&str], value: &EntryValue) {
     if parts.is_empty() {
         return;
     }
@@ -557,12 +544,10 @@ impl FormatParser for Parser {
         // Distinguish from Rails YAML by checking if the first non-comment,
         // non-blank line looks like a locale root key (e.g., "en:", "ja:", "zh-Hans:")
         if let Ok(text) = std::str::from_utf8(content) {
-            let first_line = text
-                .lines()
-                .find(|l| {
-                    let t = l.trim();
-                    !t.is_empty() && !t.starts_with('#')
-                });
+            let first_line = text.lines().find(|l| {
+                let t = l.trim();
+                !t.is_empty() && !t.starts_with('#')
+            });
 
             if let Some(line) = first_line {
                 let trimmed = line.trim();
@@ -578,7 +563,7 @@ impl FormatParser for Parser {
 
     fn parse(&self, content: &[u8]) -> Result<I18nResource, ParseError> {
         let text = std::str::from_utf8(content)
-            .map_err(|e| ParseError::InvalidFormat(format!("Invalid UTF-8: {}", e)))?;
+            .map_err(|e| ParseError::InvalidFormat(format!("Invalid UTF-8: {e}")))?;
 
         // Handle empty content
         if text.trim().is_empty() {
@@ -592,8 +577,8 @@ impl FormatParser for Parser {
             });
         }
 
-        let yaml_value: serde_yaml::Value = serde_yaml::from_str(text)
-            .map_err(|e| ParseError::Yaml(format!("{}", e)))?;
+        let yaml_value: serde_yaml::Value =
+            serde_yaml::from_str(text).map_err(|e| ParseError::Yaml(format!("{e}")))?;
 
         let root_mapping = yaml_value
             .as_mapping()
@@ -644,7 +629,7 @@ impl FormatWriter for Writer {
         let inner_mapping = unflatten_to_yaml(&resource.entries);
 
         let yaml_str = serde_yaml::to_string(&serde_yaml::Value::Mapping(inner_mapping))
-            .map_err(|e| WriteError::Serialization(format!("{}", e)))?;
+            .map_err(|e| WriteError::Serialization(format!("{e}")))?;
 
         Ok(yaml_str.into_bytes())
     }
@@ -738,7 +723,7 @@ mod tests {
                 assert_eq!(ps.one, Some("{count} item".to_string()));
                 assert_eq!(ps.other, "{count} items");
             }
-            other => panic!("Expected Plural, got {:?}", other),
+            other => panic!("Expected Plural, got {other:?}"),
         }
     }
 

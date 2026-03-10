@@ -1,5 +1,5 @@
-use i18n_convert::formats::{FormatParser, FormatWriter, Confidence};
 use i18n_convert::formats::ios_plist::{Parser, Writer};
+use i18n_convert::formats::{Confidence, FormatParser, FormatWriter};
 use i18n_convert::ir::*;
 use indexmap::IndexMap;
 
@@ -10,7 +10,10 @@ use indexmap::IndexMap;
 #[test]
 fn detect_by_extension() {
     let parser = Parser;
-    assert_eq!(parser.detect(".plist", b"<plist><dict></dict></plist>"), Confidence::Definite);
+    assert_eq!(
+        parser.detect(".plist", b"<plist><dict></dict></plist>"),
+        Confidence::Definite
+    );
 }
 
 #[test]
@@ -53,16 +56,28 @@ fn parse_simple_fixture() {
     assert_eq!(resource.metadata.source_format, FormatId::IosPlist);
     assert_eq!(resource.entries.len(), 4);
 
-    let greeting = resource.entries.get("greeting").expect("greeting should exist");
+    let greeting = resource
+        .entries
+        .get("greeting")
+        .expect("greeting should exist");
     assert_eq!(greeting.value, EntryValue::Simple("Hello".to_string()));
 
-    let farewell = resource.entries.get("farewell").expect("farewell should exist");
+    let farewell = resource
+        .entries
+        .get("farewell")
+        .expect("farewell should exist");
     assert_eq!(farewell.value, EntryValue::Simple("Goodbye".to_string()));
 
-    let app = resource.entries.get("app_name").expect("app_name should exist");
+    let app = resource
+        .entries
+        .get("app_name")
+        .expect("app_name should exist");
     assert_eq!(app.value, EntryValue::Simple("My App".to_string()));
 
-    let welcome = resource.entries.get("welcome_message").expect("welcome_message should exist");
+    let welcome = resource
+        .entries
+        .get("welcome_message")
+        .expect("welcome_message should exist");
     assert_eq!(
         welcome.value,
         EntryValue::Simple("Welcome to our application!".to_string())
@@ -140,12 +155,18 @@ fn parse_arrays_fixture() {
     let colors = resource.entries.get("colors").expect("colors should exist");
     match &colors.value {
         EntryValue::Array(arr) => {
-            assert_eq!(arr, &vec!["Red".to_string(), "Blue".to_string(), "Green".to_string()]);
+            assert_eq!(
+                arr,
+                &vec!["Red".to_string(), "Blue".to_string(), "Green".to_string()]
+            );
         }
-        other => panic!("Expected array, got {:?}", other),
+        other => panic!("Expected array, got {other:?}"),
     }
 
-    let greeting = resource.entries.get("greeting").expect("greeting should exist");
+    let greeting = resource
+        .entries
+        .get("greeting")
+        .expect("greeting should exist");
     assert_eq!(greeting.value, EntryValue::Simple("Hello".to_string()));
 
     let sizes = resource.entries.get("sizes").expect("sizes should exist");
@@ -155,7 +176,7 @@ fn parse_arrays_fixture() {
             assert_eq!(arr[0], "Small");
             assert_eq!(arr[3], "Extra Large");
         }
-        other => panic!("Expected array, got {:?}", other),
+        other => panic!("Expected array, got {other:?}"),
     }
 
     // Nested array
@@ -165,9 +186,16 @@ fn parse_arrays_fixture() {
         .expect("nav.items should exist");
     match &nav_items.value {
         EntryValue::Array(arr) => {
-            assert_eq!(arr, &vec!["Home".to_string(), "About".to_string(), "Contact".to_string()]);
+            assert_eq!(
+                arr,
+                &vec![
+                    "Home".to_string(),
+                    "About".to_string(),
+                    "Contact".to_string()
+                ]
+            );
         }
-        other => panic!("Expected array, got {:?}", other),
+        other => panic!("Expected array, got {other:?}"),
     }
 
     let nav_title = resource
@@ -194,7 +222,7 @@ fn parse_sets_format_extension() {
         Some(FormatExtension::IosPlist(ext)) => {
             assert_eq!(ext.plist_format, Some("xml1".to_string()));
         }
-        other => panic!("Expected IosPlist extension, got {:?}", other),
+        other => panic!("Expected IosPlist extension, got {other:?}"),
     }
 }
 
@@ -282,10 +310,7 @@ fn write_array_entries() {
         "colors".to_string(),
         I18nEntry {
             key: "colors".to_string(),
-            value: EntryValue::Array(vec![
-                "Red".to_string(),
-                "Blue".to_string(),
-            ]),
+            value: EntryValue::Array(vec!["Red".to_string(), "Blue".to_string()]),
             ..Default::default()
         },
     );
@@ -324,9 +349,12 @@ fn roundtrip_simple() {
 
     for (key, original) in &resource.entries {
         let reparsed_entry = reparsed.entries.get(key).unwrap_or_else(|| {
-            panic!("Key '{}' missing after round-trip", key);
+            panic!("Key '{key}' missing after round-trip");
         });
-        assert_eq!(original.value, reparsed_entry.value, "Value mismatch for key '{}'", key);
+        assert_eq!(
+            original.value, reparsed_entry.value,
+            "Value mismatch for key '{key}'"
+        );
     }
 }
 
@@ -344,9 +372,12 @@ fn roundtrip_nested() {
 
     for (key, original) in &resource.entries {
         let reparsed_entry = reparsed.entries.get(key).unwrap_or_else(|| {
-            panic!("Key '{}' missing after round-trip", key);
+            panic!("Key '{key}' missing after round-trip");
         });
-        assert_eq!(original.value, reparsed_entry.value, "Value mismatch for key '{}'", key);
+        assert_eq!(
+            original.value, reparsed_entry.value,
+            "Value mismatch for key '{key}'"
+        );
     }
 }
 
@@ -364,9 +395,12 @@ fn roundtrip_arrays() {
 
     for (key, original) in &resource.entries {
         let reparsed_entry = reparsed.entries.get(key).unwrap_or_else(|| {
-            panic!("Key '{}' missing after round-trip", key);
+            panic!("Key '{key}' missing after round-trip");
         });
-        assert_eq!(original.value, reparsed_entry.value, "Value mismatch for key '{}'", key);
+        assert_eq!(
+            original.value, reparsed_entry.value,
+            "Value mismatch for key '{key}'"
+        );
     }
 }
 

@@ -1,5 +1,5 @@
-use i18n_convert::formats::{FormatParser, FormatWriter, Confidence};
 use i18n_convert::formats::ini::{Parser, Writer};
+use i18n_convert::formats::{Confidence, FormatParser, FormatWriter};
 use i18n_convert::ir::*;
 use indexmap::IndexMap;
 
@@ -39,17 +39,38 @@ fn parse_simple_fixture() {
     assert_eq!(resource.metadata.source_format, FormatId::Ini);
     assert_eq!(resource.entries.len(), 4);
 
-    let greeting = resource.entries.get("general.greeting").expect("general.greeting should exist");
-    assert_eq!(greeting.value, EntryValue::Simple("Hello, World!".to_string()));
+    let greeting = resource
+        .entries
+        .get("general.greeting")
+        .expect("general.greeting should exist");
+    assert_eq!(
+        greeting.value,
+        EntryValue::Simple("Hello, World!".to_string())
+    );
 
-    let farewell = resource.entries.get("general.farewell").expect("general.farewell should exist");
+    let farewell = resource
+        .entries
+        .get("general.farewell")
+        .expect("general.farewell should exist");
     assert_eq!(farewell.value, EntryValue::Simple("Goodbye!".to_string()));
 
-    let welcome = resource.entries.get("messages.welcome").expect("messages.welcome should exist");
-    assert_eq!(welcome.value, EntryValue::Simple("Welcome to our app".to_string()));
+    let welcome = resource
+        .entries
+        .get("messages.welcome")
+        .expect("messages.welcome should exist");
+    assert_eq!(
+        welcome.value,
+        EntryValue::Simple("Welcome to our app".to_string())
+    );
 
-    let not_found = resource.entries.get("messages.error.not_found").expect("messages.error.not_found should exist");
-    assert_eq!(not_found.value, EntryValue::Simple("Page not found".to_string()));
+    let not_found = resource
+        .entries
+        .get("messages.error.not_found")
+        .expect("messages.error.not_found should exist");
+    assert_eq!(
+        not_found.value,
+        EntryValue::Simple("Page not found".to_string())
+    );
 }
 
 // ---------------------------------------------------------------------------
@@ -65,24 +86,30 @@ fn parse_plurals_fixture() {
     // Should have 2 plural groups: messages.items and messages.files
     assert_eq!(resource.entries.len(), 2);
 
-    let items = resource.entries.get("messages.items").expect("messages.items should exist");
+    let items = resource
+        .entries
+        .get("messages.items")
+        .expect("messages.items should exist");
     match &items.value {
         EntryValue::Plural(ps) => {
             assert_eq!(ps.one, Some("%d item".to_string()));
             assert_eq!(ps.other, "%d items".to_string());
             assert!(ps.zero.is_none());
         }
-        other => panic!("Expected plural value, got {:?}", other),
+        other => panic!("Expected plural value, got {other:?}"),
     }
 
-    let files = resource.entries.get("messages.files").expect("messages.files should exist");
+    let files = resource
+        .entries
+        .get("messages.files")
+        .expect("messages.files should exist");
     match &files.value {
         EntryValue::Plural(ps) => {
             assert_eq!(ps.zero, Some("No files".to_string()));
             assert_eq!(ps.one, Some("%d file".to_string()));
             assert_eq!(ps.other, "%d files".to_string());
         }
-        other => panic!("Expected plural value, got {:?}", other),
+        other => panic!("Expected plural value, got {other:?}"),
     }
 }
 
@@ -98,15 +125,24 @@ fn parse_comments_fixture() {
 
     assert_eq!(resource.entries.len(), 3);
 
-    let greeting = resource.entries.get("general.greeting").expect("greeting should exist");
+    let greeting = resource
+        .entries
+        .get("general.greeting")
+        .expect("greeting should exist");
     assert_eq!(greeting.comments.len(), 1);
     assert_eq!(greeting.comments[0].text, "General greeting");
 
-    let farewell = resource.entries.get("general.farewell").expect("farewell should exist");
+    let farewell = resource
+        .entries
+        .get("general.farewell")
+        .expect("farewell should exist");
     assert_eq!(farewell.comments.len(), 1);
     assert_eq!(farewell.comments[0].text, "Farewell message");
 
-    let no_comment = resource.entries.get("general.no_comment").expect("no_comment should exist");
+    let no_comment = resource
+        .entries
+        .get("general.no_comment")
+        .expect("no_comment should exist");
     assert!(no_comment.comments.is_empty());
 }
 
@@ -122,7 +158,10 @@ fn parse_no_sections_fixture() {
 
     assert_eq!(resource.entries.len(), 3);
 
-    let greeting = resource.entries.get("greeting").expect("greeting should exist");
+    let greeting = resource
+        .entries
+        .get("greeting")
+        .expect("greeting should exist");
     assert_eq!(greeting.value, EntryValue::Simple("Hello".to_string()));
     assert_eq!(greeting.comments.len(), 1);
     assert_eq!(greeting.comments[0].text, "Root level keys");
@@ -237,9 +276,12 @@ fn roundtrip_simple() {
 
     for (key, original) in &resource.entries {
         let reparsed_entry = reparsed.entries.get(key).unwrap_or_else(|| {
-            panic!("Key '{}' missing after round-trip", key);
+            panic!("Key '{key}' missing after round-trip");
         });
-        assert_eq!(original.value, reparsed_entry.value, "Value mismatch for key '{}'", key);
+        assert_eq!(
+            original.value, reparsed_entry.value,
+            "Value mismatch for key '{key}'"
+        );
     }
 }
 
@@ -257,9 +299,12 @@ fn roundtrip_plurals() {
 
     for (key, original) in &resource.entries {
         let reparsed_entry = reparsed.entries.get(key).unwrap_or_else(|| {
-            panic!("Key '{}' missing after round-trip", key);
+            panic!("Key '{key}' missing after round-trip");
         });
-        assert_eq!(original.value, reparsed_entry.value, "Value mismatch for key '{}'", key);
+        assert_eq!(
+            original.value, reparsed_entry.value,
+            "Value mismatch for key '{key}'"
+        );
     }
 }
 
@@ -277,9 +322,12 @@ fn roundtrip_no_sections() {
 
     for (key, original) in &resource.entries {
         let reparsed_entry = reparsed.entries.get(key).unwrap_or_else(|| {
-            panic!("Key '{}' missing after round-trip", key);
+            panic!("Key '{key}' missing after round-trip");
         });
-        assert_eq!(original.value, reparsed_entry.value, "Value mismatch for key '{}'", key);
+        assert_eq!(
+            original.value, reparsed_entry.value,
+            "Value mismatch for key '{key}'"
+        );
     }
 }
 

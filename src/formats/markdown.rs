@@ -63,7 +63,7 @@ fn extract_front_matter(content: &str) -> (Option<String>, &str) {
 
     // Find the opening ---
     let after_first = &trimmed[3..];
-    let after_first = after_first.trim_start_matches(|c: char| c == '-'); // handle ---- etc.
+    let after_first = after_first.trim_start_matches('-'); // handle ---- etc.
 
     // Find the closing ---
     if let Some(end_pos) = after_first.find("\n---") {
@@ -167,10 +167,7 @@ impl FormatParser for Parser {
                 }
 
                 // Update heading stack: remove headings at same or deeper level
-                while heading_stack
-                    .last()
-                    .map_or(false, |(l, _)| *l >= level)
-                {
+                while heading_stack.last().is_some_and(|(l, _)| *l >= level) {
                     heading_stack.pop();
                 }
 
@@ -204,9 +201,7 @@ impl FormatParser for Parser {
             metadata: ResourceMetadata {
                 source_format: FormatId::Markdown,
                 locale,
-                format_ext: Some(FormatExtension::Markdown(MarkdownExt {
-                    front_matter,
-                })),
+                format_ext: Some(FormatExtension::Markdown(MarkdownExt { front_matter })),
                 ..Default::default()
             },
             entries,
@@ -294,7 +289,8 @@ impl FormatWriter for Writer {
 
         // Track which heading prefixes have already been emitted so we can
         // insert intermediate headings for gaps in nesting depth.
-        let mut emitted_prefixes: std::collections::HashSet<String> = std::collections::HashSet::new();
+        let mut emitted_prefixes: std::collections::HashSet<String> =
+            std::collections::HashSet::new();
 
         // Write entries as headings with content
         for (_key, entry) in &resource.entries {
@@ -309,7 +305,7 @@ impl FormatWriter for Writer {
                     let level = i.min(6);
                     let hashes: String = "#".repeat(level);
                     let heading_text = key_to_heading(parts[i - 1]);
-                    output.push_str(&format!("{} {}\n\n", hashes, heading_text));
+                    output.push_str(&format!("{hashes} {heading_text}\n\n"));
                     emitted_prefixes.insert(prefix);
                 }
             }
@@ -318,8 +314,9 @@ impl FormatWriter for Writer {
             let depth = parts.len();
             let heading_level = depth.min(6);
             let hashes: String = "#".repeat(heading_level);
-            let heading_text = key_to_heading(parts.last().expect("key should have at least one part"));
-            output.push_str(&format!("{} {}\n\n", hashes, heading_text));
+            let heading_text =
+                key_to_heading(parts.last().expect("key should have at least one part"));
+            output.push_str(&format!("{hashes} {heading_text}\n\n"));
             emitted_prefixes.insert(entry.key.clone());
 
             // Write the content
@@ -327,9 +324,7 @@ impl FormatWriter for Writer {
                 EntryValue::Simple(s) => s.clone(),
                 EntryValue::Plural(ps) => ps.other.clone(),
                 EntryValue::Array(arr) => arr.join("\n"),
-                EntryValue::Select(ss) => {
-                    ss.cases.get("other").cloned().unwrap_or_default()
-                }
+                EntryValue::Select(ss) => ss.cases.get("other").cloned().unwrap_or_default(),
                 EntryValue::MultiVariablePlural(mvp) => mvp.pattern.clone(),
             };
 

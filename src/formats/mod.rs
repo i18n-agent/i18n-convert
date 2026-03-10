@@ -20,8 +20,7 @@ pub const PLURAL_SUFFIXES: &[(&str, &str)] = &[
 /// Check if a key ends with a plural suffix. Returns (base_key, category) if so.
 pub fn strip_plural_suffix(key: &str) -> Option<(&str, &str)> {
     for &(suffix, category) in PLURAL_SUFFIXES {
-        if key.ends_with(suffix) {
-            let base = &key[..key.len() - suffix.len()];
+        if let Some(base) = key.strip_suffix(suffix) {
             if !base.is_empty() {
                 return Some((base, category));
             }
@@ -39,37 +38,37 @@ pub fn get_attr(e: &BytesStart, name: &[u8]) -> Option<String> {
 }
 
 pub mod android_xml;
-pub mod xcstrings;
-pub mod ios_strings;
-pub mod stringsdict;
 pub mod arb;
-pub mod json_structured;
-pub mod i18next;
-pub mod xliff1;
-pub mod po;
-pub mod yaml_rails;
-pub mod xliff2;
-pub mod resx;
-pub mod java_properties;
-pub mod php_laravel;
-pub mod qt_linguist;
-pub mod csv_format;
-pub mod toml_format;
-pub mod ini;
-pub mod json5_format;
-pub mod hjson;
-pub mod tmx;
-pub mod srt;
-pub mod excel;
-pub mod markdown;
-pub mod ios_plist;
-pub mod js_format;
-pub mod ts_format;
-pub mod neon;
-pub mod plain_text;
-pub mod yaml_plain;
-pub mod ispring_xliff;
 pub mod captivate_xml;
+pub mod csv_format;
+pub mod excel;
+pub mod hjson;
+pub mod i18next;
+pub mod ini;
+pub mod ios_plist;
+pub mod ios_strings;
+pub mod ispring_xliff;
+pub mod java_properties;
+pub mod js_format;
+pub mod json5_format;
+pub mod json_structured;
+pub mod markdown;
+pub mod neon;
+pub mod php_laravel;
+pub mod plain_text;
+pub mod po;
+pub mod qt_linguist;
+pub mod resx;
+pub mod srt;
+pub mod stringsdict;
+pub mod tmx;
+pub mod toml_format;
+pub mod ts_format;
+pub mod xcstrings;
+pub mod xliff1;
+pub mod xliff2;
+pub mod yaml_plain;
+pub mod yaml_rails;
 
 #[derive(Error, Debug)]
 pub enum ParseError {

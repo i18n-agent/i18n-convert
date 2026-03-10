@@ -10,11 +10,7 @@ pub struct Writer;
 
 /// Recursively walk a plist dictionary, flattening nested dicts to dot-separated keys.
 /// Only extracts String values and Array-of-String values; skips integers, bools, etc.
-fn walk_dict(
-    dict: &plist::Dictionary,
-    prefix: &str,
-    entries: &mut IndexMap<String, I18nEntry>,
-) {
+fn walk_dict(dict: &plist::Dictionary, prefix: &str, entries: &mut IndexMap<String, I18nEntry>) {
     for (key, value) in dict.iter() {
         let full_key = if prefix.is_empty() {
             key.clone()
@@ -85,9 +81,11 @@ fn unflatten_to_plist(entries: &IndexMap<String, I18nEntry>) -> plist::Dictionar
 fn entry_value_to_plist(value: &EntryValue) -> plist::Value {
     match value {
         EntryValue::Simple(s) => plist::Value::String(s.clone()),
-        EntryValue::Array(arr) => {
-            plist::Value::Array(arr.iter().map(|s| plist::Value::String(s.clone())).collect())
-        }
+        EntryValue::Array(arr) => plist::Value::Array(
+            arr.iter()
+                .map(|s| plist::Value::String(s.clone()))
+                .collect(),
+        ),
         EntryValue::Plural(ps) => {
             // Plist doesn't natively support plurals; write the "other" form
             plist::Value::String(ps.other.clone())
@@ -96,17 +94,11 @@ fn entry_value_to_plist(value: &EntryValue) -> plist::Value {
             let val = ss.cases.get("other").cloned().unwrap_or_default();
             plist::Value::String(val)
         }
-        EntryValue::MultiVariablePlural(mvp) => {
-            plist::Value::String(mvp.pattern.clone())
-        }
+        EntryValue::MultiVariablePlural(mvp) => plist::Value::String(mvp.pattern.clone()),
     }
 }
 
-fn insert_nested_plist(
-    dict: &mut plist::Dictionary,
-    parts: &[&str],
-    value: plist::Value,
-) {
+fn insert_nested_plist(dict: &mut plist::Dictionary, parts: &[&str], value: plist::Value) {
     if parts.is_empty() {
         return;
     }
@@ -119,7 +111,10 @@ fn insert_nested_plist(
     // Navigate/create nested dict
     let key = parts[0].to_string();
     if !dict.contains_key(&key) {
-        dict.insert(key.clone(), plist::Value::Dictionary(plist::Dictionary::new()));
+        dict.insert(
+            key.clone(),
+            plist::Value::Dictionary(plist::Dictionary::new()),
+        );
     }
 
     if let Some(plist::Value::Dictionary(ref mut child_dict)) = dict.get_mut(&key) {
@@ -145,10 +140,8 @@ impl FormatParser for Parser {
         }
 
         // Also detect by content for .xml files that are actually plists
-        if extension == ".xml" {
-            if text.contains("<plist") || text.contains("<!DOCTYPE plist") {
-                return Confidence::High;
-            }
+        if extension == ".xml" && (text.contains("<plist") || text.contains("<!DOCTYPE plist")) {
+            return Confidence::High;
         }
 
         Confidence::None

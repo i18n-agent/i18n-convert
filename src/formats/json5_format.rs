@@ -21,12 +21,12 @@ impl FormatParser for Parser {
         let s = std::str::from_utf8(content)
             .map_err(|e| ParseError::InvalidFormat(format!("Invalid UTF-8: {e}")))?;
 
-        let root: serde_json::Value = json5::from_str(s)
-            .map_err(|e| ParseError::Json(format!("JSON5 parse error: {e}")))?;
+        let root: serde_json::Value =
+            json5::from_str(s).map_err(|e| ParseError::Json(format!("JSON5 parse error: {e}")))?;
 
-        let obj = root.as_object().ok_or_else(|| {
-            ParseError::InvalidFormat("Root must be a JSON5 object".to_string())
-        })?;
+        let obj = root
+            .as_object()
+            .ok_or_else(|| ParseError::InvalidFormat("Root must be a JSON5 object".to_string()))?;
 
         let mut entries = IndexMap::new();
         flatten_json5_object(obj, &mut String::new(), &mut entries);
@@ -154,15 +154,14 @@ impl FormatWriter for Writer {
             let json_value = match &entry.value {
                 EntryValue::Simple(s) => serde_json::Value::String(s.clone()),
                 EntryValue::Plural(ps) => serde_json::Value::String(ps.other.clone()),
-                EntryValue::Array(items) => {
-                    serde_json::Value::Array(
-                        items.iter().map(|s| serde_json::Value::String(s.clone())).collect(),
-                    )
-                }
+                EntryValue::Array(items) => serde_json::Value::Array(
+                    items
+                        .iter()
+                        .map(|s| serde_json::Value::String(s.clone()))
+                        .collect(),
+                ),
                 EntryValue::Select(ss) => {
-                    serde_json::Value::String(
-                        ss.cases.get("other").cloned().unwrap_or_default(),
-                    )
+                    serde_json::Value::String(ss.cases.get("other").cloned().unwrap_or_default())
                 }
                 EntryValue::MultiVariablePlural(mvp) => {
                     serde_json::Value::String(mvp.pattern.clone())
@@ -205,9 +204,11 @@ fn insert_nested_json5(
             .entry(part.to_string())
             .or_insert_with(|| serde_json::Value::Object(serde_json::Map::new()))
             .as_object_mut()
-            .ok_or_else(|| WriteError::Serialization(
-                format!("Key path conflict: '{}' is both a value and an object in key '{}'", part, key)
-            ))?;
+            .ok_or_else(|| {
+                WriteError::Serialization(format!(
+                    "Key path conflict: '{part}' is both a value and an object in key '{key}'"
+                ))
+            })?;
     }
 
     let leaf_key = parts[parts.len() - 1];
@@ -272,7 +273,8 @@ mod tests {
     #[test]
     fn test_parse_with_comments() {
         let parser = Parser;
-        let content = b"{\n  // A comment\n  greeting: 'Hello',\n  /* block */\n  farewell: 'Bye',\n}";
+        let content =
+            b"{\n  // A comment\n  greeting: 'Hello',\n  /* block */\n  farewell: 'Bye',\n}";
         let resource = parser.parse(content).expect("parse should succeed");
 
         // Comments are stripped by the json5 crate but parsing should still succeed
@@ -303,7 +305,10 @@ mod tests {
 
         assert_eq!(resource.entries.len(), reparsed.entries.len());
         for (key, entry) in &resource.entries {
-            assert_eq!(entry.value, reparsed.entries[key].value, "Mismatch for key: {key}");
+            assert_eq!(
+                entry.value, reparsed.entries[key].value,
+                "Mismatch for key: {key}"
+            );
         }
     }
 

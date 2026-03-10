@@ -44,15 +44,15 @@ fn read_element_content(
                     depth -= 1; // read_element_content consumed the end tag
 
                     // Build the original syntax representation
-                    let mut original_parts = format!("<{}", tag_name);
+                    let mut original_parts = format!("<{tag_name}");
                     for attr in e.attributes().flatten() {
                         let key = String::from_utf8_lossy(attr.key.as_ref()).to_string();
                         let val = String::from_utf8_lossy(&attr.value).to_string();
-                        original_parts.push_str(&format!(" {}=\"{}\"", key, val));
+                        original_parts.push_str(&format!(" {key}=\"{val}\""));
                     }
                     original_parts.push('>');
                     original_parts.push_str(&inner);
-                    original_parts.push_str(&format!("</{}>", tag_name));
+                    original_parts.push_str(&format!("</{tag_name}>"));
 
                     let placeholder_name = id.clone().unwrap_or_else(|| inner.clone());
 
@@ -71,11 +71,11 @@ fn read_element_content(
                     text.push_str(&original_parts);
                 } else {
                     // Other inline tags: reconstruct and include literally
-                    let mut tag_str = format!("<{}", tag_name);
+                    let mut tag_str = format!("<{tag_name}");
                     for attr in e.attributes().flatten() {
                         let key = String::from_utf8_lossy(attr.key.as_ref()).to_string();
                         let val = String::from_utf8_lossy(&attr.value).to_string();
-                        tag_str.push_str(&format!(" {}=\"{}\"", key, val));
+                        tag_str.push_str(&format!(" {key}=\"{val}\""));
                     }
                     tag_str.push('>');
                     text.push_str(&tag_str);
@@ -87,15 +87,15 @@ fn read_element_content(
                     break;
                 }
                 let tag_name = String::from_utf8_lossy(e.name().as_ref()).to_string();
-                text.push_str(&format!("</{}>", tag_name));
+                text.push_str(&format!("</{tag_name}>"));
             }
             Ok(Event::Empty(ref e)) => {
                 let tag_name = String::from_utf8_lossy(e.name().as_ref()).to_string();
-                let mut tag_str = format!("<{}", tag_name);
+                let mut tag_str = format!("<{tag_name}");
                 for attr in e.attributes().flatten() {
                     let key = String::from_utf8_lossy(attr.key.as_ref()).to_string();
                     let val = String::from_utf8_lossy(&attr.value).to_string();
-                    tag_str.push_str(&format!(" {}=\"{}\"", key, val));
+                    tag_str.push_str(&format!(" {key}=\"{val}\""));
                 }
                 tag_str.push_str(" />");
                 text.push_str(&tag_str);
@@ -153,8 +153,9 @@ impl FormatParser for Parser {
 
                     match tag_name.as_str() {
                         "string" => {
-                            let name = get_attr(e, b"name")
-                                .ok_or_else(|| ParseError::Xml("string missing name attr".into()))?;
+                            let name = get_attr(e, b"name").ok_or_else(|| {
+                                ParseError::Xml("string missing name attr".into())
+                            })?;
                             let translatable = get_attr(e, b"translatable");
                             let formatted = get_attr(e, b"formatted");
                             let product = get_attr(e, b"product");
@@ -171,7 +172,9 @@ impl FormatParser for Parser {
                                 });
                             }
 
-                            let translatable_bool = translatable.as_deref().map(|v| parse_translatable(v, &name));
+                            let translatable_bool = translatable
+                                .as_deref()
+                                .map(|v| parse_translatable(v, &name));
 
                             // Build format extension if we have formatted or product
                             let format_ext = if formatted.is_some() || product.is_some() {
@@ -198,8 +201,9 @@ impl FormatParser for Parser {
                         }
 
                         "plurals" => {
-                            let name = get_attr(e, b"name")
-                                .ok_or_else(|| ParseError::Xml("plurals missing name attr".into()))?;
+                            let name = get_attr(e, b"name").ok_or_else(|| {
+                                ParseError::Xml("plurals missing name attr".into())
+                            })?;
 
                             let mut comments = Vec::new();
                             if let Some(c) = pending_comment.take() {
@@ -218,10 +222,12 @@ impl FormatParser for Parser {
                             loop {
                                 match reader.read_event_into(&mut inner_buf) {
                                     Ok(Event::Start(ref inner_e)) => {
-                                        let inner_tag = String::from_utf8_lossy(inner_e.name().as_ref()).to_string();
+                                        let inner_tag =
+                                            String::from_utf8_lossy(inner_e.name().as_ref())
+                                                .to_string();
                                         if inner_tag == "item" {
-                                            let quantity = get_attr(inner_e, b"quantity")
-                                                .unwrap_or_default();
+                                            let quantity =
+                                                get_attr(inner_e, b"quantity").unwrap_or_default();
                                             let text = read_text_content(&mut reader)?;
 
                                             match quantity.as_str() {
@@ -236,7 +242,9 @@ impl FormatParser for Parser {
                                         }
                                     }
                                     Ok(Event::End(ref inner_e)) => {
-                                        let inner_tag = String::from_utf8_lossy(inner_e.name().as_ref()).to_string();
+                                        let inner_tag =
+                                            String::from_utf8_lossy(inner_e.name().as_ref())
+                                                .to_string();
                                         if inner_tag == "plurals" {
                                             break;
                                         }
@@ -259,8 +267,9 @@ impl FormatParser for Parser {
                         }
 
                         "string-array" => {
-                            let name = get_attr(e, b"name")
-                                .ok_or_else(|| ParseError::Xml("string-array missing name attr".into()))?;
+                            let name = get_attr(e, b"name").ok_or_else(|| {
+                                ParseError::Xml("string-array missing name attr".into())
+                            })?;
 
                             let mut comments = Vec::new();
                             if let Some(c) = pending_comment.take() {
@@ -278,14 +287,18 @@ impl FormatParser for Parser {
                             loop {
                                 match reader.read_event_into(&mut inner_buf) {
                                     Ok(Event::Start(ref inner_e)) => {
-                                        let inner_tag = String::from_utf8_lossy(inner_e.name().as_ref()).to_string();
+                                        let inner_tag =
+                                            String::from_utf8_lossy(inner_e.name().as_ref())
+                                                .to_string();
                                         if inner_tag == "item" {
                                             let text = read_text_content(&mut reader)?;
                                             items.push(text);
                                         }
                                     }
                                     Ok(Event::End(ref inner_e)) => {
-                                        let inner_tag = String::from_utf8_lossy(inner_e.name().as_ref()).to_string();
+                                        let inner_tag =
+                                            String::from_utf8_lossy(inner_e.name().as_ref())
+                                                .to_string();
                                         if inner_tag == "string-array" {
                                             break;
                                         }
@@ -336,7 +349,9 @@ impl FormatParser for Parser {
                             key: name.clone(),
                             value: EntryValue::Simple(String::new()),
                             comments,
-                            translatable: translatable.as_deref().map(|v| parse_translatable(v, &name)),
+                            translatable: translatable
+                                .as_deref()
+                                .map(|v| parse_translatable(v, &name)),
                             ..Default::default()
                         };
 
@@ -406,8 +421,7 @@ fn parse_translatable(value: &str, key: &str) -> bool {
         "false" => false,
         other => {
             eprintln!(
-                "Warning: unrecognized translatable value '{}' for key '{}', treating as true",
-                other, key
+                "Warning: unrecognized translatable value '{other}' for key '{key}', treating as true"
             );
             true
         }

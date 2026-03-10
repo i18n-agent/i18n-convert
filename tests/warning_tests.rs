@@ -377,10 +377,7 @@ fn severity_error_for_content_loss_select() {
 fn severity_error_for_content_loss_device_variants() {
     let mut entries = IndexMap::new();
     let mut variants = IndexMap::new();
-    variants.insert(
-        DeviceType::Phone,
-        EntryValue::Simple("Tap".to_string()),
-    );
+    variants.insert(DeviceType::Phone, EntryValue::Simple("Tap".to_string()));
     entries.insert(
         "action".to_string(),
         I18nEntry {

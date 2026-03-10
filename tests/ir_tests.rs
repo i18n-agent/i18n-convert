@@ -286,7 +286,7 @@ fn plural_set_with_exact_and_range_matches() {
 
 #[test]
 fn resource_metadata_format_ids() {
-    let formats = vec![
+    let formats = [
         FormatId::AndroidXml,
         FormatId::Xcstrings,
         FormatId::IosStrings,
@@ -348,7 +348,11 @@ fn data_loss_warning_construction() {
     let warning = DataLossWarning {
         severity: WarningSeverity::Error,
         message: "3 entries have plurals that will be lost".to_string(),
-        affected_keys: vec!["items".to_string(), "messages".to_string(), "files".to_string()],
+        affected_keys: vec![
+            "items".to_string(),
+            "messages".to_string(),
+            "files".to_string(),
+        ],
         lost_attribute: "plurals".to_string(),
         count: 3,
     };
@@ -360,7 +364,7 @@ fn data_loss_warning_construction() {
 
 #[test]
 fn all_comment_roles() {
-    let roles = vec![
+    let roles = [
         CommentRole::Developer,
         CommentRole::Translator,
         CommentRole::Extracted,
@@ -372,7 +376,7 @@ fn all_comment_roles() {
 
 #[test]
 fn all_translation_states() {
-    let states = vec![
+    let states = [
         TranslationState::New,
         TranslationState::Translated,
         TranslationState::NeedsReview,
@@ -392,7 +396,7 @@ fn all_translation_states() {
 
 #[test]
 fn all_context_types() {
-    let types = vec![
+    let types = [
         ContextType::Disambiguation,
         ContextType::SourceFile,
         ContextType::LineNumber,
@@ -405,7 +409,7 @@ fn all_context_types() {
 
 #[test]
 fn all_placeholder_types() {
-    let types = vec![
+    let types = [
         PlaceholderType::String,
         PlaceholderType::Integer,
         PlaceholderType::Float,

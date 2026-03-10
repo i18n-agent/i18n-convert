@@ -14,14 +14,26 @@ fn unescape_strings_value(s: &str) -> String {
     while let Some(ch) = chars.next() {
         if ch == '\\' {
             match chars.peek() {
-                Some(&'"') => { chars.next(); out.push('"'); }
-                Some(&'\\') => { chars.next(); out.push('\\'); }
-                Some(&'n') => { chars.next(); out.push('\n'); }
-                Some(&'t') => { chars.next(); out.push('\t'); }
+                Some(&'"') => {
+                    chars.next();
+                    out.push('"');
+                }
+                Some(&'\\') => {
+                    chars.next();
+                    out.push('\\');
+                }
+                Some(&'n') => {
+                    chars.next();
+                    out.push('\n');
+                }
+                Some(&'t') => {
+                    chars.next();
+                    out.push('\t');
+                }
                 Some(&'U') | Some(&'u') => {
                     let u_char = *chars.peek().expect("already matched U/u");
                     chars.next(); // consume U/u
-                    // Read exactly 4 hex digits (Apple .strings standard)
+                                  // Read exactly 4 hex digits (Apple .strings standard)
                     let mut hex = String::new();
                     for _ in 0..4 {
                         match chars.peek() {
@@ -165,7 +177,7 @@ fn parse_strings(content: &str) -> Result<I18nResource, ParseError> {
                     // Single-line comment: // ...
                     chars.next(); // consume second '/'
                     let mut comment_text = String::new();
-                    while let Some(c) = chars.next() {
+                    for c in chars.by_ref() {
                         if c == '\n' {
                             break;
                         }
@@ -195,8 +207,7 @@ fn parse_strings(content: &str) -> Result<I18nResource, ParseError> {
                 Some('=') => {}
                 other => {
                     return Err(ParseError::InvalidFormat(format!(
-                        "Expected '=' after key \"{}\", got {:?}",
-                        key, other
+                        "Expected '=' after key \"{key}\", got {other:?}"
                     )));
                 }
             }
@@ -209,8 +220,7 @@ fn parse_strings(content: &str) -> Result<I18nResource, ParseError> {
                 Some('"') => {}
                 other => {
                     return Err(ParseError::InvalidFormat(format!(
-                        "Expected '\"' to start value for key \"{}\", got {:?}",
-                        key, other
+                        "Expected '\"' to start value for key \"{key}\", got {other:?}"
                     )));
                 }
             }
@@ -225,8 +235,7 @@ fn parse_strings(content: &str) -> Result<I18nResource, ParseError> {
                 Some(';') => {}
                 other => {
                     return Err(ParseError::InvalidFormat(format!(
-                        "Expected ';' after value for key \"{}\", got {:?}",
-                        key, other
+                        "Expected ';' after value for key \"{key}\", got {other:?}"
                     )));
                 }
             }
@@ -256,8 +265,7 @@ fn parse_strings(content: &str) -> Result<I18nResource, ParseError> {
 
         // Unexpected character
         return Err(ParseError::InvalidFormat(format!(
-            "Unexpected character: '{}'",
-            ch
+            "Unexpected character: '{ch}'"
         )));
     }
 
@@ -349,9 +357,7 @@ fn write_strings(resource: &I18nResource) -> String {
                 // Fall back to first case or empty
                 ss.cases.values().next().cloned().unwrap_or_default()
             }
-            EntryValue::MultiVariablePlural(mvp) => {
-                mvp.pattern.clone()
-            }
+            EntryValue::MultiVariablePlural(mvp) => mvp.pattern.clone(),
         };
 
         out.push_str(&format!(
@@ -384,7 +390,7 @@ impl FormatParser for Parser {
 
     fn parse(&self, content: &[u8]) -> Result<I18nResource, ParseError> {
         let text = std::str::from_utf8(content)
-            .map_err(|e| ParseError::InvalidFormat(format!("Invalid UTF-8: {}", e)))?;
+            .map_err(|e| ParseError::InvalidFormat(format!("Invalid UTF-8: {e}")))?;
         parse_strings(text)
     }
 

@@ -1,3 +1,4 @@
+use regex::Regex;
 /// Convert placeholder syntax between formats.
 ///
 /// Each format has its own placeholder style:
@@ -8,37 +9,28 @@
 ///   Laravel:   :name
 ///   PO:        %(name)s
 ///   YAML:      %{name}
-
 use std::sync::LazyLock;
-use regex::Regex;
 
-static RE_ANDROID_POSITIONAL: LazyLock<Regex> = LazyLock::new(|| {
-    Regex::new(r"%(\d+)\$[sdifegacoxX@]").expect("valid regex pattern")
-});
+static RE_ANDROID_POSITIONAL: LazyLock<Regex> =
+    LazyLock::new(|| Regex::new(r"%(\d+)\$[sdifegacoxX@]").expect("valid regex pattern"));
 
-static RE_ANDROID_SIMPLE: LazyLock<Regex> = LazyLock::new(|| {
-    Regex::new(r"%([sdifegacoxX@])").expect("valid regex pattern")
-});
+static RE_ANDROID_SIMPLE: LazyLock<Regex> =
+    LazyLock::new(|| Regex::new(r"%([sdifegacoxX@])").expect("valid regex pattern"));
 
-static RE_ICU_POSITIONAL: LazyLock<Regex> = LazyLock::new(|| {
-    Regex::new(r"\{(\d+)\}").expect("valid regex pattern")
-});
+static RE_ICU_POSITIONAL: LazyLock<Regex> =
+    LazyLock::new(|| Regex::new(r"\{(\d+)\}").expect("valid regex pattern"));
 
-static RE_ICU_NAMED: LazyLock<Regex> = LazyLock::new(|| {
-    Regex::new(r"\{(\w+)\}").expect("valid regex pattern")
-});
+static RE_ICU_NAMED: LazyLock<Regex> =
+    LazyLock::new(|| Regex::new(r"\{(\w+)\}").expect("valid regex pattern"));
 
-static RE_I18NEXT: LazyLock<Regex> = LazyLock::new(|| {
-    Regex::new(r"\{\{(\w+)\}\}").expect("valid regex pattern")
-});
+static RE_I18NEXT: LazyLock<Regex> =
+    LazyLock::new(|| Regex::new(r"\{\{(\w+)\}\}").expect("valid regex pattern"));
 
-static RE_ICU_ALPHA: LazyLock<Regex> = LazyLock::new(|| {
-    Regex::new(r"\{([a-zA-Z_]\w*)\}").expect("valid regex pattern")
-});
+static RE_ICU_ALPHA: LazyLock<Regex> =
+    LazyLock::new(|| Regex::new(r"\{([a-zA-Z_]\w*)\}").expect("valid regex pattern"));
 
-static RE_YAML_RAILS: LazyLock<Regex> = LazyLock::new(|| {
-    Regex::new(r"%\{(\w+)\}").expect("valid regex pattern")
-});
+static RE_YAML_RAILS: LazyLock<Regex> =
+    LazyLock::new(|| Regex::new(r"%\{(\w+)\}").expect("valid regex pattern"));
 
 /// Convert Android positional placeholders to ICU-style.
 /// %1$s -> {0}, %2$d -> {1}, %s -> {0}
@@ -109,7 +101,10 @@ mod tests {
     fn test_android_to_icu_positional() {
         assert_eq!(android_to_icu("%1$s"), "{0}");
         assert_eq!(android_to_icu("%2$d"), "{1}");
-        assert_eq!(android_to_icu("Hello %1$s, you have %2$d items"), "Hello {0}, you have {1} items");
+        assert_eq!(
+            android_to_icu("Hello %1$s, you have %2$d items"),
+            "Hello {0}, you have {1} items"
+        );
     }
 
     #[test]
@@ -122,19 +117,28 @@ mod tests {
     fn test_icu_to_android() {
         assert_eq!(icu_to_android("{0}"), "%1$s");
         assert_eq!(icu_to_android("{1}"), "%2$s");
-        assert_eq!(icu_to_android("Hello {0}, you have {1} items"), "Hello %1$s, you have %2$s items");
+        assert_eq!(
+            icu_to_android("Hello {0}, you have {1} items"),
+            "Hello %1$s, you have %2$s items"
+        );
     }
 
     #[test]
     fn test_icu_to_i18next() {
         assert_eq!(icu_to_i18next("{name}"), "{{name}}");
-        assert_eq!(icu_to_i18next("Hello {name}, you have {count} items"), "Hello {{name}}, you have {{count}} items");
+        assert_eq!(
+            icu_to_i18next("Hello {name}, you have {count} items"),
+            "Hello {{name}}, you have {{count}} items"
+        );
     }
 
     #[test]
     fn test_i18next_to_icu() {
         assert_eq!(i18next_to_icu("{{name}}"), "{name}");
-        assert_eq!(i18next_to_icu("Hello {{name}}, you have {{count}} items"), "Hello {name}, you have {count} items");
+        assert_eq!(
+            i18next_to_icu("Hello {{name}}, you have {{count}} items"),
+            "Hello {name}, you have {count} items"
+        );
     }
 
     #[test]

@@ -1,5 +1,5 @@
-use i18n_convert::formats::{FormatParser, FormatWriter, Confidence};
 use i18n_convert::formats::java_properties::{Parser, Writer};
+use i18n_convert::formats::{Confidence, FormatParser, FormatWriter};
 use i18n_convert::ir::*;
 use indexmap::IndexMap;
 
@@ -40,17 +40,32 @@ fn parse_simple_fixture() {
     assert_eq!(resource.entries.len(), 4);
 
     // Check greeting with comment
-    let greeting = resource.entries.get("greeting").expect("greeting should exist");
-    assert_eq!(greeting.value, EntryValue::Simple("Hello, World!".to_string()));
+    let greeting = resource
+        .entries
+        .get("greeting")
+        .expect("greeting should exist");
+    assert_eq!(
+        greeting.value,
+        EntryValue::Simple("Hello, World!".to_string())
+    );
     assert_eq!(greeting.comments.len(), 1);
     assert_eq!(greeting.comments[0].text, "Application messages");
 
     // Check app.title (no spaces around =)
-    let title = resource.entries.get("app.title").expect("app.title should exist");
-    assert_eq!(title.value, EntryValue::Simple("My Application".to_string()));
+    let title = resource
+        .entries
+        .get("app.title")
+        .expect("app.title should exist");
+    assert_eq!(
+        title.value,
+        EntryValue::Simple("My Application".to_string())
+    );
 
     // Check empty value
-    let empty = resource.entries.get("empty.value").expect("empty.value should exist");
+    let empty = resource
+        .entries
+        .get("empty.value")
+        .expect("empty.value should exist");
     assert_eq!(empty.value, EntryValue::Simple("".to_string()));
 }
 
@@ -66,16 +81,37 @@ fn parse_escapes_fixture() {
 
     assert_eq!(resource.entries.len(), 4);
 
-    let newline = resource.entries.get("escaped.newline").expect("escaped.newline should exist");
-    assert_eq!(newline.value, EntryValue::Simple("Line one\nLine two".to_string()));
+    let newline = resource
+        .entries
+        .get("escaped.newline")
+        .expect("escaped.newline should exist");
+    assert_eq!(
+        newline.value,
+        EntryValue::Simple("Line one\nLine two".to_string())
+    );
 
-    let tab = resource.entries.get("escaped.tab").expect("escaped.tab should exist");
-    assert_eq!(tab.value, EntryValue::Simple("Column1\tColumn2".to_string()));
+    let tab = resource
+        .entries
+        .get("escaped.tab")
+        .expect("escaped.tab should exist");
+    assert_eq!(
+        tab.value,
+        EntryValue::Simple("Column1\tColumn2".to_string())
+    );
 
-    let backslash = resource.entries.get("escaped.backslash").expect("escaped.backslash should exist");
-    assert_eq!(backslash.value, EntryValue::Simple("C:\\Users\\test".to_string()));
+    let backslash = resource
+        .entries
+        .get("escaped.backslash")
+        .expect("escaped.backslash should exist");
+    assert_eq!(
+        backslash.value,
+        EntryValue::Simple("C:\\Users\\test".to_string())
+    );
 
-    let unicode = resource.entries.get("escaped.unicode").expect("escaped.unicode should exist");
+    let unicode = resource
+        .entries
+        .get("escaped.unicode")
+        .expect("escaped.unicode should exist");
     assert_eq!(unicode.value, EntryValue::Simple("Hello World".to_string()));
 }
 
@@ -91,14 +127,32 @@ fn parse_separators_fixture() {
 
     assert_eq!(resource.entries.len(), 3);
 
-    let eq = resource.entries.get("equals.sep").expect("equals.sep should exist");
-    assert_eq!(eq.value, EntryValue::Simple("value with equals".to_string()));
+    let eq = resource
+        .entries
+        .get("equals.sep")
+        .expect("equals.sep should exist");
+    assert_eq!(
+        eq.value,
+        EntryValue::Simple("value with equals".to_string())
+    );
 
-    let colon = resource.entries.get("colon.sep").expect("colon.sep should exist");
-    assert_eq!(colon.value, EntryValue::Simple("value with colon".to_string()));
+    let colon = resource
+        .entries
+        .get("colon.sep")
+        .expect("colon.sep should exist");
+    assert_eq!(
+        colon.value,
+        EntryValue::Simple("value with colon".to_string())
+    );
 
-    let compact = resource.entries.get("no.spaces").expect("no.spaces should exist");
-    assert_eq!(compact.value, EntryValue::Simple("compact style".to_string()));
+    let compact = resource
+        .entries
+        .get("no.spaces")
+        .expect("no.spaces should exist");
+    assert_eq!(
+        compact.value,
+        EntryValue::Simple("compact style".to_string())
+    );
 }
 
 // ---------------------------------------------------------------------------
@@ -113,7 +167,10 @@ fn parse_multiline_fixture() {
 
     assert_eq!(resource.entries.len(), 2);
 
-    let long = resource.entries.get("long.message").expect("long.message should exist");
+    let long = resource
+        .entries
+        .get("long.message")
+        .expect("long.message should exist");
     assert_eq!(
         long.value,
         EntryValue::Simple("This is a long value that spans multiple lines".to_string())
@@ -135,15 +192,24 @@ fn parse_comments_fixture() {
 
     assert_eq!(resource.entries.len(), 4);
 
-    let greeting = resource.entries.get("greeting").expect("greeting should exist");
+    let greeting = resource
+        .entries
+        .get("greeting")
+        .expect("greeting should exist");
     assert_eq!(greeting.comments.len(), 1);
     assert_eq!(greeting.comments[0].text, "Hash comment");
 
-    let farewell = resource.entries.get("farewell").expect("farewell should exist");
+    let farewell = resource
+        .entries
+        .get("farewell")
+        .expect("farewell should exist");
     assert_eq!(farewell.comments.len(), 1);
     assert_eq!(farewell.comments[0].text, "Exclamation comment");
 
-    let no_comment = resource.entries.get("no.comment").expect("no.comment should exist");
+    let no_comment = resource
+        .entries
+        .get("no.comment")
+        .expect("no.comment should exist");
     assert!(no_comment.comments.is_empty());
 }
 
@@ -242,14 +308,16 @@ fn roundtrip_simple() {
 
     for (key, original) in &resource.entries {
         let reparsed_entry = reparsed.entries.get(key).unwrap_or_else(|| {
-            panic!("Key '{}' missing after round-trip", key);
+            panic!("Key '{key}' missing after round-trip");
         });
-        assert_eq!(original.value, reparsed_entry.value, "Value mismatch for key '{}'", key);
+        assert_eq!(
+            original.value, reparsed_entry.value,
+            "Value mismatch for key '{key}'"
+        );
         assert_eq!(
             original.comments.len(),
             reparsed_entry.comments.len(),
-            "Comment count mismatch for key '{}'",
-            key
+            "Comment count mismatch for key '{key}'"
         );
     }
 }
@@ -267,7 +335,10 @@ fn roundtrip_escapes() {
     assert_eq!(resource.entries.len(), reparsed.entries.len());
     for (key, original) in &resource.entries {
         let reparsed_entry = reparsed.entries.get(key).expect("key should exist");
-        assert_eq!(original.value, reparsed_entry.value, "Value mismatch for key '{}'", key);
+        assert_eq!(
+            original.value, reparsed_entry.value,
+            "Value mismatch for key '{key}'"
+        );
     }
 }
 
@@ -284,12 +355,14 @@ fn roundtrip_comments() {
     assert_eq!(resource.entries.len(), reparsed.entries.len());
     for (key, original) in &resource.entries {
         let reparsed_entry = reparsed.entries.get(key).expect("key should exist");
-        assert_eq!(original.value, reparsed_entry.value, "Value mismatch for key '{}'", key);
+        assert_eq!(
+            original.value, reparsed_entry.value,
+            "Value mismatch for key '{key}'"
+        );
         assert_eq!(
             original.comments.len(),
             reparsed_entry.comments.len(),
-            "Comment count mismatch for key '{}'",
-            key
+            "Comment count mismatch for key '{key}'"
         );
     }
 }

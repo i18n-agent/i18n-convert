@@ -19,12 +19,11 @@ struct RawEntry {
 /// Unquote a NEON string value. Handles single-quoted, double-quoted, and unquoted strings.
 fn unquote_neon(s: &str) -> String {
     let trimmed = s.trim();
-    if trimmed.len() >= 2 {
-        if (trimmed.starts_with('"') && trimmed.ends_with('"'))
-            || (trimmed.starts_with('\'') && trimmed.ends_with('\''))
-        {
-            return trimmed[1..trimmed.len() - 1].to_string();
-        }
+    if trimmed.len() >= 2
+        && ((trimmed.starts_with('"') && trimmed.ends_with('"'))
+            || (trimmed.starts_with('\'') && trimmed.ends_with('\'')))
+    {
+        return trimmed[1..trimmed.len() - 1].to_string();
     }
     trimmed.to_string()
 }
@@ -67,9 +66,12 @@ fn parse_neon_content(content: &str) -> Result<I18nResource, ParseError> {
         }
 
         // Comment lines
-        if trimmed.starts_with('#') {
-            let text = &trimmed[1..];
-            let text = if text.starts_with(' ') { &text[1..] } else { text };
+        if let Some(text) = trimmed.strip_prefix('#') {
+            let text = if let Some(stripped) = text.strip_prefix(' ') {
+                stripped
+            } else {
+                text
+            };
             pending_comments.push(text.to_string());
             continue;
         }
@@ -115,7 +117,7 @@ fn parse_neon_content(content: &str) -> Result<I18nResource, ParseError> {
             let full_key = if prefix.is_empty() {
                 key_part.to_string()
             } else {
-                format!("{}.{}", prefix, key_part)
+                format!("{prefix}.{key_part}")
             };
 
             if value_part.is_empty() {
@@ -297,18 +299,10 @@ fn build_tree(entries: &IndexMap<String, I18nEntry>) -> IndexMap<String, NeonNod
                 if let Some(ref many) = ps.many {
                     flat_entries.push((format!("{}_many", entry.key), many.clone(), Vec::new()));
                 }
-                flat_entries.push((
-                    format!("{}_other", entry.key),
-                    ps.other.clone(),
-                    Vec::new(),
-                ));
+                flat_entries.push((format!("{}_other", entry.key), ps.other.clone(), Vec::new()));
             }
             EntryValue::Array(arr) => {
-                flat_entries.push((
-                    entry.key.clone(),
-                    arr.join(", "),
-                    entry.comments.clone(),
-                ));
+                flat_entries.push((entry.key.clone(), arr.join(", "), entry.comments.clone()));
             }
             EntryValue::Select(ss) => {
                 let val = ss.cases.values().next().cloned().unwrap_or_default();
@@ -343,10 +337,7 @@ fn insert_into_tree(
     }
 
     if parts.len() == 1 {
-        tree.insert(
-            parts[0].to_string(),
-            NeonNode::Leaf(value, comments),
-        );
+        tree.insert(parts[0].to_string(), NeonNode::Leaf(value, comments));
         return;
     }
 
@@ -380,10 +371,10 @@ fn write_tree(tree: &IndexMap<String, NeonNode>, depth: usize, out: &mut String)
                 }
                 // Determine if quoting is needed
                 let formatted_value = format_neon_value(value);
-                out.push_str(&format!("{}{}: {}\n", indent, key, formatted_value));
+                out.push_str(&format!("{indent}{key}: {formatted_value}\n"));
             }
             NeonNode::Branch(sub_tree) => {
-                out.push_str(&format!("{}{}:\n", indent, key));
+                out.push_str(&format!("{indent}{key}:\n"));
                 write_tree(sub_tree, depth + 1, out);
             }
         }
@@ -410,7 +401,7 @@ fn format_neon_value(value: &str) -> String {
     if needs_quoting {
         // Use double quotes, escaping inner double quotes
         let escaped = value.replace('\\', "\\\\").replace('"', "\\\"");
-        format!("\"{}\"", escaped)
+        format!("\"{escaped}\"")
     } else {
         value.to_string()
     }
@@ -431,7 +422,7 @@ impl FormatParser for Parser {
 
     fn parse(&self, content: &[u8]) -> Result<I18nResource, ParseError> {
         let text = std::str::from_utf8(content)
-            .map_err(|e| ParseError::InvalidFormat(format!("Invalid UTF-8: {}", e)))?;
+            .map_err(|e| ParseError::InvalidFormat(format!("Invalid UTF-8: {e}")))?;
         parse_neon_content(text)
     }
 
@@ -530,7 +521,7 @@ mod tests {
                 assert_eq!(ps.one, Some("1 item".to_string()));
                 assert_eq!(ps.other, "many items");
             }
-            other => panic!("Expected plural, got {:?}", other),
+            other => panic!("Expected plural, got {other:?}"),
         }
     }
 

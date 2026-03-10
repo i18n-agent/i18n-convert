@@ -131,9 +131,7 @@ impl HjsonParser {
                 return Ok(HjsonValue::Object(map));
             }
             if self.peek().is_none() {
-                return Err(ParseError::InvalidFormat(
-                    "Unterminated object".into(),
-                ));
+                return Err(ParseError::InvalidFormat("Unterminated object".into()));
             }
 
             // Parse key
@@ -148,8 +146,7 @@ impl HjsonParser {
                 }
                 other => {
                     return Err(ParseError::InvalidFormat(format!(
-                        "Expected ':' after key \"{}\", got {:?}",
-                        key, other
+                        "Expected ':' after key \"{key}\", got {other:?}"
                     )));
                 }
             }
@@ -179,9 +176,7 @@ impl HjsonParser {
                 return Ok(HjsonValue::Array(items));
             }
             if self.peek().is_none() {
-                return Err(ParseError::InvalidFormat(
-                    "Unterminated array".into(),
-                ));
+                return Err(ParseError::InvalidFormat("Unterminated array".into()));
             }
 
             let value = self.parse_value(true)?;
@@ -200,8 +195,7 @@ impl HjsonParser {
             Some('"') => self.parse_double_quoted_string(),
             Some(ch) if is_unquoted_key_start(ch) => self.parse_unquoted_key(),
             other => Err(ParseError::InvalidFormat(format!(
-                "Expected key, got {:?}",
-                other
+                "Expected key, got {other:?}"
             ))),
         }
     }
@@ -242,51 +236,49 @@ impl HjsonParser {
         let mut s = String::new();
         loop {
             match self.advance() {
-                Some('\\') => {
-                    match self.advance() {
-                        Some('"') => s.push('"'),
-                        Some('\\') => s.push('\\'),
-                        Some('/') => s.push('/'),
-                        Some('n') => s.push('\n'),
-                        Some('r') => s.push('\r'),
-                        Some('t') => s.push('\t'),
-                        Some('b') => s.push('\u{0008}'),
-                        Some('f') => s.push('\u{000C}'),
-                        Some('u') => {
-                            let mut hex = String::new();
-                            for _ in 0..4 {
-                                match self.advance() {
-                                    Some(c) if c.is_ascii_hexdigit() => hex.push(c),
-                                    _ => {
-                                        return Err(ParseError::InvalidFormat(
-                                            "Invalid unicode escape".into(),
-                                        ));
-                                    }
-                                }
-                            }
-                            let code = u32::from_str_radix(&hex, 16).map_err(|_| {
-                                ParseError::InvalidFormat("Invalid unicode escape".into())
-                            })?;
-                            match char::from_u32(code) {
-                                Some(c) => s.push(c),
-                                None => {
+                Some('\\') => match self.advance() {
+                    Some('"') => s.push('"'),
+                    Some('\\') => s.push('\\'),
+                    Some('/') => s.push('/'),
+                    Some('n') => s.push('\n'),
+                    Some('r') => s.push('\r'),
+                    Some('t') => s.push('\t'),
+                    Some('b') => s.push('\u{0008}'),
+                    Some('f') => s.push('\u{000C}'),
+                    Some('u') => {
+                        let mut hex = String::new();
+                        for _ in 0..4 {
+                            match self.advance() {
+                                Some(c) if c.is_ascii_hexdigit() => hex.push(c),
+                                _ => {
                                     return Err(ParseError::InvalidFormat(
-                                        "Invalid unicode code point".into(),
+                                        "Invalid unicode escape".into(),
                                     ));
                                 }
                             }
                         }
-                        Some(c) => {
-                            s.push('\\');
-                            s.push(c);
-                        }
-                        None => {
-                            return Err(ParseError::InvalidFormat(
-                                "Unterminated escape sequence".into(),
-                            ));
+                        let code = u32::from_str_radix(&hex, 16).map_err(|_| {
+                            ParseError::InvalidFormat("Invalid unicode escape".into())
+                        })?;
+                        match char::from_u32(code) {
+                            Some(c) => s.push(c),
+                            None => {
+                                return Err(ParseError::InvalidFormat(
+                                    "Invalid unicode code point".into(),
+                                ));
+                            }
                         }
                     }
-                }
+                    Some(c) => {
+                        s.push('\\');
+                        s.push(c);
+                    }
+                    None => {
+                        return Err(ParseError::InvalidFormat(
+                            "Unterminated escape sequence".into(),
+                        ));
+                    }
+                },
                 Some('"') => return Ok(s),
                 Some(c) => s.push(c),
                 None => {
@@ -477,11 +469,7 @@ fn dedent_lines(lines: &[String]) -> String {
 }
 
 /// Flatten an HJSON value tree into IR entries with dot-separated keys.
-fn flatten_hjson(
-    value: &HjsonValue,
-    prefix: &str,
-    entries: &mut IndexMap<String, I18nEntry>,
-) {
+fn flatten_hjson(value: &HjsonValue, prefix: &str, entries: &mut IndexMap<String, I18nEntry>) {
     match value {
         HjsonValue::Str(s) => {
             entries.insert(
@@ -600,17 +588,13 @@ impl FormatWriter for Writer {
             let json_value = match &entry.value {
                 EntryValue::Simple(s) => serde_json::Value::String(s.clone()),
                 EntryValue::Plural(ps) => serde_json::Value::String(ps.other.clone()),
-                EntryValue::Array(arr) => {
-                    serde_json::Value::Array(
-                        arr.iter()
-                            .map(|s| serde_json::Value::String(s.clone()))
-                            .collect(),
-                    )
-                }
+                EntryValue::Array(arr) => serde_json::Value::Array(
+                    arr.iter()
+                        .map(|s| serde_json::Value::String(s.clone()))
+                        .collect(),
+                ),
                 EntryValue::Select(ss) => {
-                    serde_json::Value::String(
-                        ss.cases.get("other").cloned().unwrap_or_default(),
-                    )
+                    serde_json::Value::String(ss.cases.get("other").cloned().unwrap_or_default())
                 }
                 EntryValue::MultiVariablePlural(mvp) => {
                     serde_json::Value::String(mvp.pattern.clone())
@@ -653,9 +637,11 @@ fn insert_nested(
             .entry(part.to_string())
             .or_insert_with(|| serde_json::Value::Object(serde_json::Map::new()))
             .as_object_mut()
-            .ok_or_else(|| WriteError::Serialization(
-                format!("Key path conflict: '{}' is both a value and an object in key '{}'", part, key)
-            ))?;
+            .ok_or_else(|| {
+                WriteError::Serialization(format!(
+                    "Key path conflict: '{part}' is both a value and an object in key '{key}'"
+                ))
+            })?;
     }
 
     let leaf_key = parts[parts.len() - 1];

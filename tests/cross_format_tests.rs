@@ -72,8 +72,7 @@ fn android_xml_to_i18next_plurals_convert_to_suffixed_keys() {
     // i18next should create suffixed keys like items_one, items_other
     assert!(
         output_str.contains("items_one") || output_str.contains("items_other"),
-        "i18next output should contain plural-suffixed keys, got: {}",
-        output_str
+        "i18next output should contain plural-suffixed keys, got: {output_str}"
     );
 
     // Parse back and verify plural structure
@@ -101,17 +100,12 @@ fn arb_to_json_metadata_stripped_values_survive() {
     for (key, entry) in &resource.entries {
         assert!(
             reparsed.entries.contains_key(key),
-            "Key '{}' should survive ARB -> JSON",
-            key
+            "Key '{key}' should survive ARB -> JSON"
         );
         // Compare just the simple string value
         if let EntryValue::Simple(original) = &entry.value {
             if let EntryValue::Simple(converted) = &reparsed.entries[key].value {
-                assert_eq!(
-                    original, converted,
-                    "Value for '{}' should survive",
-                    key
-                );
+                assert_eq!(original, converted, "Value for '{key}' should survive");
             }
         }
     }
@@ -147,14 +141,11 @@ fn po_to_json_values_survive() {
         if let EntryValue::Simple(_) = &entry.value {
             assert!(
                 reparsed.entries.contains_key(key),
-                "Key '{}' should survive PO -> JSON",
-                key
+                "Key '{key}' should survive PO -> JSON"
             );
             assert_eq!(
-                entry.value,
-                reparsed.entries[key].value,
-                "Value for key '{}' should match",
-                key
+                entry.value, reparsed.entries[key].value,
+                "Value for key '{key}' should match"
             );
         }
     }
@@ -210,15 +201,10 @@ fn xliff_to_arb_target_values_survive() {
             }
             assert!(
                 reparsed.entries.contains_key(key),
-                "Key '{}' should survive XLIFF -> ARB",
-                key
+                "Key '{key}' should survive XLIFF -> ARB"
             );
             if let EntryValue::Simple(converted) = &reparsed.entries[key].value {
-                assert_eq!(
-                    original, converted,
-                    "Value for '{}' should survive",
-                    key
-                );
+                assert_eq!(original, converted, "Value for '{key}' should survive");
             }
         }
     }
@@ -256,15 +242,10 @@ fn ios_strings_to_android_xml_simple_strings_survive() {
         if let EntryValue::Simple(original) = &entry.value {
             assert!(
                 reparsed.entries.contains_key(key),
-                "Key '{}' should survive iOS strings -> Android XML",
-                key
+                "Key '{key}' should survive iOS strings -> Android XML"
             );
             if let EntryValue::Simple(converted) = &reparsed.entries[key].value {
-                assert_eq!(
-                    original, converted,
-                    "Value for '{}' should survive",
-                    key
-                );
+                assert_eq!(original, converted, "Value for '{key}' should survive");
             }
         }
     }
@@ -284,15 +265,10 @@ fn yaml_rails_to_json_nested_keys_survive() {
         if let EntryValue::Simple(original) = &entry.value {
             assert!(
                 reparsed.entries.contains_key(key),
-                "Key '{}' should survive YAML -> JSON",
-                key
+                "Key '{key}' should survive YAML -> JSON"
             );
             if let EntryValue::Simple(converted) = &reparsed.entries[key].value {
-                assert_eq!(
-                    original, converted,
-                    "Value for '{}' should survive",
-                    key
-                );
+                assert_eq!(original, converted, "Value for '{key}' should survive");
             }
         }
     }

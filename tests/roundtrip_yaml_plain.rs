@@ -161,7 +161,7 @@ fn parse_plurals_fixture() {
             assert_eq!(ps.one, Some("{count} item".to_string()));
             assert_eq!(ps.other, "{count} items");
         }
-        other => panic!("Expected Plural for 'items', got {:?}", other),
+        other => panic!("Expected Plural for 'items', got {other:?}"),
     }
 
     match &resource.entries["files"].value {
@@ -170,7 +170,7 @@ fn parse_plurals_fixture() {
             assert_eq!(ps.one, Some("{count} file".to_string()));
             assert_eq!(ps.other, "{count} files");
         }
-        other => panic!("Expected Plural for 'files', got {:?}", other),
+        other => panic!("Expected Plural for 'files', got {other:?}"),
     }
 
     assert_eq!(
@@ -300,7 +300,10 @@ fn write_nested_entries() {
     let text = std::str::from_utf8(&output).expect("valid UTF-8");
 
     // Should have nested structure, not flat dot-keys
-    assert!(text.contains("messages:"), "Expected nested 'messages' key in:\n{}", text);
+    assert!(
+        text.contains("messages:"),
+        "Expected nested 'messages' key in:\n{text}"
+    );
 }
 
 #[test]
@@ -332,13 +335,11 @@ fn write_plural_entries_as_suffix_keys() {
 
     assert!(
         text.contains("items_one:"),
-        "Expected 'items_one' suffix key in:\n{}",
-        text
+        "Expected 'items_one' suffix key in:\n{text}"
     );
     assert!(
         text.contains("items_other:"),
-        "Expected 'items_other' suffix key in:\n{}",
-        text
+        "Expected 'items_other' suffix key in:\n{text}"
     );
 }
 
@@ -434,7 +435,7 @@ fn roundtrip_plurals() {
     assert_eq!(resource.entries.len(), reparsed.entries.len());
     for (key, entry) in &resource.entries {
         let reparsed_entry = reparsed.entries.get(key).unwrap_or_else(|| {
-            panic!("Key '{}' missing after round-trip", key);
+            panic!("Key '{key}' missing after round-trip");
         });
         assert_eq!(entry.value, reparsed_entry.value, "Mismatch for key: {key}");
     }
@@ -617,7 +618,7 @@ fn plural_suffix_only_other_is_not_grouped() {
             assert_eq!(ps.other, "many items");
             assert_eq!(ps.one, None);
         }
-        other => panic!("Expected Plural, got {:?}", other),
+        other => panic!("Expected Plural, got {other:?}"),
     }
 }
 

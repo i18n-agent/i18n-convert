@@ -1,5 +1,5 @@
-use indexmap::IndexMap;
 use super::*;
+use indexmap::IndexMap;
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct I18nResource {
