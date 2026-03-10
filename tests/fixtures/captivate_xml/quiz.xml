@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xliff version="1.2" xmlns="urn:oasis:names:tc:xliff:document:1.2">
+  <file original="captivate_project" source-language="en" datatype="plaintext">
+    <header>
+      <tool tool-id="captivate" tool-name="Adobe Captivate"/>
+    </header>
+    <body>
+      <trans-unit id="slide_3_item_1">
+        <source>Quiz Question: What is 2+2?</source>
+        <note>Multiple choice question</note>
+      </trans-unit>
+      <trans-unit id="slide_3_item_2">
+        <source>A) 3</source>
+        <note>Incorrect answer</note>
+      </trans-unit>
+      <trans-unit id="slide_3_item_3">
+        <source>B) 4</source>
+        <note>Correct answer</note>
+      </trans-unit>
+      <trans-unit id="slide_3_item_4">
+        <source>C) 5</source>
+        <note>Incorrect answer</note>
+      </trans-unit>
+      <trans-unit id="slide_4_item_1">
+        <source>True or False: The sky is blue.</source>
+        <note from="developer">Boolean question type</note>
+      </trans-unit>
+      <trans-unit id="slide_4_item_2">
+        <source>True</source>
+      </trans-unit>
+      <trans-unit id="slide_4_item_3">
+        <source>False</source>
+      </trans-unit>
+    </body>
+  </file>
+</xliff>

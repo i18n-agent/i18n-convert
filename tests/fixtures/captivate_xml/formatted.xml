@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xliff version="1.2" xmlns="urn:oasis:names:tc:xliff:document:1.2">
+  <file original="captivate_project" source-language="en" datatype="plaintext">
+    <header>
+      <tool tool-id="captivate" tool-name="Adobe Captivate"/>
+    </header>
+    <body>
+      <trans-unit id="slide_1_item_1">
+        <source><g id="1" ctype="bold">Important:</g> Pay attention to this section</source>
+      </trans-unit>
+      <trans-unit id="slide_1_item_2">
+        <source>This is <g id="2" ctype="italic">emphasized</g> text</source>
+      </trans-unit>
+      <trans-unit id="slide_2_item_1">
+        <source><g id="3" ctype="bold">Step 1:</g> Open the <g id="4" ctype="italic">Settings</g> panel</source>
+      </trans-unit>
+      <trans-unit id="slide_2_item_2">
+        <source>Plain text without formatting</source>
+      </trans-unit>
+    </body>
+  </file>
+</xliff>

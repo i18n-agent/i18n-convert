@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xliff version="1.2" xmlns="urn:oasis:names:tc:xliff:document:1.2">
+  <file original="ispring_quiz" source-language="en" target-language="de" datatype="plaintext">
+    <header>
+      <tool tool-id="ispring" tool-name="iSpring Suite" tool-version="11.3"/>
+    </header>
+    <body>
+      <trans-unit id="quiz1_title">
+        <source>Knowledge Check</source>
+        <target>Wissenstest</target>
+      </trans-unit>
+      <trans-unit id="quiz1_q1">
+        <source>What is the capital of France?</source>
+        <target>Was ist die Hauptstadt von Frankreich?</target>
+        <note from="developer">Multiple choice question</note>
+      </trans-unit>
+      <trans-unit id="quiz1_a1">
+        <source>Paris</source>
+        <target>Paris</target>
+        <note from="developer">Correct answer</note>
+      </trans-unit>
+      <trans-unit id="quiz1_a2">
+        <source>London</source>
+        <target>London</target>
+      </trans-unit>
+      <trans-unit id="quiz1_a3">
+        <source>Berlin</source>
+        <target>Berlin</target>
+      </trans-unit>
+      <trans-unit id="quiz1_q2">
+        <source>Select all programming languages:</source>
+        <target>Wählen Sie alle Programmiersprachen aus:</target>
+        <note from="developer">Multiple response question</note>
+        <note from="translator">Keep technical terms as-is</note>
+      </trans-unit>
+      <trans-unit id="quiz_btn_submit">
+        <source>Submit</source>
+        <target>Absenden</target>
+      </trans-unit>
+      <trans-unit id="quiz_btn_retry">
+        <source>Try Again</source>
+        <target>Erneut versuchen</target>
+      </trans-unit>
+      <trans-unit id="quiz_feedback_correct">
+        <source>Correct! Well done.</source>
+        <target>Richtig! Gut gemacht.</target>
+      </trans-unit>
+      <trans-unit id="quiz_feedback_incorrect">
+        <source>Incorrect. Please try again.</source>
+        <target>Falsch. Bitte versuchen Sie es erneut.</target>
+      </trans-unit>
+    </body>
+  </file>
+</xliff>

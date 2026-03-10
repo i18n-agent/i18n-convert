@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xliff version="1.2" xmlns="urn:oasis:names:tc:xliff:document:1.2">
+  <file original="captivate_project" source-language="en" datatype="plaintext">
+    <header>
+      <tool tool-id="captivate" tool-name="Adobe Captivate"/>
+    </header>
+    <body>
+      <trans-unit id="slide_1_item_1" css-style="font-family:Arial;font-size:24px;">
+        <source>Course Title</source>
+      </trans-unit>
+      <trans-unit id="slide_1_item_2" css-style="font-family:Verdana;color:#333333;">
+        <source>Subtitle text here</source>
+      </trans-unit>
+      <trans-unit id="slide_2_item_1" css-style="font-weight:bold;">
+        <source>Section Header</source>
+        <note>Main section heading</note>
+      </trans-unit>
+      <trans-unit id="slide_2_item_2">
+        <source>Body text without explicit style</source>
+      </trans-unit>
+      <trans-unit id="slide_3_item_1" css-style="text-align:center;font-size:18px;">
+        <source><g id="1" ctype="bold">Final Exam</g> - Read carefully</source>
+      </trans-unit>
+    </body>
+  </file>
+</xliff>

@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xliff version="1.2" xmlns="urn:oasis:names:tc:xliff:document:1.2">
+  <file original="ispring_course" source-language="en" target-language="fr" datatype="plaintext">
+    <header>
+      <tool tool-id="ispring" tool-name="iSpring Suite"/>
+    </header>
+    <body>
+      <trans-unit id="slide1_title">
+        <source>Introduction to the Course</source>
+        <target>Introduction au cours</target>
+      </trans-unit>
+      <trans-unit id="slide1_text">
+        <source>Welcome to this training module.</source>
+        <target>Bienvenue dans ce module de formation.</target>
+        <note from="developer">Main slide text</note>
+      </trans-unit>
+      <trans-unit id="slide2_title">
+        <source>Learning Objectives</source>
+        <target>Objectifs d'apprentissage</target>
+      </trans-unit>
+      <trans-unit id="nav_next">
+        <source>Next</source>
+        <target>Suivant</target>
+      </trans-unit>
+      <trans-unit id="nav_prev">
+        <source>Previous</source>
+        <target>Précédent</target>
+      </trans-unit>
+    </body>
+  </file>
+</xliff>
