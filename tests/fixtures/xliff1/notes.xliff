@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xliff version="1.2" xmlns="urn:oasis:names:tc:xliff:document:1.2">
+  <file source-language="en" target-language="fr" datatype="plaintext" original="ui.properties">
+    <body>
+      <trans-unit id="btn_save">
+        <source>Save</source>
+        <target>Enregistrer</target>
+        <note from="developer" priority="1" annotates="source">Button label for save action</note>
+      </trans-unit>
+      <trans-unit id="btn_cancel">
+        <source>Cancel</source>
+        <target>Annuler</target>
+        <note from="translator" annotates="target">Use formal register</note>
+        <note>General note about this string</note>
+      </trans-unit>
+      <trans-unit id="menu_file">
+        <source>File</source>
+        <target>Fichier</target>
+        <note from="developer" priority="2">Menu item in top bar</note>
+        <note from="translator">Keep short for menu display</note>
+      </trans-unit>
+    </body>
+  </file>
+</xliff>

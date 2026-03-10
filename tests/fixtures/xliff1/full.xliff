@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xliff version="1.2" xmlns="urn:oasis:names:tc:xliff:document:1.2">
+  <file source-language="en" target-language="es" datatype="html" original="index.html">
+    <body>
+      <trans-unit id="title" restype="x-title" resname="page_title" maxwidth="50" size-unit="char" translate="yes" approved="yes">
+        <source>Welcome to our app</source>
+        <target state="final">Bienvenido a nuestra aplicación</target>
+        <note from="developer" priority="1" annotates="source">Main page title</note>
+        <note from="translator">Keep concise for header display</note>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/index.html</context>
+          <context context-type="linenumber">42</context>
+        </context-group>
+        <alt-trans match-quality="85" origin="tm-database">
+          <source>Welcome to the app</source>
+          <target>Bienvenido a la app</target>
+        </alt-trans>
+      </trans-unit>
+      <trans-unit id="description" maxwidth="200" size-unit="pixel" translate="yes">
+        <source>This is the description</source>
+        <target state="translated">Esta es la descripción</target>
+        <context-group purpose="information">
+          <context context-type="element">p</context>
+          <context context-type="x-url">/about</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="no_translate" translate="no">
+        <source>BRAND_NAME</source>
+      </trans-unit>
+      <trans-unit id="with_alt_trans">
+        <source>Submit form</source>
+        <target state="needs-review-translation">Enviar formulario</target>
+        <alt-trans match-quality="72" origin="mt-engine">
+          <source>Submit form</source>
+          <target>Enviar el formulario</target>
+        </alt-trans>
+        <alt-trans match-quality="60" origin="tm-legacy">
+          <source>Submit the form</source>
+          <target>Presentar formulario</target>
+        </alt-trans>
+      </trans-unit>
+    </body>
+  </file>
+</xliff>

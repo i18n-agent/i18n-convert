@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xliff version="1.2" xmlns="urn:oasis:names:tc:xliff:document:1.2">
+  <file source-language="en" target-language="ja" datatype="plaintext" original="app.properties">
+    <body>
+      <trans-unit id="new_entry" approved="no">
+        <source>New entry</source>
+        <target state="new">New entry</target>
+      </trans-unit>
+      <trans-unit id="translated_entry" approved="no">
+        <source>Translated entry</source>
+        <target state="translated">翻訳済みエントリ</target>
+      </trans-unit>
+      <trans-unit id="reviewed_entry" approved="yes">
+        <source>Reviewed entry</source>
+        <target state="signed-off">レビュー済みエントリ</target>
+      </trans-unit>
+      <trans-unit id="final_entry" approved="yes">
+        <source>Final entry</source>
+        <target state="final">最終エントリ</target>
+      </trans-unit>
+      <trans-unit id="needs_translation">
+        <source>Needs translation</source>
+        <target state="needs-translation">翻訳が必要</target>
+      </trans-unit>
+      <trans-unit id="needs_review">
+        <source>Needs review</source>
+        <target state="needs-review-translation" state-qualifier="leveraged-inherited">レビューが必要</target>
+      </trans-unit>
+      <trans-unit id="needs_adapt">
+        <source>Needs adaptation</source>
+        <target state="needs-adaptation">適応が必要</target>
+      </trans-unit>
+      <trans-unit id="needs_l10n">
+        <source>Needs localization</source>
+        <target state="needs-l10n">ローカライズが必要</target>
+      </trans-unit>
+      <trans-unit id="needs_review_adapt">
+        <source>Needs review adaptation</source>
+        <target state="needs-review-adaptation">レビュー適応が必要</target>
+      </trans-unit>
+      <trans-unit id="needs_review_l10n">
+        <source>Needs review localization</source>
+        <target state="needs-review-l10n">レビューローカライズが必要</target>
+      </trans-unit>
+    </body>
+  </file>
+</xliff>
