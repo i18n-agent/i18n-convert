@@ -1,0 +1,13 @@
+# Application strings
+greeting: Hello
+
+# Farewell message shown on exit
+farewell: Goodbye
+
+app_name: My App
+
+# Navigation section
+nav:
+	# Home page link
+	home: Home
+	about: About

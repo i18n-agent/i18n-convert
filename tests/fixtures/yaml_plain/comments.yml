@@ -1,0 +1,9 @@
+# App strings
+greeting: Hello
+# Farewell message
+farewell: Goodbye
+# Nested messages section
+messages:
+  # Welcome message
+  welcome: Welcome to our app
+  error: Something went wrong

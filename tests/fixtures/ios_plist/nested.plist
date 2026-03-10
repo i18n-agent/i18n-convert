@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>messages</key>
+	<dict>
+		<key>welcome</key>
+		<string>Welcome</string>
+		<key>error</key>
+		<dict>
+			<key>not_found</key>
+			<string>Page not found</string>
+			<key>server</key>
+			<string>Internal server error</string>
+		</dict>
+	</dict>
+	<key>settings</key>
+	<dict>
+		<key>language</key>
+		<string>Language</string>
+		<key>theme</key>
+		<string>Theme</string>
+	</dict>
+	<key>app_title</key>
+	<string>My Application</string>
+</dict>
+</plist>

@@ -1,0 +1,9 @@
+messages:
+	welcome: Welcome
+	error:
+		not_found: Page not found
+		server: Internal server error
+settings:
+	language: Language
+	theme: Theme
+app_title: My Application

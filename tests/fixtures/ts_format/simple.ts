@@ -1,0 +1,5 @@
+export default {
+  greeting: "Hello",
+  farewell: "Goodbye",
+  welcome: "Welcome to our app"
+};
