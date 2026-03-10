@@ -1,0 +1,12 @@
+en:
+  items:
+    zero: no items
+    one: one item
+    two: two items
+    few: a few items
+    many: many items
+    other: "%{count} items"
+  messages:
+    one: one message
+    other: "%{count} messages"
+  simple_key: not a plural

@@ -1,0 +1,13 @@
+en:
+  common:
+    greeting: Hello
+    farewell: Goodbye
+  pages:
+    home:
+      title: Home Page
+      description: Welcome to the home page
+    about:
+      title: About Us
+      team:
+        lead: Team Lead
+        members: Team Members

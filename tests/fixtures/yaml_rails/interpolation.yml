@@ -1,0 +1,5 @@
+en:
+  greeting: "Hello, %{name}!"
+  welcome: "Welcome to %{app_name}, %{user}!"
+  items_count: "You have %{count} items in your %{container}"
+  no_interpolation: This is a plain string
