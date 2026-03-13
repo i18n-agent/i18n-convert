@@ -28,14 +28,24 @@ fn detect_hjson_by_extension() {
 
 #[test]
 fn detect_ignores_non_hjson_extension() {
+    // HJSON-like content with .json extension: invalid JSON but starts with {
+    // Returns Low since it could be HJSON but no definitive HJSON syntax (comments)
     let content = b"{greeting: Hello}";
+    assert_eq!(parser().detect(".json", content), Confidence::Low);
+}
+
+#[test]
+fn detect_valid_json_not_hjson() {
+    // Valid strict JSON with .json extension should NOT match as HJSON
+    let content = br#"{"greeting": "Hello"}"#;
     assert_eq!(parser().detect(".json", content), Confidence::None);
 }
 
 #[test]
 fn detect_hjson_content_with_comments() {
+    // HJSON-specific syntax (# comments) in non-JSON content → High confidence
     let content = b"{\n  # This is a comment\n  greeting: Hello\n}";
-    assert_eq!(parser().detect(".txt", content), Confidence::Low);
+    assert_eq!(parser().detect(".txt", content), Confidence::High);
 }
 
 // ──────────────────────────────────────────────

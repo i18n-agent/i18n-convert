@@ -14,7 +14,8 @@ fn load_fixture(name: &str) -> Vec<u8> {
 fn detect_i18next_with_plural_suffixes() {
     let content = load_fixture("plurals.json");
     let confidence = i18next::Parser.detect(".json", &content);
-    assert_eq!(confidence, Confidence::High);
+    // Structural analysis finds plural key pairs → Definite confidence
+    assert_eq!(confidence, Confidence::Definite);
 }
 
 #[test]

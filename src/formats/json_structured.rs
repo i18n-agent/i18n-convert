@@ -5,24 +5,34 @@ pub struct Writer;
 
 impl FormatParser for Parser {
     fn detect(&self, extension: &str, content: &[u8]) -> Confidence {
-        if extension == ".json" {
-            if let Ok(s) = std::str::from_utf8(content) {
-                // Exclude ARB (has @@locale) and xcstrings (has sourceLanguage+strings)
-                if s.contains("\"@@locale\"") {
+        if extension != ".json" {
+            return Confidence::None;
+        }
+        let s = match std::str::from_utf8(content) {
+            Ok(s) => s,
+            Err(_) => return Confidence::None,
+        };
+        // Exclude ARB (has @@locale) and xcstrings (has sourceLanguage+strings)
+        if s.contains("\"@@locale\"") {
+            return Confidence::None;
+        }
+        if s.contains("\"sourceLanguage\"") && s.contains("\"strings\"") {
+            return Confidence::None;
+        }
+        // Try to parse as JSON for structural analysis
+        if let Ok(val) = serde_json::from_str::<serde_json::Value>(s) {
+            if let Some(obj) = val.as_object() {
+                // Exclude i18next: check for actual plural key pairs in the object tree
+                if has_plural_key_pairs(obj) {
                     return Confidence::None;
                 }
-                if s.contains("\"sourceLanguage\"") && s.contains("\"strings\"") {
-                    return Confidence::None;
-                }
-                // Check for i18next plural suffixes
-                if s.contains("_one\"") || s.contains("_other\"") {
-                    return Confidence::None;
-                }
-                // Generic JSON with string values
-                if s.trim_start().starts_with('{') {
-                    return Confidence::Low;
-                }
+                // Valid JSON object with no competing format signals
+                return Confidence::High;
             }
+        }
+        // Fallback: looks like JSON but didn't fully parse
+        if s.trim_start().starts_with('{') {
+            return Confidence::Low;
         }
         Confidence::None
     }
@@ -69,6 +79,31 @@ impl FormatParser for Parser {
             custom_properties: false,
         }
     }
+}
+
+/// Check if a JSON object has i18next-style plural key pairs at any nesting level.
+/// Requires both `base_other` and at least one sibling (`base_one`, `base_zero`, etc.)
+/// to avoid false positives from keys that just happen to end with `_other`.
+fn has_plural_key_pairs(obj: &serde_json::Map<String, serde_json::Value>) -> bool {
+    let keys: Vec<&str> = obj.keys().map(|k| k.as_str()).collect();
+    for key in &keys {
+        if let Some(base) = key.strip_suffix("_other") {
+            for suffix in &["_one", "_zero", "_many", "_few", "_two"] {
+                let sibling = format!("{base}{suffix}");
+                if keys.contains(&sibling.as_str()) {
+                    return true;
+                }
+            }
+        }
+    }
+    for value in obj.values() {
+        if let serde_json::Value::Object(nested) = value {
+            if has_plural_key_pairs(nested) {
+                return true;
+            }
+        }
+    }
+    false
 }
 
 /// Recursively flatten a JSON object into dot-separated keys with simple string values.

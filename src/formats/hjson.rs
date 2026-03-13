@@ -520,14 +520,19 @@ impl FormatParser for Parser {
         if extension == ".hjson" {
             return Confidence::Definite;
         }
-        // Try content-based detection: looks like JSON-ish with unquoted values
         if let Ok(s) = std::str::from_utf8(content) {
             let trimmed = s.trim();
             if trimmed.starts_with('{') {
-                // Check for HJSON-specific features: unquoted keys, # comments, // comments
-                if trimmed.contains("# ") || trimmed.contains("// ") {
-                    return Confidence::Low;
+                // If it parses as valid strict JSON, it's not HJSON-specific syntax
+                if serde_json::from_str::<serde_json::Value>(trimmed).is_ok() {
+                    return Confidence::None;
                 }
+                // Fails strict JSON parse but looks like an object — could be HJSON
+                if trimmed.contains("# ") || trimmed.contains("// ") || trimmed.contains("/*") {
+                    return Confidence::High;
+                }
+                // Could still be HJSON (unquoted keys/values, trailing commas, etc.)
+                return Confidence::Low;
             }
         }
         Confidence::None

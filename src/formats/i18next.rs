@@ -37,16 +37,31 @@ enum PluralCategory {
 
 impl FormatParser for Parser {
     fn detect(&self, extension: &str, content: &[u8]) -> Confidence {
-        if extension == ".json" {
-            if let Ok(s) = std::str::from_utf8(content) {
-                // i18next uses _one, _other, _zero, _few, _many, _two suffixes
-                if s.contains("_one\"") && s.contains("_other\"") {
+        if extension != ".json" {
+            return Confidence::None;
+        }
+        let s = match std::str::from_utf8(content) {
+            Ok(s) => s,
+            Err(_) => return Confidence::None,
+        };
+        // Parse JSON and structurally verify plural key pairs in actual keys
+        if let Ok(val) = serde_json::from_str::<serde_json::Value>(s) {
+            if let Some(obj) = val.as_object() {
+                let pairs = count_plural_pairs(obj);
+                if pairs >= 2 {
+                    return Confidence::Definite;
+                }
+                if pairs == 1 {
                     return Confidence::High;
                 }
-                if s.contains("_other\"") {
-                    return Confidence::Low;
-                }
             }
+        }
+        // Fallback: string heuristics for malformed files
+        if s.contains("_one\"") && s.contains("_other\"") {
+            return Confidence::High;
+        }
+        if s.contains("_other\"") {
+            return Confidence::Low;
         }
         Confidence::None
     }
@@ -161,6 +176,30 @@ impl FormatWriter for Writer {
     fn capabilities(&self) -> FormatCapabilities {
         Parser.capabilities()
     }
+}
+
+/// Count i18next-style plural key pairs across all levels of a JSON object.
+/// A pair requires `base_other` plus at least one sibling (`base_one`, `base_zero`, etc.).
+fn count_plural_pairs(obj: &serde_json::Map<String, serde_json::Value>) -> usize {
+    let mut count = 0;
+    let keys: Vec<&str> = obj.keys().map(|k| k.as_str()).collect();
+    for key in &keys {
+        if let Some(base) = key.strip_suffix("_other") {
+            for suffix in &["_one", "_zero", "_many", "_few", "_two"] {
+                let sibling = format!("{base}{suffix}");
+                if keys.contains(&sibling.as_str()) {
+                    count += 1;
+                    break;
+                }
+            }
+        }
+    }
+    for value in obj.values() {
+        if let serde_json::Value::Object(nested) = value {
+            count += count_plural_pairs(nested);
+        }
+    }
+    count
 }
 
 /// Flatten a nested JSON object into dot-separated keys.

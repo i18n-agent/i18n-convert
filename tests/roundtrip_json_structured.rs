@@ -329,8 +329,9 @@ fn roundtrip_preserves_icu_structure() {
 
 #[test]
 fn detect_json_file() {
+    // Valid JSON object with no competing format signals → High confidence
     let content = b"{\"greeting\": \"Hello\"}";
-    assert_eq!(parser().detect(".json", content), Confidence::Low);
+    assert_eq!(parser().detect(".json", content), Confidence::High);
 }
 
 #[test]

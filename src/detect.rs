@@ -120,4 +120,68 @@ mod tests {
         assert_eq!(results[0].0, "xliff");
         assert_eq!(results[0].1, Confidence::Definite);
     }
+
+    #[test]
+    fn detect_plain_json_as_high() {
+        let registry = FormatRegistry::new();
+        let path = Path::new("en.json");
+        let content = br#"{"greeting": "Hello", "farewell": "Goodbye"}"#;
+        let result = detect_best(&registry, path, content);
+        assert_eq!(result, Some("json"));
+        let results = detect_format(&registry, path, content);
+        assert_eq!(results[0].1, Confidence::High);
+    }
+
+    #[test]
+    fn detect_i18next_json_definite_with_plural_pairs() {
+        let registry = FormatRegistry::new();
+        let path = Path::new("en.json");
+        let content = br#"{"item_one": "{{count}} item", "item_other": "{{count}} items", "dog_one": "{{count}} dog", "dog_other": "{{count}} dogs"}"#;
+        let result = detect_best(&registry, path, content);
+        assert_eq!(result, Some("i18next"));
+        let results = detect_format(&registry, path, content);
+        assert_eq!(results[0].1, Confidence::Definite);
+    }
+
+    #[test]
+    fn detect_i18next_json_high_with_single_pair() {
+        let registry = FormatRegistry::new();
+        let path = Path::new("en.json");
+        let content = br#"{"item_one": "{{count}} item", "item_other": "{{count}} items", "greeting": "Hello"}"#;
+        let result = detect_best(&registry, path, content);
+        assert_eq!(result, Some("i18next"));
+        let results = detect_format(&registry, path, content);
+        assert_eq!(results[0].1, Confidence::High);
+    }
+
+    #[test]
+    fn detect_json_not_confused_by_other_suffix_in_values() {
+        let registry = FormatRegistry::new();
+        let path = Path::new("en.json");
+        // Values contain "_one" and "_other" but keys don't have plural pairs
+        let content = br#"{"message": "buy_one get_other free"}"#;
+        let result = detect_best(&registry, path, content);
+        assert_eq!(result, Some("json"));
+    }
+
+    #[test]
+    fn detect_valid_json_not_hjson() {
+        let registry = FormatRegistry::new();
+        let path = Path::new("en.json");
+        // Valid JSON with "# " in a value should NOT match as HJSON
+        let content = br#"{"comment": "see section # 3 for details"}"#;
+        let results = detect_format(&registry, path, content);
+        for (id, _) in &results {
+            assert_ne!(*id, "hjson");
+        }
+    }
+
+    #[test]
+    fn detect_i18next_nested_plural_pairs() {
+        let registry = FormatRegistry::new();
+        let path = Path::new("translation.json");
+        let content = br#"{"common": {"item_one": "{{count}} item", "item_other": "{{count}} items"}, "nav": {"home": "Home"}}"#;
+        let result = detect_best(&registry, path, content);
+        assert_eq!(result, Some("i18next"));
+    }
 }
