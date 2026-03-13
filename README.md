@@ -19,7 +19,20 @@ i18n-convert messages.json --to android-xml -o strings.xml
 
 ## Installation
 
-### Download binary (recommended)
+### npm (recommended)
+
+```bash
+npm install -g @i18n-agent/i18n-convert
+```
+
+### Homebrew
+
+```bash
+brew tap i18n-agent/tap
+brew install i18n-convert
+```
+
+### Download binary
 
 Download the latest release for your platform from [GitHub Releases](https://github.com/i18n-agent/i18n-convert/releases/latest).
 
