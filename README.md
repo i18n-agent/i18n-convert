@@ -17,6 +17,12 @@ One binary. Any format in, any format out. Lossless round-trips where possible, 
 i18n-convert messages.json --to android-xml -o strings.xml
 ```
 
+## Need to translate, not just convert?
+
+i18n-convert changes the **shape** of your localization files. If you also need to translate their **content** with AI quality, [i18nagent.ai](https://i18nagent.ai/mcp-translation-server?utm_source=readme&utm_medium=cta_block&utm_campaign=i18n_convert) is the MCP server we built for that — plug it into Claude or another MCP-aware AI tool and translate across the same 32 formats with multi-model AI quality.
+
+Same author. Same audience. Same formats.
+
 ## Installation
 
 ### npm (recommended)
