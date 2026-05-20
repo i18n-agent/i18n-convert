@@ -429,7 +429,7 @@ impl FormatRegistry {
             .map(|(id, entry)| (*id, entry.parser.detect(extension, content)))
             .filter(|(_, c)| *c != Confidence::None)
             .collect();
-        results.sort_by(|a, b| b.1.cmp(&a.1));
+        results.sort_by_key(|b| std::cmp::Reverse(b.1));
         results
     }
 }

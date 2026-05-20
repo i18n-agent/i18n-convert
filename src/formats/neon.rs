@@ -86,11 +86,7 @@ fn parse_neon_content(content: &str) -> Result<I18nResource, ParseError> {
                 leading_ws // each tab is one level
             } else {
                 // space-based indentation
-                if indent_size > 0 {
-                    leading_ws / indent_size
-                } else {
-                    0
-                }
+                leading_ws.checked_div(indent_size).unwrap_or(0)
             }
         };
 

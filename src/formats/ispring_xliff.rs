@@ -183,30 +183,24 @@ impl FormatParser for Parser {
                                 ..Default::default()
                             });
                         }
-                        "source" => {
-                            if state == ParseState::TransUnit {
-                                state = ParseState::Source;
-                                text_buf.clear();
-                            }
+                        "source" if state == ParseState::TransUnit => {
+                            state = ParseState::Source;
+                            text_buf.clear();
                         }
-                        "target" => {
-                            if state == ParseState::TransUnit {
-                                state = ParseState::Target;
-                                if let Some(ref mut tu) = current_tu {
-                                    tu.target_state = get_attr(e, b"state");
-                                }
-                                text_buf.clear();
+                        "target" if state == ParseState::TransUnit => {
+                            state = ParseState::Target;
+                            if let Some(ref mut tu) = current_tu {
+                                tu.target_state = get_attr(e, b"state");
                             }
+                            text_buf.clear();
                         }
-                        "note" => {
-                            if state == ParseState::TransUnit {
-                                state = ParseState::Note;
-                                current_note = Some(NoteBuilder {
-                                    from: get_attr(e, b"from"),
-                                    ..Default::default()
-                                });
-                                text_buf.clear();
-                            }
+                        "note" if state == ParseState::TransUnit => {
+                            state = ParseState::Note;
+                            current_note = Some(NoteBuilder {
+                                from: get_attr(e, b"from"),
+                                ..Default::default()
+                            });
+                            text_buf.clear();
                         }
                         _ => {}
                     }
@@ -233,35 +227,29 @@ impl FormatParser for Parser {
                     let local_name = tag_name.split(':').next_back().unwrap_or(&tag_name);
 
                     match local_name {
-                        "source" => {
-                            if state == ParseState::Source {
-                                if let Some(ref mut tu) = current_tu {
-                                    tu.source = text_buf.clone();
-                                }
-                                state = ParseState::TransUnit;
-                                text_buf.clear();
+                        "source" if state == ParseState::Source => {
+                            if let Some(ref mut tu) = current_tu {
+                                tu.source = text_buf.clone();
                             }
+                            state = ParseState::TransUnit;
+                            text_buf.clear();
                         }
-                        "target" => {
-                            if state == ParseState::Target {
-                                if let Some(ref mut tu) = current_tu {
-                                    tu.target = Some(text_buf.clone());
-                                }
-                                state = ParseState::TransUnit;
-                                text_buf.clear();
+                        "target" if state == ParseState::Target => {
+                            if let Some(ref mut tu) = current_tu {
+                                tu.target = Some(text_buf.clone());
                             }
+                            state = ParseState::TransUnit;
+                            text_buf.clear();
                         }
-                        "note" => {
-                            if state == ParseState::Note {
-                                if let Some(mut note) = current_note.take() {
-                                    note.text = text_buf.clone();
-                                    if let Some(ref mut tu) = current_tu {
-                                        tu.notes.push(note);
-                                    }
+                        "note" if state == ParseState::Note => {
+                            if let Some(mut note) = current_note.take() {
+                                note.text = text_buf.clone();
+                                if let Some(ref mut tu) = current_tu {
+                                    tu.notes.push(note);
                                 }
-                                state = ParseState::TransUnit;
-                                text_buf.clear();
                             }
+                            state = ParseState::TransUnit;
+                            text_buf.clear();
                         }
                         "trans-unit" => {
                             if let Some(tu) = current_tu.take() {

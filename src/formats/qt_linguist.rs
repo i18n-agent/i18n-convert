@@ -716,19 +716,19 @@ impl Writer {
         // <comment> (developer)
         for comment in &entry.comments {
             match comment.role {
-                CommentRole::Developer | CommentRole::Extracted | CommentRole::General => {
-                    if !comment.text.is_empty() {
-                        writer
-                            .write_event(Event::Start(BytesStart::new("comment")))
-                            .map_err(|e| WriteError::Serialization(e.to_string()))?;
-                        writer
-                            .write_event(Event::Text(BytesText::new(&comment.text)))
-                            .map_err(|e| WriteError::Serialization(e.to_string()))?;
-                        writer
-                            .write_event(Event::End(BytesEnd::new("comment")))
-                            .map_err(|e| WriteError::Serialization(e.to_string()))?;
-                        break; // Qt only supports one developer comment
-                    }
+                CommentRole::Developer | CommentRole::Extracted | CommentRole::General
+                    if !comment.text.is_empty() =>
+                {
+                    writer
+                        .write_event(Event::Start(BytesStart::new("comment")))
+                        .map_err(|e| WriteError::Serialization(e.to_string()))?;
+                    writer
+                        .write_event(Event::Text(BytesText::new(&comment.text)))
+                        .map_err(|e| WriteError::Serialization(e.to_string()))?;
+                    writer
+                        .write_event(Event::End(BytesEnd::new("comment")))
+                        .map_err(|e| WriteError::Serialization(e.to_string()))?;
+                    break; // Qt only supports one developer comment
                 }
                 _ => {}
             }

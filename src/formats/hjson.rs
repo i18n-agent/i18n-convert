@@ -71,11 +71,9 @@ impl HjsonParser {
                     self.advance(); // consume *
                     loop {
                         match self.advance() {
-                            Some('*') => {
-                                if self.peek() == Some('/') {
-                                    self.advance();
-                                    break;
-                                }
+                            Some('*') if self.peek() == Some('/') => {
+                                self.advance();
+                                break;
                             }
                             None => break,
                             _ => {}
