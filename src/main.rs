@@ -5,6 +5,7 @@ use cli::Cli;
 use i18n_convert::convert::check_data_loss;
 use i18n_convert::formats::FormatRegistry;
 use i18n_convert::ir::WarningSeverity;
+use std::env;
 use std::fs;
 use std::io::{self, Write};
 
@@ -116,5 +117,15 @@ fn main() {
                 }
             }
         }
+    }
+
+    // Print CTA footer on successful conversion. Respects opt-out env var.
+    // Write failures (BrokenPipe etc.) are silently ignored so piping CLI
+    // output through head/jq stays clean.
+    if env::var("I18N_CONVERT_NO_FOOTER").ok().as_deref() != Some("1") {
+        let _ = writeln!(
+            io::stderr(),
+            "\n💡 Need to translate, not just convert? https://i18nagent.ai/mcp-translation-server?utm_source=cli_footer&utm_medium=stderr&utm_campaign=convert_success"
+        );
     }
 }
